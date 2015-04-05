@@ -1,0 +1,65 @@
+---
+layout: post
+title: 'Compass 整理筆記'
+date: 2013-08-30 16:15:00
+categories: CSS Sass
+---
+
+使用 Compass 之前需要先安裝 ruby，這裡我們可以透過[官方](https://www.ruby-lang.org/en/downloads/)
+的教學來安裝，建議使用 rvm 的方式來管理各種版本的 ruby。
+
+rvm 安裝方式
+----
+				$ \curl -L https://get.rvm.io | bash -s stable --ruby
+        
+設定 ruby 環境
+---
+				$ gem update --system
+				$ gem install compass
+ 				$ compass -v // 確認版本與安裝完成
+
+建立專案
+---
+				$ compass create Project1 // 單純使用 css
+				$ compass create Project2 --syntax sass  // 使用 sass
+        
+建立之後 compass 會提示訊息告訴你， Congratulations! Your compass project has been created.
+意思是恭喜，你的專案已經建立了。然後呢如果你是用 sass，你現在應該在 sass 的目錄底下開始新增和編輯你的 sass 檔案
+例如： style.sass
+注意：底線開頭的 sass 檔案叫做 partials 可以稱之為局部文件如 `_member.sass`，他們不會被
+編譯成單檔而是匯入其他 sass 檔案中使用。
+關於 sass 的設定都在 config.rb 裡面。當你做了任何修改，你都需要重新編譯。
+
+編譯指令
+---
+				$ compass compile [專案路徑]  // 到目錄為止
+
+開始編寫 sass
+---
+在這之前呢， compass 會好心的提醒你需要把下面這段代碼引入到你的 html 中
+
+				<head>
+  				<link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css" />
+  				<link href="/stylesheets/print.css" media="print" rel="stylesheet" type="text/css" />
+  				<!--[if IE]>
+      			<link href="/stylesheets/ie.css" media="screen, projection" rel="stylesheet" type="text/css" />
+  				<![endif]-->
+				</head>
+        
+如果你跟我一樣是使用 jade 的話則如下
+
+				link(rel='stylesheet', href='/stylesheets/screen.css', media='screen, projection', type="text/css")
+				link(rel='stylesheet', href='/stylesheets/print.css',  media='print', type="text/css")
+				//[if IE]
+				  link(rel='stylesheet', href='/path/project')
+				  <![endif]
+
+然後我們就可以試著在 sass 目錄加入自己的 style.sass
+並且輸入如下
+
+				h2
+				  color: red;
+          
+最後 compile 之後就可以看看了。
+				
+

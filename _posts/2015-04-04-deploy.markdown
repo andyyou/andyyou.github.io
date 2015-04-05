@@ -1,0 +1,231 @@
+---
+layout: post
+title: 'CentOS Rails 環境安裝'
+date: 2015-04-04 12:00:00
+categories: Ruby, Rails
+---
+
+# CentOS Rails 環境安裝
+
+## 安裝 Apache & PostgreSQL
+
+{% highlight bash %}
+$ service --status-all # 檢查服務運行的狀態
+$ yum list installed # 檢查已安裝的 yum packages
+$ yum install httpd # 安裝 apache
+$ yum install postgresql postgresql-server postgresql-devel postgresql-libs # 安裝 PostgreSQL，注意沒裝 devel 和 libs 裝 gem 時會出錯。
+
+# 第一次啟動如果炸掉 ERROR:  `/var/lib/pgsql/data is missing. Use “service postgresql initdb” to initialize the cluster first.`
+$ service postgresql initdb
+
+# 如果又遇到 Initializing database: mkdir: cannot create directory `/var/lib/pgsql/data/pg_log': File exists
+$ rm -rf /var/lib/pgsql/data/pg_log # 把 log 刪除
+
+$ service postgresql start # 啟動 PostgreSQL
+$ chkconfig postgresql on # 設定開機後自動啟動
+
+# 修改 /var/lib/pgsql/data/pg_hba.conf (預設路徑)
+# local all all ident sameuser
+local all all trust
+# host all all 127.0.0.1/32 ident sameuser
+host all all 127.0.0.1/32 md5
+
+# 註：md5 和 trust 差別在於 trust 允許在本機不用輸入密碼來登入資料庫。
+
+# 由於變更設定檔需要 reload
+$ su - postgres
+$ pg_ctl reload
+$ psql # 進入介面開 table 或建立 users 權限
+
+# 列出 database
+$ \list 
+$ \l
+
+# 連線該 db
+$ \connect [database_name] 
+
+# 重設密碼
+$ \password 
+
+# 在 command line 裡分成兩種方式一種是先切換成 postgres 使用者身份直接下指令，另一種是登入 psql 後下 sql 指令
+# 預設 PostgreSQL 只允許本機上的 user 和 PostgreSQL 中 role name 相同的帳號不用密碼登入
+# 預設只有 db 的 owner 可以操作裡面的東西(不包含 superuser)
+
+# 建立 db role
+$ createuser test_user # 這種方式會有精靈讓你選權限
+
+# SQL下指令記得加 ; 
+# 建立 db role (SQL)
+$ create role [rails_user] with createdb login password 'password here';
+
+# 修改 role (SQL)
+$ alter role [rails_user] with createdb login password 'password here';
+
+# 列出所有使用者的權限
+$ \du
+
+# 顯示所有 roles 名稱(SQL)
+$ select rolname from pg_roles;
+
+# 查看 table 權限
+$ \z
+
+# 列出所有 table
+$ \dt
+
+# 當前的使用者
+$ select current_user;
+
+# 當前連線的 db
+$ select current_database();
+
+# 離開 psql
+$ \q
+
+# 檢查 PostgreSQL status
+$ service postgresql status
+
+# 移除 db (OSX)
+$ rm /usr/local/var/postgres/postmaster.pid
+$ dropdb rbase_test
+
+# 在 SQL 中移除 db
+$ drop database if exists [database name]
+
+# 列出 tables
+$ \dt
+
+# 建立新資料庫
+$ CREATE DATABASE mydb;
+
+# 建立使用者
+$ CREATE USER andy with password 'p@ssw0rd';
+$ createuser test --interactive -P # 含建立密碼 + 權限
+
+# 連線資料庫
+$ \c database
+
+# 建立 table 範例
+CREATE TABLE films (
+  code        char(5) CONSTRAINT firstkey PRIMARY KEY,
+  title       varchar(40) NOT NULL,
+  did integer NOT NULL,
+  date_prod   date,
+  kind        varchar(10),
+  len         interval hour to minute
+); 
+
+# 列出 table schema
+$ \d+ [tablename]
+
+# 刪除 table
+DROP TABLE IF EXISTS table;
+
+# 插入資料
+INSERT INTO films VALUES
+('UA502', 'Bananas', 105, DEFAULT, 'Comedy', '82 minutes');
+ 
+INSERT INTO films (code, title, did, date_prod, kind)
+VALUES ('T_601', 'Yojimbo', 106, DEFAULT, 'Drama'),
+('HG120', 'The Dinner Game', 140, DEFAULT, 'Comedy');
+ 
+ 
+# 選取 table 大小和隨機的指數
+SELECT relname, reltuples, relpages FROM pg_class ;
+ 
+# select size of tables and indices in descending order of size
+SELECT relname, reltuples, relpages FROM pg_class ORDER BY relpages DESC ;
+ 
+# select size of tables and indices in descending order of tuple- / recordcount
+SELECT relname, reltuples, relpages FROM pg_class ORDER BY reltuples DESC ;
+ 
+# 修改密碼
+$ su - postgres
+$ psql template1
+$ alter user postgres with password 'postgres_password';
+ 
+# 列出使用者
+SELECT * FROM "pg_user";
+ 
+# change user for all tables
+for tbl in `psql -qAt -c "select tablename from pg_tables where schemaname = 'public';" YOUR_DB` ; do psql -c "alter table $tbl owner to NEW_OWNER" YOUR_DB ; done
+ 
+# change user for all seqs
+for tbl in `psql -qAt -c "select sequence_name from information_schema.sequences where sequence_schema = 'public';" YOUR_DB` ; do psql -c "alter table $tbl owner to NEW_OWNER" YOUR_DB ; done
+ 
+# change user for all views
+for tbl in `psql -qAt -c "select table_name from information_schema.views where table_schema = 'public';" YOUR_DB` ; do psql -c "alter table $tbl owner to NEW_OWNER" YOUR_DB ; done
+ 
+# 複製資料庫
+create database NEWDB with template OLDDB;
+ 
+# 修改 DB owner/name
+ALTER DATABASE name RENAME TO newname
+ALTER DATABASE name OWNER TO new_owner
+ 
+# Showing transaction status in the psql prompt
+$ \set PROMPT1 '%/%R%x%# '
+# from http://sql-info.de/postgresql/notes/transaction-status-in-the-psql-prompt.html
+ 
+# 列出資料表欄位
+ 
+SELECT attname FROM pg_attribute, pg_type
+WHERE typname = 'table_name'
+AND attrelid = typrelid
+AND attname NOT IN ('cmin', 'cmax', 'ctid', 'oid', 'tableoid', 'xmin', 'xmax');
+ 
+# 備份 / 還原 使用 Dump
+# 備份
+$ pg_dump dbname > outfile
+$ pg_dump dbname | gzip > filename.gz
+ 
+# 還原
+$ psql dbname < infile
+$ createdb dbname && gunzip -c filename.gz | psql dbname
+ 
+# 更新
+$ update auth_user set is_superuser = 't' where username='abhiomkar';
+
+```
+[完整 PostgreSQL 建立 ROLE 教學](https://www.digitalocean.com/community/tutorials/how-to-use-roles-and-manage-grant-permissions-in-postgresql-on-a-vps--2)
+[OSX PostgreSQL Installing](https://marcinkubala.wordpress.com/2013/11/11/postgresql-on-os-x-mavericks/)
+[OSX 簡易控制 PostgreSQL](http://robots.thoughtbot.com/starting-and-stopping-background-services-with-homebrew)
+
+## 安裝 Rails 
+
+```
+# 1. 安裝 git
+$ yum install curl-devel expat-devel gettext-devel \
+  openssl-devel zlib-devel
+
+# 取得原始碼 https://www.kernel.org/pub/software/scm/git/
+$ wget https://www.kernel.org/pub/software/scm/git/git-2.2.0.tar.gz
+$ tar -zxf git-2.0.0.tar.gz
+$ make prefix=/usr/local all  # 注意換路徑不需要加到 bin
+$ sudo make prefix=/usr/local install
+
+? Ruby with Readline 尚未測試成功
+
+# 2. 安裝 Ruby
+$ yum install -y gcc openssl-devel libyaml-devel libffi-devel readline-devel zlib-devel gdbm-devel ncurses-devel
+$ wget http://cache.ruby-lang.org/pub/ruby/2.2/ruby-2.2.0.tar.gz
+$ tar -zxvf ruby-2.0.0.tar.gz
+$ ./configure
+$ make && make install
+$ gem install bundler
+
+
+# 安裝 Rails 之前先安裝 sqlite3
+$ yum install sqlite-devel
+$ yum install readline-devel
+$ gem install rails
+
+$ cd [YOUR_PROJECT] 
+$ bundle install
+
+{% endhighlight %}
+
+[常見問題](https://github.com/sstephenson/ruby-build/wiki)
+[日文完整教學](http://computer.co-machi.org/2014/01/13/ruby-on-rails4-%E3%81%AE%E9%96%8B%E7%99%BA%E3%82%92%E5%A7%8B%E3%82%81%E3%82%89%E3%82%8C%E3%82%8B%E3%81%BE%E3%81%A7/)
+
+

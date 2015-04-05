@@ -1,0 +1,373 @@
+---
+layout: post
+title: 'Devise 快速上手'
+date: 2015-04-04 12:05:00
+categories: Ruby Rails
+---
+
+## devise 使用筆記
+
+`Devise` 是一套彈性的驗證機制解決方案，它是根據 Warden 為架構的基礎延伸的。`Devise` 本身具備
+* 支援 rake 
+* 架構在 Rails 之上提供完整的 MVC 方案
+* 提供您可以使用多個 Model 在同一時間登入
+* 模組化，您只需要採用您需要的部份
+
+整體是由 10 個模組組成
+* [Database Authenticatable](http://www.rubydoc.info/github/plataformatec/devise/master/Devise/Models/DatabaseAuthenticatable) 加密並儲存密碼於資料用以驗證使用者身份。驗證機制可以透過 POST 或者 HTTP 基本的驗證方式
+* [Omniauthable](http://rubydoc.info/github/plataformatec/devise/master/Devise/Models/Omniauthable) 加入 OmniAuth(https://github.com/intridea/omniauth) 的支援
+* [Confirmable](http://rubydoc.info/github/plataformatec/devise/master/Devise/Models/Confirmable) 寄送 Email 與確認機制驗證帳號是否正確與啟用
+* [Recoverable](http://rubydoc.info/github/plataformatec/devise/master/Devise/Models/Recoverable) 重設密碼與寄送 Reset 信件
+* [Registerable](http://rubydoc.info/github/plataformatec/devise/master/Devise/Models/Registerable) 處理註冊流程包含帳號本身的編輯與刪除
+* [Rememberable](http://rubydoc.info/github/plataformatec/devise/master/Devise/Models/Rememberable) 管理 Token 的產生與清除，這些資訊會被存在使用端的 cookie
+* [Trackable](http://rubydoc.info/github/plataformatec/devise/master/Devise/Models/Trackable) 追蹤紀錄登入的次數，時間與 IP
+* [Validatable](http://rubydoc.info/github/plataformatec/devise/master/Devise/Models/Validatable) 提供信箱和密碼的驗證機制。此部分並沒有強制使用且可以根據不同的情況客製，您可以自行定義您的驗證機制
+* [Lockable](http://rubydoc.info/github/plataformatec/devise/master/Devise/Models/Lockable) 提供鎖定機制，當帳號不斷登入失敗時會啟用。同時提供 Email 解鎖的機制
+
+Devise 確保能夠在 `YARV`, `JRuby` 環境下執行緒安全(Thread-Safe)，簡單的說即在多執行緒的情況下確保變數(通常是全域變數)是正確一致的。
+
+# 資訊
+
+## Devise wiki
+Devise wiki 提供許多關於 Devise 的資料包含 `how-to` 的文章以及常見問題的答案。當您完成這個 README 文件的閱讀後請記得瀏覽 [wiki](https://github.com/plataformatec/devise/wiki)
+
+## Bug 回報
+如果您發現問題，我們希望您能告知我們。然後我們希望當您想要回報時可以遵循一些[規範](https://github.com/plataformatec/devise/wiki/Bug-reports)
+如果您發現關於安全問題的 bug ，請不要使用 Github 上面的 Issue 回報，請直接發 Mail 到 opensource@plataformatec.com.br
+
+## 郵件列表
+如果您有任何問題，意見或疑慮，請使用 Google Group 告知我們而不是在 Github 上面開 Issues
+
+[https://groups.google.com/group/plataformatec-devise](https://groups.google.com/group/plataformatec-devise)
+
+## RDocs
+當然您可以查閱 RDoc 格式的 Devise 文件在下面連結
+
+[http://rubydoc.info/github/plataformatec/devise/master/frames](http://rubydoc.info/github/plataformatec/devise/master/frames)
+
+如果您需要使用舊版的 Rails 搭配 Devise 您可以在指令介面執行 `gem server` 來存取舊版的文件。
+
+## 程式範例
+這邊有一些程式範例放在 Github 上面，它們展示了 Devise 各種不一樣的功能同時也有搭配不同版本 Rails 的範例，如下面連結
+
+[https://github.com/plataformatec/devise/wiki/Example-Applications](https://github.com/plataformatec/devise/wiki/Example-Applications)
+
+## 套件
+我們的社群已經建立了很多的擴展套件，它們可以幫您加上其他的功能，您可以參考下面連結根據您的需求使用
+
+[https://github.com/plataformatec/devise/wiki/Extensions](https://github.com/plataformatec/devise/wiki/Extensions)
+
+## 貢獻
+我們希望您可以考慮協作 Devise。如果要執行測試，請進入 Devise 的頂層目錄並執行 `bundle install` -> `rake` 為了通過這些測試您會需要使用 MongoDB Server
+
+
+# 與 Rails 整合
+如果您是第一次建立 Rails 應用程式我們建議您不要使用 Devise。Devise 需要您對於 Rails Framework 有足夠的了解。如果是這種情況我們建議您先使用一些簡單的驗證機制
+* [Michael Hartl's online book](https://www.railstutorial.org/book/modeling_users)
+* [Ryan Bates' Railscast](http://railscasts.com/episodes/250-authentication-from-scratch)
+
+一旦您對於 Rails 和驗證機制有充足的認識，我們保證 Devise 將會讓您開發更便捷。
+
+# 入門
+Devise 3.0 需搭配 Rails 3.2 以上版本。您可以先在 Gemfile 加入:
+
+{% highlight ruby %}
+gem 'devise'
+{% endhighlight %}
+
+接著執行  `bundle install` 安裝它。
+在完成安裝之後，您需要執行 generator 來自動安裝和變更一些設定
+
+{% highlight bash %}
+$ rails genereate devise:install
+{% endhighlight %}
+
+這個 generator 會安裝一個 `initializer` 其內容是用來描述所有 devise 的設定。通常您需要查看一下這隻檔案 `config/initializers/devise.rb`
+在您完成這個步驟之後您已經可以使用 generator 將 devise 加入到任何 model 
+
+{% highlight bash %}
+$ rails generate devise MODEL
+{% endhighlight %}
+
+將 `MODEL` 的地方取代成您要的 model name ，這個 model 在程式中代表使用者(通常我們使用 `User` 或者 `Admin`)。一旦執行該指令會產生一個 model (請確保 model 不重複)
+以及設定其為預設的 devise 模組。注意：這個指令同時也會設定您的 `config/routes.rb` 檔案，幫您把路由指定到 devise controller
+
+接著我們檢查 MODEL 看看是否要增加其他的設定，您可能會想要加入像是 `confirmable` 或 `lockable` 的功能。如果您開啟這個選項，請記得到 `migration` 檔案檢查欄位設定，去把適當的屬性註解拿掉，因為 migration 才是實際調整資料庫的地方。舉例來說如果您在 model 中加入 `:confirmable` 支援那麼就需要去把 migration 中跟 confirmable 相關的部分註解也拿掉。接著執行 `rake db:migrate`
+
+下一步您需要設定預設的 URL 給 devise 的 mailer 使用，下面提供一個範例設定
+
+{% highlight ruby %}
+config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
+{% endhighlight %}
+
+在完成修改之後需要重啟應用程式，否則您將會看到錯誤訊息。
+
+# Controller filters 和 helpers
+devise 會幫我們建立一些 helpers 讓我們可以在 controller 和 view 裡面使用。例如要設定一個 controller 需要驗證，只要在 `before_action` (例如您的 model 叫作 User)加入
+
+{% highlight ruby %}
+# 限制 controller 的使用權限
+before_action :authenticate_user!
+{% endhighlight %}
+
+如果您的 devise model 是其他名稱則把 _user 的部分換掉，例如 model 叫 admin 則換成 `authenticate_admin!` 下面的 helper 都是以此類推。
+
+{% highlight ruby %}
+# 判斷是否登入
+user_signed_in?
+
+# 取得當前使用者
+current_user
+
+# 存取 session
+user_session
+{% endhighlight %}
+
+當使用者執行了登入，啟用帳號，更新密碼之後，devise 會找尋 scope 內的 `root_path`。具體舉例來說當我們使用了 `:user` 的 resources
+就會去找 `user_root_path` 如果存在就會用它，否則預設會去找 `root_path`，意思是我們至少需要設定 root_path
+
+{% highlight ruby %}
+root to: "home#index"
+
+namespace :user do
+  root to: 'home#index' # 路徑會是 /user/home#index
+end
+{% endhighlight %}
+
+您也可以覆寫 `after_sign_in_path_for` 和 `after_sign_out_path_for` 到您自訂的 redirect_to 程式碼片段
+
+注意如果您的 devise model 叫 `Member` 而不是 `User` 的話，那麼 helpers 會完全不一樣
+
+{% highlight ruby %}
+before_action :authenticate_member!
+member_singned_in?
+current_member
+member_session
+{% endhighlight %}
+
+# 設定 Model
+關於 devise model 內的方法(method) 也允許我們做一些額外的設定，例如您可以選擇加密的演算法
+
+{% highlight ruby %}
+class User < ActiveRecord::Base
+  devise :database_authenticatable, :registerable, :confirmable, :recoverable, stretches: 20
+end
+{% endhighlight %}
+
+除了 `:stretches`，您還可以定義 `:pepper`, `:encryptor`, `:confirm_within`, `:remember_for`, `:timeout_in`, `:unlock_in` 
+想取得更詳細的資料可以看 `initializer` 檔案，這隻檔案就是我們執行 `rails generate devise:install` 時產生的。
+這隻檔案預設在 `config/initializers/devise.rb`
+
+## Strong Parameters 核可參數
+核可參數提供了一個介面來防止使用者亂送參數，阻止送 Action Controller 的參數被用在 Model 中，除非參數被加到白名單，此外參數也可以被註記為 required 必須。
+
+當您客製化了您的 view，最終您可能要加入新的屬性(attributes)到您的 form。Rails 4 把參數的防護措施從 Model 移到了 Controller，造成 devise 也把處理機制換到了 controller
+
+在 devise 只有三個 action 允許您設定參數是否允許通過傳到 model，這是因為必要的防護機制。它們的名稱和 `permitted parameters` 允許參數預設值如下
+
+* sign_in(Devise::SessionsController#create) - 只允許驗證 key 通過(如 email)
+* sign_up(Devise::RegistrationsController#create) - key 和 password, password_confirmation 三個
+* account_update(Devise::RegistrationsController#update) - key, password, password_confirmation, current_password
+
+根據您想要放行額外的參數您可以簡單的在 `ApplicationController` 的 before_action 
+
+{% highlight ruby %}
+class ApplicationController < ActionController::Base
+  before_action :configure_permitted_parameters, if: :devise_controller?
+
+  protected
+
+  def configure_permitted_parameters
+    devise_parameter_sanitizer.for(:sign_up) << :username
+  end
+end
+{% endhighlight %}
+
+上面這段範例可以協助您增加額外的欄位。如果您需要的是巢狀的屬性(物件)換句話說您正使用 `accepts_nested_attributes_for` ，這樣的話您就需要
+告訴 devise 關於這個物件的資訊，devise 讓您可以透過一個 block 來修改預設值
+
+{% highlight ruby %}
+def configure_permitted_parameters
+  devise_parameter_sanitizer.for(:sign_in) { |u| u.permit(:username, :email) }
+end
+{% endhighlight %}
+
+如果您在註冊的時候有一些 checkbox 用來表示使用者的權限(角色)，瀏覽器會把勾選的 checkbox 值當成一個陣列傳入。一個陣列並不屬於核可參數
+這種情況的話我們可以照下面這樣做
+
+{% highlight ruby %}
+def configure_permitted_parameters
+  devise_parameter_sanitizer.for(:sign_up) { | u | u.permit({ roles: []}, :email, :password, :password_confirmation)}
+end
+{% endhighlight %}
+
+要查詢所有允許的準則和如何宣告內嵌物件和陣列的 permitted keys 請查閱
+[https://github.com/rails/strong_parameters#nested-parameters](https://github.com/rails/strong_parameters#nested-parameters)
+
+另外如果您有多個 devise model 您可能想要針對每個 model 設定不同的防護機制，這種情況下我們建議您直接繼承 `Devise::ParameterSanitizer` 
+
+{% highlight ruby %}
+class User::ParameterSanitizer < Devise::ParameterSanitizer
+  def sign_in
+    default_params.permit(:username, :email)
+  end
+end
+{% endhighlight %}
+
+然後直接在 controller 內直接使用
+
+{% highlight ruby %}
+class ApplicationController < ActionController::Base
+  protected
+
+  def devise_parameter_sanitizer
+    if resource_class == User
+      User::ParameterSanitizer.new(User, :user, params)
+    else
+      super # Use the default one
+    end
+  end
+end
+{% endhighlight %}
+
+上面這個範例覆寫了 User model 允許的參數，這樣 `:username` 和 `:email` 都會放行。
+
+## 設定 views
+官方建立了 devise 來協助您快速的開發讓您的程式具有驗證機制，然而並不是所有的狀況都剛好適用預設值，您可能會希望客製一些東西。
+因為 devise 屬於一個引擎，所有的 view 都被打包在 gem 內部。這些 view 可以幫助您快速的開始，不過隨後您可能會希望修改它們，在這種情況下您可以
+調用下面的指令把 view 從 gem 複製出來
+
+{% highlight bash %}
+$ rails generate devise:views
+{% endhighlight %}
+
+如果您有超過一個的 devise model (例如 User 和 Admin) 您會注意到 devise 所有 model 都使用相同的 view ，幸運的是 devise 提供一個簡單的方法來自訂這些 views
+您只需要在 `config/initializers/devise.rb` 中設定 `config.scoped_views = true` 
+
+之後您就可以根據角色如 `users/sessions/new`, `admins/sessions/new` 提供不同的 views。如果在 scope 找不到 view，devise 會使用預設在 `devise/sessions/new` 的 view。 或者您可以使用 generator 來產生 
+
+{% highlight bash %}
+$ rails g devise:views users
+{% endhighlight %}
+
+如果您想要只產生部分的 views 例如 `registerable` 和 `confirmable` 模組，您可以傳入參數 `-v`
+
+{% highlight bash %}
+$ rails g devise:views -v registrations confirmations
+{% endhighlight %}
+
+## 設定 controller
+如果客製 view 的層級還不夠您使用，您甚至可以自訂 controller 如下
+
+1. 建立您的 controller
+
+{% highlight bash %}
+$ rails generate devise:controller [scope]
+{% endhighlight %}
+
+如果您設定 users 來當作 scope 那麼 controllers 將會被建立在 `app/controllers/users/` 目錄下，而這些 session controller 會如下
+
+{% highlight ruby %}
+class Users::SessionsController < Devise::SessionsController
+   # GET /resource/sign_in
+   # def new
+   #   super
+   # end
+   ...
+ end
+{% endhighlight %}
+
+2. 設定 routes
+
+{% highlight ruby %}
+devise_for :users, controllers: { sessions: "users/sessions" }
+{% endhighlight %}
+
+3. 從 `devise/sessions` 複製 views 到 `users/sessions`。因為 controller 已經被修改了，所以沒辦法使用預設的 `devise/sessions` 的 view
+
+4. 最後，修改 controller 的 actions
+
+{% highlight ruby %}
+ class Users::SessionsController < Devise::SessionsController
+   def create
+     # custom sign-in code
+   end
+ end
+{% endhighlight %}
+
+或者您也可以簡單呼叫父類別的行為
+
+{% highlight ruby %}
+class Users::SessionsController < Devise::SessionsController
+   def create
+     super do |resource|
+       BackgroundWorker.trigger(resource)
+     end
+   end
+ end
+{% endhighlight %}
+
+注意 devise 會使用 flash message 來讓使用者知道操作的結果。devise 預設您的程式會呼叫 `flash[:notice]` 和 `flash[:alert]` 
+
+## 設定路由
+devise 也提供預設的路由。如果您需要自訂他們，您可以透過 `devise_for` 方法。它提供了一些參數像是 `class_name`, `path_prefix` 等等
+
+{% highlight ruby %}
+devise_for :users, path: "auth", path_names: { sign_in: 'login', sign_out: 'logout', password: 'secret', confirmation: 'verification', unlock: 'unblock', registration: 'register', sign_up: 'cmon_let_me_in' }
+{% endhighlight %}
+
+您可能會需要根據 i18n 修改路徑
+
+您可以再參考文件來瞭解更多關於 devise_for 的用法
+
+如果您有需要在做更多的設定例如除了 `/users/sign_in` 還允許 `/sign_in` 可以做登入的動作，您只需要建立一個路由 
+
+{% highlight ruby %}
+devise_scope :user do
+  get "sign_in", to: "devise/sessions#new"
+end
+{% endhighlight %}
+
+這樣一來您就多了一個 `/sign_in` 可以存取了
+
+## I18n
+devise 在 flash messages 使用了 i18n ，即您在 flash[:notice] 和 flash[:alert] 中的訊息是多國語系的，如果要針對訊息客製您可以在 local file 定義
+
+{% highlight yaml %}
+en:
+  devise:
+    sessions:
+      signed_in: 'Signed in successfully.'
+{% endhighlight %} 
+
+您也可以根據 resources 區分不同的訊息，注意 scope 是單數
+
+{% highlight yaml %}
+en:
+  devise:
+    sessions:
+      user:
+        signed_in: 'Welcome user, you are signed in.'
+      admin:
+        signed_in: 'Hello admin!'
+{% endhighlight %}
+
+devise mailer 使用簡單的格式來建立標題訊息
+
+{% highlight yaml %}
+en:
+  devise:
+    mailer:
+      confirmation_instructions:
+        subject: 'Hello everybody!'
+        user_subject: 'Hello User! Please confirm your email'
+      reset_password_instructions:
+        subject: 'Reset instructions'
+{% endhighlight %}
+
+## OmniAuth
+devise 同時支援 OmniAuth 讓您可以使用一些外部的驗證機制，要使用它們只需要把 `config/initializers/devise.rb` 的設定註解拿掉即可
+
+{% highlight ruby %}
+config.omniauth :github, 'APP_ID', 'APP_SECRET', scope: 'user,public_repo'
+{% endhighlight %}

@@ -4,15 +4,16 @@ title: 'KineticJS 建立範圍選取功能'
 date: 2013-11-28 14:17:00
 categories: Javascript F2E
 ---
-### KineticJS 介紹
+
+# KineticJS 介紹
 KineticJS 是一套針對 canvas 設計的函式庫，使得我們在操作使用 canvas 的時候相對簡單易懂。
 這篇文章將會教您如何透過 KineticJS 在螢幕上（canvas）建立一些物件，然後可以透過拖拉選取範圍。
 
-### 背景
+# 背景
 如果您還不了解 HTML5 canvas 標簽，請先閱讀[HTML5 Canvas Tutorials](http://www.html5canvastutorials.com/)。如果您還不知道什麼是 KineticJS 請先至[官網](http://kineticjs.com/) 閱讀基本教學。
 這篇文章是針對 KineticJS v4.7.4。
 
-### 程式碼說明
+# 程式碼說明
 在這個範例中，將會在 canvas 建立三個方塊，然後可以選取它們。首先呢，您必須在 html 中有一個 container
 
 {% highlight html %}

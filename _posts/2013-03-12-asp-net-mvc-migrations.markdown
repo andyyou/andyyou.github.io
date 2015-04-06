@@ -5,6 +5,7 @@ date: 2013-03-12 07:04:00
 categories: Database
 ---
 
+# 大綱
 本練習將介紹 Entity Framework Code First Migration 整個使用的概觀:
 主題包含:
 
@@ -17,8 +18,7 @@ categories: Database
 +   程式啟動時自動更新資料結構.
 
 <!-- more -->
-####建置初始化Model和資料庫
-----
+# 建置初始化Model和資料庫
 
 在我們開始介紹如何使用資料庫遷移(Migrations)之前我們需要一個專案和 Model。在這個練習中我們將模擬一個 Blog 建立 Blog 和 Post 的 Model。
 
@@ -86,8 +86,7 @@ namespace MigrationsDemo
 (LocalDb)\v11.0 來建立資料庫。
 一般來說 Visual Studio 2010 預設安裝會包含 SQL Express。而 Visual Studio 2012 則預設安裝包含 LocalDb。注意如果您兩個都有安裝的話 SQL Express 會優先使用。
 
-#### 啟動 Migrations
----
+# 啟動 Migrations
 
 在 Code First 模式下 Migrations 資料庫遷移指的是一種機制讓我們可以修改資料庫，資料表結構。
 
@@ -107,11 +106,13 @@ Enable-Migrations
 
 這個指令會加入一個 Migrations 目錄。裡面會新增兩個檔案:
 
-*設定類別 (Configuration.cs)
+## 設定類別 (Configuration.cs)
+
 這個類別可以讓您自訂一些資料庫遷移時的行為，意思就是當我們要變更資料結構時可以追加一些設定。
 例如: 使用 Seed() 在建立資料表時幫您補上預設的資料，或者幫欄位設定預設值。
 
-*資料遷移檔 ([時間戳記]_InitialCreate.cs)
+## 資料遷移檔 ([時間戳記]_InitialCreate.cs)
+
 主要的資料遷移檔案是一個關於建立資料表，修改資料結構的 Script 。因為我們已經利用 Code First 幫我們建立了一個資料庫，所以這個
 遷移檔就會根據目前的資料庫結構產生一個對應的遷移檔。在我們這個範例中您會看到:
 
@@ -132,8 +133,8 @@ CreateTable(
 Add-Migration [name]
 {% endhighlight %}
 
-####建立與執行 Migrations
----
+# 建立與執行 Migrations
+
 
 Code First 的 Migrations 機制主要有兩個指令。這兩個指令很重要必須要熟悉它們。
 
@@ -144,13 +145,13 @@ Code First 的 Migrations 機制主要有兩個指令。這兩個指令很重要
   
 現在我們需要對我們已經變更的 Model 產生一個 Migration 檔
 
-1. 執行下面的指令
+### 1. 執行下面的指令
 
 {% highlight sh %}
 Add-Migration AddBlogUrl
 {% endhighlight %}
 
-2. 在 Migraions 目錄底下我們看到了一個新增的遷移檔。看看內容
+### 2. 在 Migraions 目錄底下我們看到了一個新增的遷移檔。看看內容
 
 {% highlight csharp %}
 public override void Up()
@@ -168,19 +169,18 @@ Update-Database
 
 Code First Migrations 機制就會幫我們去比對每一個資料庫遷移檔然後對資料庫做修改。
 
-####自訂 Migrations
-----
+# 自訂 Migrations
 
 目前為止，我們建立並執行了 Migration 但我們並沒有改變任何關於遷移檔的設定。
 讓我們來看看如何修改預設產生的遷移檔。
 
-1. 對 Model 修改，增加一個 Rating 屬性:
+### 1. 對 Model 修改，增加一個 Rating 屬性:
 
 {% highlight csharp %}
 public int Rating { get; set; }
 {% endhighlight %}
 
-2. 接著再新增一個 Post 類別:
+### 2. 接著再新增一個 Post 類別:
 
 {% highlight csharp %}
  public class Post
@@ -195,7 +195,7 @@ public int Rating { get; set; }
     }
 {% endhighlight %}
  
-3. 建立完成後我們再對 Blog 類別增加:
+### 3. 建立完成後我們再對 Blog 類別增加:
 
 {% highlight csharp %}
 public virtual List<Post> Posts { get; set; }
@@ -208,13 +208,15 @@ Add-Migration AddPostClass
 {% endhighlight %}
 
 Code Fist Migrations 機制很盡責地幫我們對應結構產生了 Migration 檔，但在這邊我們想要作一些改變。
-1. Posts.Title 欄位不得重複(unique)
+
+### 1. Posts.Title 欄位不得重複(unique)
 
 {% highlight sh %}
 .Index(p => p.Title, unique: true);
 {% endhighlight %}
 
-2. 我們也增加了一個不得為 null 的 Blogs.Rating 欄位。如果有任何資料已存在資料表中將會得到 CLR 資料型別的預設值，例如 Rating 是 int 如果 Blog 資料表已經有資料那這欄位就會得到 0 。在這邊我們也透過修改遷移檔把預設值變成 3 。
+### 2. 不得為 null
+我們也增加了一個不得為 null 的 Blogs.Rating 欄位。如果有任何資料已存在資料表中將會得到 CLR 資料型別的預設值，例如 Rating 是 int 如果 Blog 資料表已經有資料那這欄位就會得到 0 。在這邊我們也透過修改遷移檔把預設值變成 3 。
 完成的範例如下:
 
 {% highlight csharp %}
@@ -254,7 +256,6 @@ namespace MigrationsDemo.Migrations
         }
     }
 }
-
 {% endhighlight %}
 
 當我們完成所有的編輯就可以使用 Update-Database 去修改資料庫實際的表格結構，這一次我們使用 -Verbose 參數來看看實際執行Migration時的詳細資料:
@@ -288,8 +289,7 @@ ALTER TABLE [dbo].[Posts] ADD CONSTRAINT [FK_dbo.Posts_dbo.Blogs_BlogId] FOREIGN
 Running Seed method.
 {% endhighlight %}
 
-####資料遷移和使用SQL
------
+# 資料遷移和使用SQL
 
 目前為止我們看過了關於資料遷移的操作，但我們並沒有改變或搬移任何資料，讓我們複習一下目前為止重要的指令:
 
@@ -342,8 +342,8 @@ namespace MigrationsDemo.Migrations
 
 編輯完成之後讓我們再度執行 Update-Database
 
-####遷移指定的版本(包含降版)
------
+# 遷移指定的版本(包含降版)
+
 
 到這一小節我們都是升級最新的 Migration 檔，但有可能有些時候你想要升級/降級到特定的遷移檔。假設我們想要改變資料庫到 AddBlogUrl 這個遷移檔我們可以使用 TargetMigration 切換到降版
 
@@ -356,8 +356,8 @@ Update-Database –TargetMigration: AddBlogUrl
 這個指令會執行程式中 Down() 的 Script 一路從 AddBlogAbstract 一直往下降版本，所以這邊要注意的是每一版和上一版之間的 Down() 如果有自訂的設定
 也要有對應的還原。
 
-####建立 SQL Script
------
+# 建立 SQL Script
+
 
 如果其他的開發者想要在他們的機器執行這些改變，他們只需要在版本控制系統取得每一次的改變(資料庫遷移檔)。每當我們更新他們就可以透過 Migration 檔案和 Update-Database 指令切換資料庫的結構。然而如果我們想要傳遞這些變更到測試伺服器並且模擬實際產品環境我們可能想要 SQL Script 如此我們就可以把工作交給DBA。
 
@@ -378,8 +378,8 @@ Update-Database -Script -SourceMigration: $InitialDatabase -TargetMigration: Add
 註: 如果你不指定 target Migration 將會使用最新的遷移檔。如果你不指定 source Migration會使用目前資料庫的狀態。
 
 
-####於程式啟動時自動更新資料結構
-----
+# 於程式啟動時自動更新資料結構
+
 
 如果你想要發佈的應用程式，當程式執行時自動更新資料庫您可以透過註冊 MigrateDatabaseToLatestVersion 初始化物件來辦到。
 一個資料庫初始化物件 (Database initializer) 只是用來確認資料庫目前是否設定正確。這些邏輯在第一次 Context 類別被使用的時候執行。

@@ -4,24 +4,26 @@ title: 'Grunt 系列(1) 基礎教學'
 date: 2013-09-27 08:50:00
 categories: Javascript F2E Grunt
 ---
-## Grunt 入門
----
+# Grunt 入門
+
 `Grunt` 和 `Grunt 擴充套件` 都是透過 `npm` 來安裝和管理。`Grunt` 這個工具大概就等於 `Ruby` 中的 `rake` ，它可以透過一些設定讓你輕鬆完成一些例行性的任務，例如壓縮檔案，編譯 coffee less，搬移到目標目錄，單元測試等等。之後就可以透過一個指令，就把所有的事情做好。
 
 
-## 安裝
----
+# 安裝
+
 為了能夠使用 `Grunt` 你必須安裝 `grunt-cli` 就是 Grunt 的 Command Line Interface 到您的系統。
 安裝過程可能會需要 sudo 或這在 windows 底下使用管理者身份執行。
 
-> npm install -g grunt-cli
-  
+{% highlight bash %}
+$ npm install -g grunt-cli
+{% endhighlight %}
+
 在 `npm` 使用 -g 就會把該套件裝至系統路徑，這樣您就可以在任何目錄使用 `grunt-cli`
 注意：安裝了 `grunt-cli` 並不是安裝 `Grunt task runner`。 `grunt-cli` 本身的任務非常單純，他就只是使用你已經安裝的 Grunt 版本去執行 `Gruntfile.js`。這樣你就可以在同一台機器，運行不同版本的 grunt 了。
 
 
-## CLI如何運作
----
+# CLI如何運作
+
 每一次執行 `grunt`，他會用`require()`去引入本地的 `grunt`，注意不是 `cli`。也因次你可以在不同專案目錄底下運行不同版本的 `grunt`。
 一旦 `grunt` 被載入了，接著就會載入 `Gruntfile` 然後根據裡面的設定去運行任務。
 如果你想理解原理可以閱讀程式碼 https://github.com/gruntjs/grunt-cli/blob/master/bin/grunt
@@ -40,8 +42,7 @@ categories: Javascript F2E Grunt
 Sails 建立的 Gruntfile
 ![](http://i.imgur.com/dM6f4cX.png)
 
-## 建立一個新的 Grunt 專案
----
+# 建立一個新的 Grunt 專案
 
 要建立一個 `Grunt` 專案涉及到最重要的兩個檔案的建立 `package.json` 和 `Gruntfile.js`。
 * `package.json`  : 這是 `npm` 用來儲存 matadata 的檔案，簡單說就是 npm 對於這個專案相關的設定擋。包含相依的套件，一旦在這邊設定，您就可以透過 `npm install` 來安裝相依的套件。一般在使用時，我們也會用 `npm install --save` 在安裝後順便把設定加到 `package.json`。你也會在這個檔案設定 grunt 和 grunt 套件相依的一些函式庫或元件。通常會像下面程式碼片段，指的是開發階段使用的套件。
@@ -54,8 +55,7 @@ Sails 建立的 Gruntfile
           
 * `Gruntfile` : 這個檔案通常會是 `Gruntfile.js` 或者 `Gruntfile.coffee` 他被用來設定任務，載入外掛。 
 
-## package.json
----
+# package.json
 
 `package.json` 通常和 `Gruntfile` 都在專案的根目錄。而且必須和你的專案一起被送交。在根目錄下 `npm install`  就會根據 `package.json` 去安裝相依的套件。而且還能指定版本。下面提供一些簡單的方式快速建立 `package.json`
 
@@ -76,8 +76,8 @@ Sails 建立的 Gruntfile
           }
         }
 
-## 安裝 Grunt 和 Grunt 套件
----
+# 安裝 Grunt 和 Grunt 套件
+
 
 安裝 Grunt 和 Grunt 套件並且加入 package.json 最簡單的方式就是執行 `npm install <module> --save-dev`
 它不只會安裝該套件模組還會新增或更新 package.json 。
@@ -88,8 +88,8 @@ Sails 建立的 Gruntfile
 > npm install jquery@1.7.2 --save-dev
 > npm install jquery@1.8.3 --save-dev
 
-## Gruntfile
----
+# Gruntfile
+
 
 `Gruntfile.js` 或 `Gruntfile.coffee` 都必須是合法正確的 javascript 或 coffee 。他們通常放在專案的根目錄下。跟 `package.json` 同一層，也一樣必須要被提交。
 一個 `Gruntfile` 包含下面這幾個部分：
@@ -99,8 +99,7 @@ Sails 建立的 Gruntfile
 * 載入的 Grunt 套件和任務(別人已經寫好的)
 * 自訂的任務
 
-## Gruntfile 範例
----
+# Gruntfile 範例
 
 在下面的範例中，關於 project 的 metadata 等資料是透過讀取 package.json 取得，並在 grunt 中使用。
 使用 [grunt-contrib-uglify](https://github.com/gruntjs/grunt-contrib-uglify) 套件的`uglify`任務是用來設定壓縮檔案並根據專案的 metadata 產生一些註解。當 grunt 開始執行，預設就會執行 `uglify` 任務
@@ -130,8 +129,7 @@ Sails 建立的 Gruntfile
  
  整個 Gruntfile 大致上就如上面這樣，後續我們將一步一步介紹每個組成部份。
  
-## The "wrapper" function (把所有動作包起來的 function) 
----
+# The "wrapper" function (把所有動作包起來的 function) 
 
 每一個 Gruntfile 或者 Grunt 套件都使用這個基本的定義格式，而你所有要讓 Grunt 執行的程式碼都必須被包在這個 function 中。
  
@@ -139,8 +137,8 @@ Sails 建立的 Gruntfile
            // Do grunt-related things in here
          }
 
-## 專案和任務設定
----
+# 專案和任務設定
+
 
 絕大多數的 Grunt 任務都透過定義一個包含所有設定資料的物件，然後把物件傳給 [grunt.initConfig](http://gruntjs.com/api/grunt#grunt.initconfig) 方法來設定的。
 在上面的範例中，`grunt.file.readJSON('package.json')` 匯入了一個 JSON 格式的檔案，JSON 讀取至 javascript 中便是一個 object。接著在 Gruntfile 中可以使用 `<% %>` 這樣的語法，中間可以帶入其他設定的屬性，例如檔案路徑。
@@ -162,8 +160,8 @@ Sails 建立的 Gruntfile
            }
          });
          
-## 載入 Grunt 和 Grunt 套件
----
+# 載入 Grunt 和 Grunt 套件
+
 
 大部份的任務例如串聯檔案，壓縮，都已經有現成的套件可以使用了，只要在 package.json 中設定並安裝，就可以使用。
 安裝完之後，就是在 Gruntfile 中載入
@@ -173,8 +171,7 @@ Sails 建立的 Gruntfile
         
 載入之後透過 `grunt --help` 就可以列出目前可以執行的任務，注意：initConfig 是在 grunt 初始化時針對任務做一些設定。於是真正在執行的時候就會去套用設定，例如上面我們載入了 grunt-contrib-uglify，之後我們就可以下達指令：`grunt uglify`。就會照著我們設定的把一支跟專案名稱一樣的 .js 壓縮成 .min.js。
 
-## 自訂任務
----
+# 自訂任務
 
 您可以在預設就讓 grunt 執行多個任務，只要透過 `default` 設定，接著我們執行 `grunt` 的時候就會照著預設任務去執行。如下範例，我們把 uglify 註冊到 default 。這樣我們就不用特別單獨執行 grunt uglify ，只要執行 `grunt` 或者 `grunt default` 就會執行下面壓縮檔案的這個任務。需要指定的任務可以加入下面程式碼 ['uglify'] 中的這個陣列。它可以執行多個任務。
 

@@ -6,14 +6,14 @@ categories: osx System
 ---
 當你在 Mac 上開啓 Line 的時候，由其實開發時常常因為 Line 收到通知導致那個在 Dock 上的 Icon 一直在那邊彈跳(Dock Bouncing) 想把它關掉必須靠指令
 
-### 關閉
+# 關閉
 
 {% highlight bash %}
 $ defaults write com.apple.dock no-bouncing -bool TRUE
 $ killall Dock
 {% endhighlight %}
 
-### 開啓
+# 開啓
 
 {% highlight bash %}
 $ defaults write com.apple.dock no-bouncing -bool FALSE

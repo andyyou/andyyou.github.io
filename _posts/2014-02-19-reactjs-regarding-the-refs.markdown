@@ -128,13 +128,14 @@ render: function() {
 # ref 屬性(attribute)
 React 支援一個非常特別的屬性，你可以把它附加到任何在 `render()` 裡面的元件上(就是標簽 tag 上)。這個特殊的屬性可以讓你存取到對應的『背後的實際物件』，它保證可以在任何時間點存取到當下的物件。
 下面是一個範例：
-1 在 `render()` 裡將回傳任意的元素設定 `ref` 屬性(attribute)
+
+#### 1 在 `render()` 裡將回傳任意的元素設定 `ref` 屬性(attribute)
 
 {% highlight html %}
 <input ref='myInput' />
 {% endhighlight %}
 
-2 在程式碼(典型的範例是在處理事件或函式裡)中你就可以透過 `this.refs` 存取這個『背後的物件』。
+#### 2 在程式碼(典型的範例是在處理事件或函式裡)中你就可以透過 `this.refs` 存取這個『背後的物件』。
 
 {% highlight js %}
 this.refs.myInput

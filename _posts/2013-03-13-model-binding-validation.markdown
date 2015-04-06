@@ -6,8 +6,8 @@ categories: .NET Database
 ---
 
 
-### 資料模型的驗證機制
-----
+# 資料模型的驗證機制
+
 
 在物件導向的世界裡有很多種方式可以驗證資料模型(Model Class) 。大部分的情況下我們可以在 Property
 的 setter 裡面作資料的確認。就是如下程式碼

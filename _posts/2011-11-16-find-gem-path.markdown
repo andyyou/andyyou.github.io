@@ -5,13 +5,13 @@ date: 2011-11-16 23:20:00
 categories: Ruby
 ---
 
-*取得Gem環境資訊*
+## 取得Gem環境資訊
 
 {% highlight bash %}
 $ gem env
 {% endhighlight %}
 
-*取得正在引入gem資訊*
+## 取得正在引入gem資訊
 
 {% highlight ruby %}
 require 'rubygems'

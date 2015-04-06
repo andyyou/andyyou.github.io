@@ -12,7 +12,7 @@ categories: Reactjs
 * 一個表單(form)可以送出留言。
 * 為你的後端程式提供一個 Hooks ，
 
-> Hooks 簡易說明：Hooks 英文翻譯為鉤子，在程式術語中所表達的是在程式特定位置埋入一段預留的程式碼，用來呼叫其他對應的程式碼。可以大略想成在某個片段先空出一個位置，這個位置可以在事後再放入動作，不放也沒關係。
+>Hooks 簡易說明：Hooks 英文翻譯為鉤子，在程式術語中所表達的是在程式特定位置埋入一段預留的程式碼，用來呼叫其他對應的程式碼。可以大略想成在某個片段先空出一個位置，這個位置可以在事後再放入動作，不放也沒關係。
 
 同時也有下列的特點:
 * 優化留言：留言在儲存到伺服器之前就出現在列表中，這會讓使用者有變快的感覺。
@@ -81,12 +81,12 @@ React.renderComponent(
 );
 {% endhighlight %}
 
-> 小提醒：在 React 中使用 JSX `<div>` 或 `<CommentBox />` 的標簽時 `/` 結尾的關閉標簽一定要加，否則會造成錯誤。
+>小提醒：在 React 中使用 JSX `<div>` 或 `<CommentBox />` 的標簽時 `/` 結尾的關閉標簽一定要加，否則會造成錯誤。
 
 # JSX 語法
 首先就是你應該注意到那些在 Javascript 中類似 XML 的語法，這些特殊的 JSX 語法是為了讓我們更方便直覺的維護程式碼的糖衣語法，我們會需要使用預先編譯器負責去轉換這些糖衣語法為原生的 Javascript。
 
-> 糖衣語法：指程式語言中添加的某種語法，這種語法對語言的功能並沒有影響，但是更方便程式設計師使用。通常來說使用語法糖能夠增加程序的可讀性，從而減少程序代碼出錯的機會。
+>糖衣語法：指程式語言中添加的某種語法，這種語法對語言的功能並沒有影響，但是更方便程式設計師使用。通常來說使用語法糖能夠增加程序的可讀性，從而減少程序代碼出錯的機會。
 
 事實上，如果不使用 `JSX` 你依然可以撰寫 React 。不過得改用原生的 React 物件去組織程式碼，而寫出來的程式碼和透過 JSXTransformer 轉換的語法基本上是會一樣的。如下範例：
 
@@ -108,7 +108,7 @@ React.renderComponent(
 )
 {% endhighlight %}
 
-> 小提醒：開發時我們會使用 JSXTransformer 以方便開發，而當要部署 Production 的時候，建議要先行編譯轉換以提升效能。
+>小提醒：開發時我們會使用 JSXTransformer 以方便開發，而當要部署 Production 的時候，建議要先行編譯轉換以提升效能。
 
 JSX 不是一定要使用的，不過官方建議 JSX 的語法比純 Javascript 更簡潔易維護，如果你想了解更多可以閱讀 [JSX Syntax](http://facebook.github.io/react/docs/jsx-in-depth.html)。
 
@@ -163,7 +163,7 @@ var CommentBox = React.createClass({
 
 注意到我們在上面的範例混合了 HTML 的 `<h1>` 標簽和 `<CommentList>` 等元件，HTML 標簽是正規的 React 元件，就跟你定義的元件一樣，但這之中有一點點不同。 `JSX` 的編譯器會自動把 HTML 標簽轉成 `React.DOM.tagName` ，這是為了防止污染全域的命名空間。
 
-> 補充：如果你對於不使用 JSX 的寫法比較有興趣下面列出一段大概的用法：
+>補充：如果你對於不使用 JSX 的寫法比較有興趣下面列出一段大概的用法：
 
 {% highlight js %}
 var CommentBox = React.createClass({displayName: 'CommentBox',
@@ -198,7 +198,7 @@ var CommentList = React.createClass({
 現在我們使用類似 XML 的語法格式在 `CommentList` 放入一些子元素 `Comment` 和一些資料到屬性。每一個 `<Comment>` 表示一則留言訊息。
 在結構上資料是透過父元素傳給子元素的，要完成把資料傳給子元素有一個重要的方式叫做 `props` 就是 Properties 的縮寫，或者說可以透過 `props` 取得父元素的資料。
 
-> 小筆記：邏輯上 CommentList 是整個留言列表所以資料會繫結到這個元件上，再透過迭代的方式去產生底下的 `Comment` 元件。上面的範例我們先使用 hardcode 的方式讓讀者理解概念。 
+>小筆記：邏輯上 CommentList 是整個留言列表所以資料會繫結到這個元件上，再透過迭代的方式去產生底下的 `Comment` 元件。上面的範例我們先使用 hardcode 的方式讓讀者理解概念。 
 
 # 使用 props
 建立 `Comment` 元件類別，它將會從 `CommentList` 讀取資料然後渲染標記。再複習一次整個 React 的架構就是分別建立各個元件，然後透過組合的方式來實現 `reuse` 的原則，設計上我們通常會讓父元素取得資料，這樣就可以在內部直接迭代渲染輸出 HTML 。
@@ -275,7 +275,7 @@ var Comment = React.createClass({
 
 這是一個特殊的 API 企圖讓寫入 HTML 變得比較困難一點，但因為 Showdown 需要輸出 HTML 的關係我們必須要開一個後門。
 
-> 提醒：使用這個功能你必須依賴 Showdown 本身的安全性，以及確保被轉換的資料不會有風險。
+>提醒：使用這個功能你必須依賴 Showdown 本身的安全性，以及確保被轉換的資料不會有風險。
 
 # 連結資料模型
 到目前為止，我們已經在程式碼直接寫入了一些留言，實務上我們的資料通常會從資料庫來，這邊我們用一些 JSON 格式的資料來模擬實際的狀況。
@@ -311,7 +311,7 @@ React.renderComponent(
 
 現在資料已經是透過 JSON 格式來取得了並且和 `CommentList` 繫結，接著就讓我們動態的輸出這些留言吧。
 
-> 小筆記：撰寫 React 的時候概念上我們可以把 `createClass` 就理解成是在建立一個類別，`renderComponent()` 就是在實例化物件，此時該傳入的資料(參數)我們就透過標簽屬性(attributes)帶入。
+>小筆記：撰寫 React 的時候概念上我們可以把 `createClass` 就理解成是在建立一個類別，`renderComponent()` 就是在實例化物件，此時該傳入的資料(參數)我們就透過標簽屬性(attributes)帶入。
 
 {% highlight js %}
 var CommentList = React.createClass({
@@ -594,7 +594,7 @@ var CommentForm = React.createClass({
 });
 {% endhighlight %}
 
-> 總結上面敘述就是我們應該把處理寫入留言(提交到伺服器)的邏輯和程式碼寫在 `CommentBox` 元件裡面，就是 `handleCommentSubmit` 這個方法，接著透過 `<CommentForm onCommentSubmit={this.handleCommentSubmit} />` 的方式把方法傳給子元件 `CommentForm` ，`CommentForm` 有需要送出留言的時候就可以透過 `this.props.onCommentSubmit()` 去呼叫。資料統一都由父元素管理是比較合理的做法。到目前為止我們概略的了解關於狀態和資料還有處理的方法應該放在父元素，你可以在父元素裡面在放置其他元件，如果子元素需要動用父元素的功能或資料就透過屬性(attributes)帶入參數的方式傳進去。
+總結上面敘述就是我們應該把處理寫入留言(提交到伺服器)的邏輯和程式碼寫在 `CommentBox` 元件裡面，就是 `handleCommentSubmit` 這個方法，接著透過 `<CommentForm onCommentSubmit={this.handleCommentSubmit} />` 的方式把方法傳給子元件 `CommentForm` ，`CommentForm` 有需要送出留言的時候就可以透過 `this.props.onCommentSubmit()` 去呼叫。資料統一都由父元素管理是比較合理的做法。到目前為止我們概略的了解關於狀態和資料還有處理的方法應該放在父元素，你可以在父元素裡面在放置其他元件，如果子元素需要動用父元素的功能或資料就透過屬性(attributes)帶入參數的方式傳進去。
 
 現在讓我們來完成 `callback` 函式該執行的任務
 

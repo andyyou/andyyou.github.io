@@ -16,7 +16,7 @@ categories: ios Mobile
 4. 回到 `apple developer` 申請產生iOS的憑證檔 `provisioning profile`。
 5. 將裝置憑證檔案 `provisioning profile` 安裝到 `xcode` 。
 
-## 概念說明
+# 概念說明
 本文不是要做流程記錄如果想學習整個流程可以參考[教學](http://j.mp/1pdWyOr)
 這篇文章是想針對各種憑證做些概念上的筆記
 其實當你到 Apple Developer 的 `Certificates, Identifiers & Profiles` 界面時你可以觀察到全部大概就是下列這些東西
@@ -46,13 +46,13 @@ categories: ios Mobile
 
 
 
-### Certificate
+## Certificate
 `Certificate` 憑證簡單說就是一個身份的證明，證明你是一個 Apple 開發者，然後才可以把 APP 安裝到機器上，當你對 APPLE 購買了開發者之後就可以取得，共分成兩大類 `Development` 和 `Production`
 ![](http://i.imgur.com/QL2aNR3.png)
 
 Development 認證可以讓你部署 APP 到裝置上(上限100台)做測試，而 Product 則是用來發佈到 App Store。
 
-#### Development Certificate
+## Development Certificate
   
   1. iOS App Development
   簽署測試用的APP以安裝在實機上。
@@ -60,7 +60,7 @@ Development 認證可以讓你部署 APP 到裝置上(上限100台)做測試，�
   2. Apple Push Notification service SSL (Sandbox)
 	當你的APP需要使用到Apple Push Notification功能時需要使用此種憑證，開啟沙箱功能。
 
-#### Production
+## Production
 Production 憑證又分成5種各針對不同需求的 APP
 
 1. App Store and Ad Hoc 使用於提交到 App Store 或特殊用途的簽證如：TestFlight。
@@ -70,18 +70,17 @@ Production 憑證又分成5種各針對不同需求的 APP
 5. VOIP Services Certificate
   
  
-```
+~~~~~
 Ad hoc是拉丁文常用短語中的一個短語。這個短語的意思是「特設的、特定目的的（地）、即席的、臨時的、將就的、專案的」。這個短語通常用來形容一些特殊的、不能用於其它方面的的，為一個特定的問題、任務而專門設定的解決方案。這個詞彙須與a priori區分。
-```
+~~~~~
 
-### App IDs
+## App IDs
 App ID 就是 APP 唯一的識別名稱，App ID 應該和 Xcode 中的 Bundle ID 一樣。App ID 分成兩種 
 
 1. Explicit App ID：唯一的 App ID，用來針對單一 APP 命名，例如 com.apple.MyApp。
-
 2. Wildcard App ID：類似使用正規式匹配符號的概念，指的是某些符合命名的 APP。例如 `*` 可表示所有 APP，`com.apple.*` 指的是開頭是 `com.apple` 的 APP。 App ID 可以設定相關 APP Services授權。例如，如果要使用 Apple Push Notification Services，則必須使用 Explicit App ID，以方便能識別唯一的應用程式。
 
-### Provisioning Profile
+## Provisioning Profile
 簡單說 Provisioning Profile 就是包含 App ID, Certificates, Devices 列表資訊的一個檔案。
 其用途就是用來確認這個 APP 是否合法，首先就是我們會需要 Certificate 來證明開發者是誰，然後 App ID 用來設定該 App 的授權的其他功能並驗證 Bundle ID 是否唯一。再來就是在測試的時候確定裝置是否能安裝。
 所有這個 Profile 可以說是用來規範驗證這個 App 的檔案。

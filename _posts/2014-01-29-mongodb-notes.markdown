@@ -129,7 +129,7 @@ function insertData(dbName, colName, num) {
 
 讓我們直接透過官方教學的步驟來體驗一下 mongo
 
-1. 在 mongo shell 環境下執行
+#### 1. 在 mongo shell 環境下執行
 
 {% highlight js %}
 var c = db.testData.find();
@@ -137,7 +137,7 @@ var c = db.testData.find();
 
 c 會取得一個指標物件。
 
-2. 透過迴圈列出所有的資料
+#### 2. 透過迴圈列出所有的資料
 
 {% highlight js %}
 while ( c.hasNext() ) printjson( c.next() )
@@ -145,7 +145,7 @@ while ( c.hasNext() ) printjson( c.next() )
 
 另外當你只輸入 `c` 的時候會輸出這個指標物件的內容，接著會提示如果要繼續檢視下面的內容就輸入 `it` 。
 
-3. 使用陣列方式操作指標物件
+#### 3. 使用陣列方式操作指標物件
 
 {% highlight js %}
 var c = db.testData.find();

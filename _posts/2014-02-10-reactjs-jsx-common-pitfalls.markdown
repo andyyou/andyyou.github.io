@@ -9,7 +9,7 @@ categories: Reactjs
 JSX 看起來像 HTML 但有一些您應該知道關鍵性的差異。
 注意：對於和 DOM 之間的差異，例如行內式屬性設定(inline style)，請查閱[這裡](http://facebook.github.io/react/docs/dom-differences.html)。
 
-> DOM 的差異：
+>DOM 的差異：
 React 為了跨瀏覽器和提升效能的因素，實作一套和瀏覽器本身無關的 events 以及模擬 DOM 的機制。我們可以借由這個機制處理一些關於原始 DOM 設計上一些不足的地方。
 * 所有的 DOM 屬性 `Properties` 和 `Attributes` (包含事件)都應該使用駝峰式命名 `camelCased` ，這和一般的 Javascrpt 程式碼風格一致。我們故意在這邊違背 html 規格 ，因此這和 html 規格是不同的。
 * `style` 屬性透過 Javascript 物件和駝峰式的屬性來設定，而不是 CSS 字串。所以設定 CSS 的語法風格會和 DOM, Javascrit 屬性一致，外加這麼做可以防止 XSS 攻擊。

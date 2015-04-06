@@ -259,7 +259,7 @@ $ rails g devise:views -v registrations confirmations
 ## 設定 controller
 如果客製 view 的層級還不夠您使用，您甚至可以自訂 controller 如下
 
-1. 建立您的 controller
+#### 1. 建立您的 controller
 
 {% highlight bash %}
 $ rails generate devise:controller [scope]
@@ -277,15 +277,15 @@ class Users::SessionsController < Devise::SessionsController
  end
 {% endhighlight %}
 
-2. 設定 routes
+#### 2. 設定 routes
 
 {% highlight ruby %}
 devise_for :users, controllers: { sessions: "users/sessions" }
 {% endhighlight %}
 
-3. 從 `devise/sessions` 複製 views 到 `users/sessions`。因為 controller 已經被修改了，所以沒辦法使用預設的 `devise/sessions` 的 view
+#### 3. 從 `devise/sessions` 複製 views 到 `users/sessions`。因為 controller 已經被修改了，所以沒辦法使用預設的 `devise/sessions` 的 view
 
-4. 最後，修改 controller 的 actions
+#### 4. 最後，修改 controller 的 actions
 
 {% highlight ruby %}
  class Users::SessionsController < Devise::SessionsController

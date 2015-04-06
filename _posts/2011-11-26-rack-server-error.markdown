@@ -5,12 +5,14 @@ date: 2011-11-26 04:05:00
 categories: Ruby, Rails
 ---
 
-錯誤訊息：
+## 錯誤訊息：
+
 ~~~~~
 initialize: Address already in use
 ~~~~~
 
-解決方式：
+## 解決方式：
+
 查詢程序ID
 
 {% highlight bash %}

@@ -14,7 +14,8 @@ categories: Javascript F2E Grunt
 * [grunt-contrib-watch](https://github.com/gruntjs/grunt-contrib-watch) : 觀察檔案變更
 
 整個完整的 `Gruntfile` 在頁面的最下方，不過如果你按順序閱讀，這篇文章會一步一步的說明。
-> 備註：通常在使用套件前，比較方便的方式是透過下面指令來安裝，這樣一來也順便會更新 `package.json` 。一般來說執行 grunt 都是在開發階段所以參數會使用 --save-dev 就是設定在 `package.json` 的 `devDependencies` 中。
+
+>備註：通常在使用套件前，比較方便的方式是透過下面指令來安裝，這樣一來也順便會更新 `package.json` 。一般來說執行 grunt 都是在開發階段所以參數會使用 --save-dev 就是設定在 `package.json` 的 `devDependencies` 中。
 
 {% highlight bash %}
 $ npm install grunt-contrib-uglify --save-dev 
@@ -74,11 +75,12 @@ concat: {
 注意到這邊我們引用了專案名稱 `name` 屬性，透過 `grunt.file.readJSON` 我們把 `package.json` 讀入成為一個物件，並且賦予 `pkg` ，如此一來我們就可以很輕鬆地存取關於 `package.josn` 中的設定。 Grunt 內建一個簡單的樣板引擎，讓我們在設定檔中能夠輕鬆的內嵌變數，通常是屬性的值（例如 `pkg.name`）。上面任務的意思就是取得 `src/` 目錄底下所有 `.js` 結尾的檔案，然後合併成一個 `dist/[專案名稱].js` 。 
 
 接著讓我們來看看 `uglify` 任務，它是用來壓縮 Javascript 的套件。
-> dist = Distribution
+
+>dist = Distribution
 
 {% highlight js %}
 uglify: {
-		options: {
+    options: {
 				// 產生一段 banner 文字並加入到將產生檔案的一開始
 				banner: '/*! <%= pkg.name %> <%= grunt.template.today("dd-mm-yyyy") %> */\n'
 		},
@@ -89,7 +91,7 @@ uglify: {
         		// 回憶一下上一篇 dist:src 前面是目的路徑，後面是來源路徑，注意來源是 concat 的屬性
     				'dist/<%= pkg.name %>.min.js': ['<%= concat.dist.dest %>']
 				}
-		}
+    }
 }
 {% endhighlight %}
      

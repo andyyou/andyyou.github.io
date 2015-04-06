@@ -5,8 +5,7 @@ date: 2012-01-15 05:30:00
 categories: Tools osx
 ---
 
-Open In Browser 設定
----
+# Open In Browser 設定
 
 ### Step 1
 開啓Preferences -> Browse Packages...

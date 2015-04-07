@@ -171,7 +171,9 @@ $ find /usr -name 'postgres' -type d
 # 忘記密碼的解法
 
 #### 1. 找到 `pg_hba.conf` 
+
 #### 2. 備份一份起來
+
 #### 3. 修改設定 
 
 ~~~~~

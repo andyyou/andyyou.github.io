@@ -82,7 +82,7 @@ SELECT * FROM "pg_user";
 # 列出所有角色 + 權限
 $ \du
 
-# 列出該 db 與角色的權限
+# 列出該 db schema 與角色的權限
 $ \dn+
 
 # 列出當前使用者
@@ -90,6 +90,16 @@ SELECT current_user;
 
 # 授權
 $ grant all on schema public to public;
+
+# 移除 db (OSX)
+$ rm /usr/local/var/postgres/postmaster.pid
+$ dropdb rbase_test
+
+# 在 SQL 中移除 db
+$ drop database if exists [database name]
+
+# 列出 Table/View 權限
+$ \dp
 
 # 建立使用者
 $ CREATE USER andy with password 'p@ssw0rd';
@@ -133,6 +143,16 @@ $ createdb dbname && gunzip -c filename.gz | psql dbname
  
 # 更新
 $ update auth_user set is_superuser = 't' where username='abhiomkar';
+
+# 顯示所有 roles 名稱(SQL)
+$ select rolname from pg_roles;
+
+# 查看 table 權限
+$ \z
+
+# 移除 db (OSX)
+$ rm /usr/local/var/postgres/postmaster.pid
+$ dropdb rbase_test
 
 {% endhighlight %}
 
@@ -207,6 +227,11 @@ $ ALTER USER user_name with password 'new_password';
 
 #### 8. 重啟
 
+# 無法刪除 db
+
+DETAIL:  There is 1 other session using the database.
+
+麻煩請找找是否有 GUI 軟體或其他 Session 正在連線。
 
 # 無法連線的狀況
 錯誤訊息

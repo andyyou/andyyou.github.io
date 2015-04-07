@@ -182,7 +182,7 @@ local all all trust
 
 #### 4. 重啟
 
-一般在 OSX 下如果您習慣都用 `brew` 安裝可以多裝一套 [brew services](https://robots.thoughtbot.com/starting-and-stopping-background-services-with-homebrew)
+一般在 OSX 下我習慣都用 `brew` 可以多裝一套 [brew services](https://robots.thoughtbot.com/starting-and-stopping-background-services-with-homebrew)
 
 {% highlight bash %}
 $ brew services start postgresql
@@ -204,6 +204,7 @@ $ ALTER USER user_name with password 'new_password';
 
 
 #### 7. 換回原來設定
+
 #### 8. 重啟
 
 

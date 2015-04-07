@@ -13,9 +13,7 @@ categories: Azure
 ![1]({{ site.url }}/assets/tutorials/azure_1.png)
 * 如果您已經在 Azure 管理介面時可以點您的帳號選下 -> 下拉式選單 -> 聯絡 Microsoft 支援服務
 ![2]({{ site.url }}/assets/tutorials/azure_2.png)
-
->注意只有帳號的最高權限有這個存取權限。
-
+  >注意只有帳號的最高權限有這個存取權限。
 2. 在 `建立支援票證` 介面填入您的資料
 ![3]({{ site.url }}/assets/tutorials/azure_3.png)
 3. 支援類型選擇 `帳務`(Billing)

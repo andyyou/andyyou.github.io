@@ -3,7 +3,7 @@ title: Journal.new( 'andyyou' )
 email: andyyu0920@gmail.com
 description: > 
   The journals and articles are written by andyyou. Most of all just recording of how to slove problem, fix bugs in programming area.
-  Apart from those I also write a bit tutorials. Here just a backup. Some cnotent just draft or notes for me.
+  Apart from those I also write a bit tutorials. Here just a backup. Some content just draft or notes for me.
 baseurl: "" # the subpath of your site, e.g. /blog/
 encoding: utf-8
 url: "http://andyyou.github.io" # the base hostname & protocol for your site

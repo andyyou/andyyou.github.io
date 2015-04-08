@@ -9,7 +9,9 @@ categories: Javascript
 再加上 `offset[Top | Left]`, `scroll[Top | Left]`, `client[Top | Left]` 等方向距離的屬性導致這件事變得異常複雜，外加它們都是整數因此在一些操作上會有些誤差。
 在開始之前對於那些急性子的人我先提供他們一些對於座標屬性的整理，您可以先大略看過這些整理，後面我們將針對一個實際的例子來練習，這些整理應該可以讓一些老手快速的回復記憶，其實就是因為這樣所以我才紀錄了這篇文章。
 
+先附上兩張圖式
 ![]({{ site.url }}/assets/tutorials/position_1.png)
+![]({{ site.url}}/assets/tutorials/css_box_model_1.png)
 
 ## CSS Box 為 content-box 時的情況(下面為 HTML DOM 屬性)
 
@@ -173,7 +175,7 @@ var x = 0;
 var y = 0;
 {% endhighlight %}
 
-這兩個變數會被用儲存 x, y 座標，因為 `offset[Top/Left]` 取的是該元素和 `offsetParent` 的距離，當我們沒有使用 `position` CSS 規則時 `offsetParent` 會是 `root` 或 外層結構中離元素最近的 `table cell` (在 HTML 標準兼容模式中 root 為 body)，另外一旦您對元素設定了 `display: none;` 那麼 `offsetParent` 就會回傳 `null`。
+這兩個變數會被用來儲存 x, y 座標，因為 `offset[Top/Left]` 取的是該元素和 `offsetParent` 的距離，當我們沒有使用 `position` CSS 規則時 `offsetParent` 會是 `root` 或 外層結構中離元素最近的 `table cell` (在 HTML 標準兼容模式中 root 為 body)，另外一旦您對元素設定了 `display: none;` 那麼 `offsetParent` 就會回傳 `null`。
 
 原來 `offset[Top | Left]` 並不是像我們一開始認為的直接算出到最左上角的距離，是和 `offsetParent` 的距離。
 意思是當外層的結構有元素套用了 `position: absolute;` 或 `relative` 等等的時候 `offsetParent` 就換人了，`static` 則維持預設。

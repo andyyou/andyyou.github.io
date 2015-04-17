@@ -380,18 +380,51 @@ f3('Tony', Proc.new{|name| puts name}) # 'Proc.new' is equivalent to 'Kernel::pr
 {% highlight ruby %}
 %(interpolated string (#{ "default" }))
   #=> "interpolated string (default)"
+
+# 雙引號的另外一種取代的寫法，當文字裡面有其他雙引號時可以用這種寫法內不會自動幫您把 `"` 轉成 `\"` 如此一來可以省略反斜線
+
 %Q(interpolated string (#{ "default" }))
   #=> "interpolated string (default)"
+
+# (...) 括號可以用其他非英數字元取代如 `!`
+%Q!Joe said: "Frank said: "#{what_frank_said}""!
+%Q[Joe said: "Frank said: "#{what_frank_said}""]
+%Q+Joe said: "Frank said: "#{what_frank_said}""+
+
+# 單引號的另一種寫法，不過注意單引號內部不會轉譯會直接輸出
 %q(non-interpolated string)
   #=> "non-interpolated string"
+%q(Joe said: 'Frank said: '#{what_frank_said} ' ')
+  #=> "Joe said: 'Frank said: '\#{what_frank_said} ' '"
+
+# 類似 %Q 的功能不過用在正規式上，該脫曳的字元會自動加上 `\`
 %r(#{ "interpolated" } regexp)i
   #=> /interpolated regexp/i
-%w(non-interpolated\ string  separated\ by\ whitespaces)
-  #=> ['non-interpolated string', 'separated by whitespaces']
+
+# 空白分開會被轉成陣列，每個元素外圍用雙引號包起來
 %W(interpolated\ string #{ "separated by whitespaces" })
   #=> ['interpolated string', 'separated by whitespaces']
+%W(#{foo} Bar Bar\ with\ space)
+  #=> ["Foo", "Bar", "Bar with space"]  
+
+# 跟 %W 類似但元素不會編譯或脫曳字元
+%w(non-interpolated\ string  separated\ by\ whitespaces)
+  #=> ['non-interpolated string', 'separated by whitespaces']
+%w(#{foo} Bar Bar\ with\ space)
+  #=> ["\#{foo}", "Bar", "Bar with space"]
+
+# 轉成 symbol
 %s(non-interpolated symbol)
   #=> :'non-interpolated symbol'
+%s(foo)
+  #=> :foo
+%s(foo bar)
+  #=> :"foo bar"
+%s(#{foo} bar)
+  #=> :"\#{foo} bar"
+
+# 會將內部內容透過子 shell 來執行
 %x(echo #{ "interpolated shell command" })
   #=> "interpolated shell command\n"
+
 {% endhighlight %}

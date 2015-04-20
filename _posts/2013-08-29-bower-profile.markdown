@@ -13,7 +13,9 @@ Bower 是一套管理網頁套件的工具，他提供了一種通用且不受�
 ---
 Bower 相依於 Node 和 npm 安裝指令如下
 
-				npm install -g bower
+{% highlight bash %}
+$ npm install -g bower
+{% endhighlight %}
 
 使用方法
 ---
@@ -25,17 +27,23 @@ Bower 是一組指令集，他們不需要使用 root 權限。如果你真的�
 ---
 透過 bower.json 來安裝管理，bower.json 就像一組清單用來幫你記錄管理想要安裝的套件和版本，先把清單些完之後執行下面的指令就能一口氣安裝完畢。
 
-				bower install
+{% highlight bash %}
+$ bower install
+{% endhighlight %}
         
 安裝在本地專案
 
-				bower install <package>
-				ex: bower install jquery
+{% highlight bash %}
+$ bower install <package>
+# ex: bower install jquery
+{% endhighlight %}
 
 指定版本
 
-				bower install <package>#<version>
-        
+{% highlight bash %}
+$ bower install <package>#<version>
+{% endhighlight %}
+
 <package> 可以是下面任何一種值
 ---
  1. 套件名稱 ex: `jquery`。可以透過 bower search jquery 來尋找相關的套件名稱。
@@ -46,21 +54,30 @@ Bower 是一組指令集，他們不需要使用 root 權限。如果你真的�
  
 查詢已經安裝的套件
 ---
- 				bower list
- 
+
+{% highlight bash %}
+$ bower list
+{% endhighlight %}
+
 搜尋
 ---
- 				boewr search [keyword]
- 
+
+{% highlight bash %}
+$ boewr search [keyword]
+{% endhighlight %}
+
 安裝完後使用套件
 ---
 最簡單的方式就是直接使用預設路徑
- 
- 				<script src="/bower_components/jquery/index.js"></script>
- 
+
+{% highlight html %}
+<script src="/bower_components/jquery/index.js"></script>
+{% endhighlight %}
+
 對於更複雜的情況，你可能會需要使用腳本，或者使用一個載入模組。Bower 只是一個管理工具，此時可以使用其他的工具 - 如 RequireJS - 這將幫助你做到這一點。
 
 移除
 ---
-				bower uninstall <package-name>
- 
+{% highlight bash %}
+$ bower uninstall <package-name>
+{% endhighlight %}

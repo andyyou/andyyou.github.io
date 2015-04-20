@@ -10,19 +10,28 @@ categories: CSS Sass
 
 rvm 安裝方式
 ----
-				$ \curl -L https://get.rvm.io | bash -s stable --ruby
-        
+{% highlight bash %}
+$ \curl -L https://get.rvm.io | bash -s stable --ruby
+{% endhighlight %}
+
 設定 ruby 環境
 ---
-				$ gem update --system
-				$ gem install compass
- 				$ compass -v // 確認版本與安裝完成
+
+{% highlight bash %}
+$ gem update --system
+$ gem install compass
+$ compass -v // 確認版本與安裝完成
+{% endhighlight %}
 
 建立專案
 ---
-				$ compass create Project1 // 單純使用 css
-				$ compass create Project2 --syntax sass  // 使用 sass
-        
+
+{% highlight bash %}
+$ compass create Project1 // 單純使用 css
+$ compass create Project2 --syntax sass  // 使用 sass
+{% endhighlight %}
+
+
 建立之後 compass 會提示訊息告訴你， Congratulations! Your compass project has been created.
 意思是恭喜，你的專案已經建立了。然後呢如果你是用 sass，你現在應該在 sass 的目錄底下開始新增和編輯你的 sass 檔案
 例如： style.sass
@@ -32,27 +41,36 @@ rvm 安裝方式
 
 編譯指令
 ---
-				$ compass compile [專案路徑]  // 到目錄為止
+
+{% highlight bash %}
+$ compass compile [專案路徑]  // 到目錄為止
+{% endhighlight %}
 
 開始編寫 sass
 ---
 在這之前呢， compass 會好心的提醒你需要把下面這段代碼引入到你的 html 中
 
-				<head>
-  				<link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css" />
-  				<link href="/stylesheets/print.css" media="print" rel="stylesheet" type="text/css" />
-  				<!--[if IE]>
-      			<link href="/stylesheets/ie.css" media="screen, projection" rel="stylesheet" type="text/css" />
-  				<![endif]-->
-				</head>
+{% highlight html %}
+<head>
+	<link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css" />
+	<link href="/stylesheets/print.css" media="print" rel="stylesheet" type="text/css" />
+	<!--[if IE]>
+		<link href="/stylesheets/ie.css" media="screen, projection" rel="stylesheet" type="text/css" />
+	<![endif]-->
+</head>
+{% endhighlight %}
         
 如果你跟我一樣是使用 jade 的話則如下
 
-				link(rel='stylesheet', href='/stylesheets/screen.css', media='screen, projection', type="text/css")
-				link(rel='stylesheet', href='/stylesheets/print.css',  media='print', type="text/css")
-				//[if IE]
-				  link(rel='stylesheet', href='/path/project')
-				  <![endif]
+{% highlight jade %}
+
+link(rel='stylesheet', href='/stylesheets/screen.css', media='screen, projection', type="text/css")
+link(rel='stylesheet', href='/stylesheets/print.css',  media='print', type="text/css")
+//[if IE]
+  link(rel='stylesheet', href='/path/project')
+  <![endif]
+
+{% endhighlight %}
 
 然後我們就可以試著在 sass 目錄加入自己的 style.sass
 並且輸入如下

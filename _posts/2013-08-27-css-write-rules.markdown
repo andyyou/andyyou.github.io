@@ -106,22 +106,21 @@ p {margin: inherit; padding: inherit}
 
 CSS 規則的累加與優先順序的工作原理如下。
 
-1. 找到所有的 css 宣告和對應的元素。
-2. 根據原始碼和優先權排序。
+#### 1. 找到所有的 css 宣告和對應的元素。
+#### 2. 根據原始碼和優先權排序。
+#### 3. !important 優先
+#### 4. 頁面設定為優先 
 
-  !important
-    
-	頁面設定為優先 
+{% highlight html %}
+<style>
+p {font-size: 12px}
+</style>
+{% endhighlight %}    
 
-		{% highlight html %}
-		<style>
-		p {font-size: 12px}
-		</style>
-		{% endhighlight %}    
+#### 5.	外部載入
+{% highlight html %}
+<link rel='stylesheet' href='style.css' />
+{% endhighlight %} 
 
-	外部載入
-		{% highlight html %}
-		<link rel='stylesheet' href='style.css' />
-    {% endhighlight %} 
-3. 選擇器的權重計算(Specificity)
-4. 如果兩個規則相等則宣告的最後宣告的規則會覆寫。
+#### 6. 選擇器的權重計算(Specificity)
+#### 7. 如果兩個規則相等則宣告的最後宣告的規則會覆寫。

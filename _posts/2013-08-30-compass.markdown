@@ -75,8 +75,10 @@ link(rel='stylesheet', href='/stylesheets/print.css',  media='print', type="text
 然後我們就可以試著在 sass 目錄加入自己的 style.sass
 並且輸入如下
 
-				h2
-				  color: red;
+{% highlight sass %}
+h2
+  color: red;
+{% endhighlight %}
           
 最後 compile 之後就可以看看了。
 				

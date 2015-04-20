@@ -10,12 +10,9 @@ categories: Tools osx
 ### Step 1
 開啓Preferences -> Browse Packages...
 
-![Alt text](/images/article/sublime-1.png)
 
 ### Step 2
 在HTML目錄底下建立<code>OpenBrowserCommand.py</code>檔案
-
-![Alt text](/images/article/sublime-2.png)
 
 程式碼貼入
 

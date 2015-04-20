@@ -20,29 +20,36 @@ categories: CSS
 
 舉例來說您有一個 p 標籤包含著一段文字，設定如下
 
-				<style>
-				p {font-size: 12px;}
-				p.bio{font-size: 36px;}
- 				</style>
-        
- 				<p class='bio'>text here</p>
- 
+{% highlight html %}
+<style>
+p {font-size: 12px;}
+p.bio{font-size: 36px;}
+</style>
+      
+<p class='bio'>text here</p>
+{% endhighlight %}
+
  您會猜測上面這個範例文字應該是 36px，第二句的選擇器 `p.bio` 更明確的指向該元素。
  然而有些時候選擇器並不是那麼單純好分辨。
  
- 				<div id='sidebar'>
-				<p class='bio'>text here</p>
-				</div>
-        
-				<style>
-				div p.bio {font-size: 14px;}
-				#sidebar p {font-size: 12px;}
-				</style>
-        
- 乍看之下第一句 CSS 看起來更明確的指定元素，但實際上顯示的樣式是第二行。
- 為什麼？
- 要回答這個問題，我們需要考慮 CSS 的選擇器的權重計算。
- 關於 CSS 選擇器權重計算，是透過計算每個樣式的組成然後產生一組表達式`(a,b,c,d)`
+{% highlight html %}
+<div id='sidebar'>
+	<p class='bio'>text here</p>
+</div>
+
+<style>
+div p.bio {font-size: 14px;}
+#sidebar p {font-size: 12px;}
+</style>
+{% endhighlight %}
+
+乍看之下第一句 CSS 看起來更明確的指定元素，但實際上顯示的樣式是第二行。
+
+為什麼？
+
+要回答這個問題，我們需要考慮 CSS 的選擇器的權重計算。
+
+關於 CSS 選擇器權重計算，是透過計算每個樣式的組成然後產生一組表達式`(a,b,c,d)`
 
 
 * 元素，構造虛擬類別元素(a:root) =>   d = 1  // (0,0,0,1)
@@ -63,13 +70,19 @@ categories: CSS
 
 所以上面 sidebar 的範例就會是如下
 
-				div p.bio{font-size: 14px;} //(0,0,1,2)
-				#sidebar p{font-size: 12px;}  //(0,1,0,1)
-          
+{% highlight css %}
+
+div p.bio{font-size: 14px;} //(0,0,1,2)
+#sidebar p{font-size: 12px;}  //(0,1,0,1)
+
+{% endhighlight %}
+
 最後在我們繼續往下之前要先瞭解。`!important` 勝過 `Specificity`。
 
-				div p.bio {font-size: 14px !important}
-				#sidebar p {font-size: 12px}
+{% highlight css %}
+div p.bio {font-size: 14px !important}
+#sidebar p {font-size: 12px}
+{% endhighlight %}
 
 事實上，如果你能明確知道規則的優先順序你應該是不需要使用 `!important`。
 
@@ -82,8 +95,10 @@ margin 和 padding，直到有另外的設定。
 
 你可以使用明確宣告設定屬性的繼承，從它的父容器繼承樣式：
 
-				p {margin: inherit; padding: inherit}
-        
+{% highlight css %}
+p {margin: inherit; padding: inherit}
+{% endhighlight %}
+
 然後 p 就會繼承包復他的父元素。
 
 
@@ -97,14 +112,16 @@ CSS 規則的累加與優先順序的工作原理如下。
   !important
     
 	頁面設定為優先 
-	
-  			<style>
-				p {font-size: 12px}
-				</style>
-        
-	外部載入
 
-				<link rel='stylesheet' href='style.css' />
-    
+		{% highlight html %}
+		<style>
+		p {font-size: 12px}
+		</style>
+		{% endhighlight %}    
+
+	外部載入
+		{% highlight html %}
+		<link rel='stylesheet' href='style.css' />
+    {% endhighlight %} 
 3. 選擇器的權重計算(Specificity)
 4. 如果兩個規則相等則宣告的最後宣告的規則會覆寫。

@@ -17,14 +17,14 @@ categories: Database
 +   建立 SQL Script.
 +   程式啟動時自動更新資料結構.
 
-<!-- more -->
+
 # 建置初始化Model和資料庫
 
 在我們開始介紹如何使用資料庫遷移(Migrations)之前我們需要一個專案和 Model。在這個練習中我們將模擬一個 Blog 建立 Blog 和 Post 的 Model。
 
 1. 新增主控台應用程式 (Console Project) 並命名為 MigrationsDemo。
 2. 透過 Nuget 安裝最新版的 EntityFramewrok。
-2-1. 工具->程式庫套件管理員->套件管理員主控台。
+2-1. 工具 -> 程式庫套件管理員 -> 套件管理員主控台。
 2-2. 執行 Install-Package EntityFramework 指令。
 2-3. 加入一個 Model.cs 類別程式碼如下:
 
@@ -106,12 +106,12 @@ Enable-Migrations
 
 這個指令會加入一個 Migrations 目錄。裡面會新增兩個檔案:
 
-## 設定類別 (Configuration.cs)
+#### 設定類別 (Configuration.cs)
 
 這個類別可以讓您自訂一些資料庫遷移時的行為，意思就是當我們要變更資料結構時可以追加一些設定。
 例如: 使用 Seed() 在建立資料表時幫您補上預設的資料，或者幫欄位設定預設值。
 
-## 資料遷移檔 ([時間戳記]_InitialCreate.cs)
+#### 資料遷移檔 ([時間戳記]_InitialCreate.cs)
 
 主要的資料遷移檔案是一個關於建立資料表，修改資料結構的 Script 。因為我們已經利用 Code First 幫我們建立了一個資料庫，所以這個
 遷移檔就會根據目前的資料庫結構產生一個對應的遷移檔。在我們這個範例中您會看到:
@@ -145,13 +145,13 @@ Code First 的 Migrations 機制主要有兩個指令。這兩個指令很重要
   
 現在我們需要對我們已經變更的 Model 產生一個 Migration 檔
 
-### 1. 執行下面的指令
+#### 1. 執行下面的指令
 
 {% highlight sh %}
 Add-Migration AddBlogUrl
 {% endhighlight %}
 
-### 2. 在 Migraions 目錄底下我們看到了一個新增的遷移檔。看看內容
+#### 2. 在 Migraions 目錄底下我們看到了一個新增的遷移檔。看看內容
 
 {% highlight csharp %}
 public override void Up()
@@ -174,13 +174,13 @@ Code First Migrations 機制就會幫我們去比對每一個資料庫遷移檔�
 目前為止，我們建立並執行了 Migration 但我們並沒有改變任何關於遷移檔的設定。
 讓我們來看看如何修改預設產生的遷移檔。
 
-### 1. 對 Model 修改，增加一個 Rating 屬性:
+#### 1. 對 Model 修改，增加一個 Rating 屬性:
 
 {% highlight csharp %}
 public int Rating { get; set; }
 {% endhighlight %}
 
-### 2. 接著再新增一個 Post 類別:
+#### 2. 接著再新增一個 Post 類別:
 
 {% highlight csharp %}
  public class Post
@@ -195,7 +195,7 @@ public int Rating { get; set; }
     }
 {% endhighlight %}
  
-### 3. 建立完成後我們再對 Blog 類別增加:
+#### 3. 建立完成後我們再對 Blog 類別增加:
 
 {% highlight csharp %}
 public virtual List<Post> Posts { get; set; }
@@ -209,13 +209,13 @@ Add-Migration AddPostClass
 
 Code Fist Migrations 機制很盡責地幫我們對應結構產生了 Migration 檔，但在這邊我們想要作一些改變。
 
-### 1. Posts.Title 欄位不得重複(unique)
+#### 1. Posts.Title 欄位不得重複(unique)
 
 {% highlight sh %}
 .Index(p => p.Title, unique: true);
 {% endhighlight %}
 
-### 2. 不得為 null
+#### 2. 不得為 null
 我們也增加了一個不得為 null 的 Blogs.Rating 欄位。如果有任何資料已存在資料表中將會得到 CLR 資料型別的預設值，例如 Rating 是 int 如果 Blog 資料表已經有資料那這欄位就會得到 0 。在這邊我們也透過修改遷移檔把預設值變成 3 。
 完成的範例如下:
 

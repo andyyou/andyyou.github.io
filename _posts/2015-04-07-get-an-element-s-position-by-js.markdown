@@ -48,7 +48,7 @@ categories: Javascript
 
 - `scrollTop`/`scrollLeft`:
   + 如果該目標元素沒有 scrollbar 則值為 0 例如: 沒有 y 軸 scrollbar 則 `scrollTop = 0`
-  + 從元素 border 內緣開始計算
+  + 從元素 border 內緣開始計算，scrollTop 與 scrollLeft 是取有捲軸的那個元素捲到哪
   + 按照規定 scrollTop 不會小於 0 但是在 OSX 下的 Chrome 和 Safari 可能會產生負值。
   + [範例](http://codepen.io/AndyYou/pen/LEoXBR)
 

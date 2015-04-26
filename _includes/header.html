@@ -14,7 +14,7 @@
       </ul>
 
       <ul id="nav-mobile" class="side-nav">
-        <li><a href="{{ site.url }}"><i class="mdi-social-school"></i>{{ site.title }}</a></li>
+        <li><a href="{{ site.url }}"><i class="mdi-social-school"></i></a></li>
         {% for page in site.pages %}
           {% if page.title %}
           <li><a href="{{ page.url | prepend: site.baseurl }}">{{ page.title }}</a></li>

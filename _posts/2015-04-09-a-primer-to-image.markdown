@@ -23,7 +23,7 @@ categories: CSS
 
 最後 `content 區塊` 就是把元素扣掉 border 和 padding ，實際內容部分。
 
-![]({{ site.url }}/assets/tutorials/css_box_1.png)
+![]({{ site.url }}/assets/images/tutorials/css_box_1.png)
 
 圖示元素的區塊模型，圖片來源：參考 Codrops CSS 
 

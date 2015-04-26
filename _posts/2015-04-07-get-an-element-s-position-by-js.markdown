@@ -10,8 +10,8 @@ categories: Javascript
 在開始之前對於那些急性子的人我先提供他們一些對於座標屬性的整理，您可以先大略看過這些整理，後面我們將針對一個實際的例子來練習，這些整理應該可以讓一些老手快速的回復記憶，其實就是因為這樣所以我才紀錄了這篇文章。
 
 先附上兩張圖式
-![]({{ site.url }}/assets/tutorials/position_1.png)
-![]({{ site.url}}/assets/tutorials/css_box_model_1.png)
+![]({{ site.url }}/assets/images/tutorials/position_1.png)
+![]({{ site.url}}/assets/images/tutorials/css_box_model_1.png)
 
 ## CSS Box 為 content-box 時的情況(下面為 HTML DOM 屬性)
 
@@ -85,7 +85,7 @@ categories: Javascript
 # 我們有一個需求
 在我們開始寫程式之前讓我們先假設遇到一個需求 - 我們想要取得 HTML 元素確切的 x, y 座標。
 
-![]({{ site.url }}/assets/tutorials/position_3.png)
+![]({{ site.url }}/assets/images/tutorials/position_3.png)
 
 一般來說，所有的座標設定的行為都需要一個相對的起始點，通常我們會拿 document 最左上角的點來當對應的起始點。而我們放的位置`點`則對應到元素的最左上角。
 
@@ -127,7 +127,7 @@ function getPosition (element) {
 
 範例中的提示框會告訴我們元素座標，如果您去量測瀏覽器的 `viewport` 可視區域的左上角到該圖片的左上角會如下得到準確的座標，注意 border 不會算在其中。
 
-![]({{ site.url }}/assets/tutorials/position_4.png)
+![]({{ site.url }}/assets/images/tutorials/position_4.png)
 
 我們簡單的示範了最單純的例子但是實務上總不是那麼容易。
 
@@ -137,7 +137,7 @@ function getPosition (element) {
 # 小技巧
 記得直接用瀏覽記得工具來協助計算
 
-![]({{ site.url }}/assets/tutorials/position_5.png)
+![]({{ site.url }}/assets/images/tutorials/position_5.png)
 
 # 解析取得座標的程式碼
 對於上面的程式碼您應該有個概略的理解，但實作的時候您必須要精準的理解每個片段才行。現在讓我們來認真看看這些程式碼是怎麽運作的
@@ -213,7 +213,7 @@ while(element) {
 # Scrolling 捲軸的部分
 如果您設計的 block 可以捲動，一般來說就是父元素限制了寬高且 `overflow: auto;` ，但內容的寬高卻超過了這個尺寸，此時您的內容的確是在父元素內部，但取得的座標卻不是我們要的 - 從看到的元素左上角到 root 左上角為了取得這個座標於是我們要把 scrollTop 扣掉。直接看圖比較快
 
-![]({{ site.url }}/assets/tutorials/position_1.png)
+![]({{ site.url }}/assets/images/tutorials/position_1.png)
 
 最後呢! 回傳 x, y
 

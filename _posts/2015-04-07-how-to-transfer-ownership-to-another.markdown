@@ -10,12 +10,12 @@ categories: Azure
 # 提交一個 Azure 帳號移轉的支援請求(Support ticket)
 
 1. 連到[Azure Support](http://azure.microsoft.com/support) 或[Azure 支援中文](https://azure.microsoft.com/zh-tw/support/options/) 然後點擊 `取得支援`(Get support) 接著您就可以送出一個事件給 Azure 帳務中心。
-![1]({{ site.url }}/assets/tutorials/azure_1.png)
+![1]({{ site.url }}/assets/images/tutorials/azure_1.png)
 * 如果您已經在 Azure 管理介面時可以點您的帳號選下 -> 下拉式選單 -> 聯絡 Microsoft 支援服務
-![2]({{ site.url }}/assets/tutorials/azure_2.png)
+![2]({{ site.url }}/assets/images/tutorials/azure_2.png)
 * 注意只有帳號的最高權限有這個存取權限。
 2. 在 `建立支援票證` 介面填入您的資料
-![3]({{ site.url }}/assets/tutorials/azure_3.png)
+![3]({{ site.url }}/assets/images/tutorials/azure_3.png)
 3. 支援類型選擇 `帳務`(Billing)
 4. 選擇語系接著建立支援服務
 5. 問題類型選擇 `帳戶、訂閱和帳戶入口網站協助`(Account, Subscription and Account Portal Assistance)
@@ -25,6 +25,6 @@ categories: Azure
 9. 勾選同意之後送出
 
 最後您就可以在管理這邊追蹤進度。
-![4]({{ site.url }}/assets/tutorials/azure_4.png)
+![4]({{ site.url }}/assets/images/tutorials/azure_4.png)
 
 - *2015-04-07 更新*

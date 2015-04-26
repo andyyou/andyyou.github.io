@@ -37,7 +37,7 @@ function one() {
 
 這個範例很簡單的示範從 global context 我們呼叫的 `one()`，`one()` 呼叫 `two()`，接著在呼叫 `three()`，最後在 function three 發動一個 alert，下圖是當我們執行到 alert 時堆疊的概念圖
 
-![]({{ site.url }}/assets/tutorials/es2.png)
+![]({{ site.url }}/assets/images/tutorials/es2.png)
 
 此時的 scope chain 就會是
 
@@ -136,7 +136,7 @@ one()​;​
 
 從 `alert(a + b + c);` 這行程式，當直譯器開始要找 `a` 的時候，它會不斷的到 scope chain 裡面去尋找，這個過程如下圖
 
-![]({{ site.url }}/assets/tutorials/es2.png)
+![]({{ site.url }}/assets/images/tutorials/es2.png)
 
 一開始會到自己的 VO 去找，找不到換下一個一直到 Global 為止。
 如果都找不到則丟出 `ReferenceError` 的錯誤，所以上面這段小範例 `a` `b` `c` 都會找到值。

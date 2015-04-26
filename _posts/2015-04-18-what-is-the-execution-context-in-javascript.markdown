@@ -71,7 +71,7 @@ OK 這邊交代得有點亂，我們看到的程式碼的時候通常最小的�
 }(0));
 {% endhighlight %}
 
-![]({{ site.url }}/assets/tutorials/es1.gif)
+![]({{ site.url }}/assets/images/tutorials/es1.gif)
 
 這段程式碼簡單的呼叫自己三次每一次把參數加一，每當 `foo` 被呼叫的時候新的 `執行環境` 就被建立，然後當 `執行環境` 裡面的程式跑完的時候，就從堆疊中把 `執行環境` 拿掉，把控制權交還給上一個環境一直到回到 global 為止。
 

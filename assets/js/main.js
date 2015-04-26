@@ -1,8 +1,7 @@
 (function($){
   $(function(){
 
-    $('.btn-collapse').sideNav();
-    // $('.parallax').parallax();
+    $('.button-collapse').sideNav();
 
   });
 })(jQuery);

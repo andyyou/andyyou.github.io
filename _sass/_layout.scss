@@ -102,6 +102,24 @@ nav ul a {
     }
 }
 
+.fb-like {
+  display: inline-block;
+}
+
+.fb_iframe_widget,
+.fb_iframe_widget span,
+.fb_iframe_widget span iframe[style] {
+  min-width: 100% !important;
+  width: 100% !important;
+}
+.fb-comments {
+  ._li{
+    text-align: center;
+  }
+}
+
+
+
 .post-content {
   margin-bottom: $spacing-unit;
   font-family: 'cwTeXMing', serif;
@@ -111,6 +129,13 @@ nav ul a {
   img {
     margin: 0 auto;
     display: block;
+  }
+
+  ul {
+    list-style: circle;
+    li {
+      list-style: circle;
+    }
   }
   
   h1 {

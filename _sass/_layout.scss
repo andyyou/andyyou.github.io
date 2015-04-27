@@ -65,6 +65,7 @@ nav ul a {
  */
 .page-content {
     padding: $spacing-unit 0;
+    font-family: 'cwTeXMing', serif;
 }
 
 .page-heading {
@@ -94,6 +95,7 @@ nav ul a {
     font-weight: 700;
     letter-spacing: 2px;
     line-height: 1;
+    font-family: 'cwTeXMing', serif;
 
     @include media-query($on-laptop) {
         font-size: 36px;
@@ -101,41 +103,49 @@ nav ul a {
 }
 
 .post-content {
-    margin-bottom: $spacing-unit;
-    
-    h1 {
-      font-size: 36px;
+  margin-bottom: $spacing-unit;
+  font-family: 'cwTeXMing', serif;
+  font-size: 1.2em;
+  color: rgba(0, 0, 0, .87);
+
+  img {
+    margin: 0 auto;
+    display: block;
+  }
+  
+  h1 {
+    font-size: 36px;
+    font-weight: 600;
+
+      @include media-query($on-laptop) {
+          font-size: 32px;
+      }
+  }
+
+  h2 {
+      font-size: 32px;
       font-weight: 600;
 
-        @include media-query($on-laptop) {
-            font-size: 32px;
-        }
-    }
+      @include media-query($on-laptop) {
+          font-size: 28px;
+      }
+  }
 
-    h2 {
-        font-size: 32px;
-        font-weight: 600;
+  h3 {
+      font-size: 26px;
+      font-weight: 600;
 
-        @include media-query($on-laptop) {
-            font-size: 28px;
-        }
-    }
+      @include media-query($on-laptop) {
+          font-size: 22px;
+      }
+  }
 
-    h3 {
-        font-size: 26px;
-        font-weight: 600;
+  h4 {
+      font-size: 20px;
+      font-weight: 600;
 
-        @include media-query($on-laptop) {
-            font-size: 22px;
-        }
-    }
-
-    h4 {
-        font-size: 20px;
-        font-weight: 600;
-
-        @include media-query($on-laptop) {
-            font-size: 18px;
-        }
-    }
+      @include media-query($on-laptop) {
+          font-size: 18px;
+      }
+  }
 }

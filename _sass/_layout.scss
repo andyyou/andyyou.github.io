@@ -113,7 +113,7 @@ nav ul a {
   width: 100% !important;
 }
 .fb-comments {
-  ._li{
+  div[id^=app_content]{
     text-align: center;
   }
 }

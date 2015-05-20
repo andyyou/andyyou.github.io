@@ -457,7 +457,7 @@ xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     </html>
   </xsl:template>
 </xsl:stylesheet>
-{% endhighlihgt %}
+{% endhighlight %}
 
 如果要排序則使用 `<xsl:sort>` 元素，如下用法
 

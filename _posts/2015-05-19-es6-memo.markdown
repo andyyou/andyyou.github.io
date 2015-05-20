@@ -1,0 +1,312 @@
+---
+layout: post
+title: 'ES6 筆記'
+date: 2015-05-19 05:30:00
+categories: Javascript
+---
+
+# Arrows
+`=>` 符號就是一個函式的簡寫，語法上類似 C#, Java, CoffeeScript 類似的功能。它支援 expression 和 statement 區塊。不過不像一般函式(function)， `arrows` 跟將其包圍的程式片段共用相同的 `this` ，原本的 function 一旦宣告就會建立自己的 `context` 和自己的 `this` 。
+
+{% highlight js %}
+// Expression 
+var people = [
+  {name: "Andy", age: "28" },
+  {name: "Marc", age: "32" },
+  {name: "Calvert", age: "27" }
+];
+
+var youth = people.filter(p => p.age > 18 && p.age < 30);
+console.log(youth);
+
+// Statement 區塊
+var nums = [1, 3, 4, 5, 7, 9];
+var even = [];
+nums.forEach(n => {
+  if (n % 2 === 0)
+    even.push(n);
+});
+console.log(even);
+
+/**
+ * 重點的差別
+ */
+var andy = {
+  _name: "Andy",
+  _firends: ["Dino", "Eugene"],
+  friendList: function() {
+    this._friends.forEach(functino(friend) {
+      // 此時如果呼叫該 friendList 函式會出錯，
+      // 因為 function 的 this 通常指向呼叫的
+      // 物件。
+      console.log(this._name + " knows " + friend); 
+    })
+  }
+}
+
+/**
+ * 在過去，我們有幾種解法把 this 在 friendList 函式
+ * 裡面先存起來。或者使用 bind 把 function 
+ */
+var andy = {
+  _name: "Andy",
+  _firends: ["Dino", "Eugene"],
+  friendList: function() {
+    var that = this;
+    this._friends.forEach(functino(friend) {
+      console.log(that._name + " knows " + friend); 
+    })
+  }
+}
+
+// 換成 ES6 arrows 
+var andy = {
+  _name: "Andy",
+  _firends: ["Dino", "Eugene"],
+  friendList() {
+    this._friends.forEach(f => {
+      console.log(that._name + " knows " + f); 
+    })
+  }
+}
+{% endhighlight %}
+
+# Classes
+ES6 的類別只是一個單純的語法糖衣，運作的機制仍然是基於原來的 `prototype` 模式。透過一個方便地宣告方式讓類別的觀念更容易使用，促進協同開發的可讀性等。類別也支援 `prototype-base` 的繼承，父類別 `super calls`，實例，靜態方法和建構子。
+
+{% highlight js %}
+class Dog extends Animal {
+  // 建構子
+  constructor(name, skill) {
+    super(name); // super call
+
+    this.skill = skill;
+  }
+
+  walk(direction) {
+    console.log("The dog walk to the" + direction);
+  }
+
+  static generateName() {
+    console.log("Random Name");
+  }
+}
+
+// static method 的意思即類別的方法
+Dog.generateName();
+
+// new object
+var d = new Dog("Bone", "Fly");
+
+{% endhighlight %}
+
+# 增強的物件實字(Object Literals)
+首先要對這個文謅謅的名詞做點解釋，所謂的`物件實字`指的其實就是用大括號把屬性(名值對)包起來的宣告方式，屬性與屬性之間用 `,` 分開。
+即 JS 中`不是`用函式當建構子定義物件的方式。
+
+物件實字增加支援在 `constructor` 設定 `prototype`。
+同名屬性與處理函式的縮寫例如 `foo: foo`，新的函式定義語法，可以使用 super 呼叫上層類別。
+
+{% highlight js %}
+var object = {
+  // 可設定 prototype
+  __proto__: thePrototypeObject,
+  // handler: handler 的縮寫語法
+  handler,
+  // 新的方法宣告語法
+  toString() {
+    // super call
+    return "Hey " + super.toString();
+  },
+  // 動態的屬性設定
+  ["abc" + (()=> 1) ]: 100
+}
+{% endhighlight %}
+
+# 樣版字串(Template String)
+提供語法糖衣來建構字串。這個功能類似在 C# 裡面用 `String.Format("{0}", 1)` 或者 Ruby 中用 `"#{name} say hi"`
+使用重音符號 **`**  取代原本的單引號跟雙引號，接著字串中透過 `${variable}` 來插入變數或表達式 expression。
+
+{% highlight js %}
+// 可以直接使用轉義字元(跳脫字元)
+`In ES5 "\n" is a line-feed.`
+
+// 多行
+`In ES5 this is
+ not legal.`
+
+// 插入變數
+var name = "Andy", time = "today";
+`Hello ${name}, how are you ${time}?`
+{% endhighlight %}
+
+另外還有`標籤式樣版`(Tagged Templates)，標籤式樣版透過在樣版字串前面放置一個`函式名稱`來轉換成另外一個字串。( function 不用加上 `()` )
+
+* [完整教學](http://updates.html5rocks.com/2015/01/ES6-Template-Strings)
+
+{% highlight js %}
+// 本質上這是一個特殊的函式調用方式
+fn`Hello ${you}! You're looking ${adjective} today!`
+
+var a = 5;
+var b = 10;
+
+// 特殊的函式宣告法，在其他語言中的不定參數
+function t(strings, ...values) {
+  console.log(strings[0]); // "Hello "
+  console.log(strings[1]); // " world "
+  console.log(values[0]);  // 15
+  console.log(values[1]);  // 50
+
+  return "HEY!";
+}
+
+t`Hello ${ a + b } world ${ a * b}`;
+{% endhighlight %}
+
+# 解構賦值(Destructuring) 
+這是種類似 Ruby 中 Tuple 的行為，有人翻作`分割代入`
+我個人比較喜歡分割帶入，分割帶入讓我們可以使用模式匹配的方式來替變數賦值，支援陣列與物件。
+
+{% highlight js %}
+var [x, ,y] = [1, 2, 3];
+console.log(x); // #=> 1
+console.log(y); // #=> 3
+
+// 預設值
+var [a = 1] = []; // #=> 1
+
+// 不定參數的用法
+var [a, b, ...c] = [1, 2, 3, 4, 5, 6]; // #=> 1 2 [3, 4, 5, 6]
+
+// 物件方式
+var {a, b} = { a: 'foo', b: 'bar'}
+{% endhighlight %}
+
+# 預設值, 不定參數, 分割代入參數
+函式可以對參數設定預設值。把連續的變數放到一個陣列中或把一個呼叫時丟的引數陣列分散到連續的參數中。
+
+{% highlight js %}
+// 使用預設值
+function fn(x, y=10) {
+  return x + y;
+}
+fn(2); // #=> 12
+
+// 使用不定參數
+function fn(x, ...y) {
+  // y 會變成一個陣列
+  return x + y.length;
+}
+
+fn(10, 1, 1, 1); // #=> 13
+
+// 分割陣列引數到連續的參數
+function fn(x, y, z) {
+  return x + y + z;
+}
+
+fn(...[1, 2, 3]); // #=> 6
+{% endhighlight %}
+
+# let 和 const
+
+
+當第一次看到 JS 要提供 `let` 的宣告時我還沒意會過來，原因是在 C#, Java 等語言中一個 block 會建立一個 scope，當我們用 `for`, `if` 的時候都有。而 JS 是用 `Lexical Scope`，背後的意義簡單說就是除了 `function` 的 `context` 會建構出一個類似 scope 的概念，其他 `for` 之類的都沒有。導致我們常常需要用閉包來處理。
+
+`let` 就是新版的 `new` 不過差別是它會在所宣告的 `{ }` 建立一個 scope。
+
+{% highlight js %}
+// 基本的用法
+function fn() {
+  { // <- block start
+    let x;
+    { // <- another block
+      const x = "sub block";
+      x = "foo" // error, it's a const
+    }
+    let x = "inner" // error, already declared
+  }
+}
+
+// 定義區塊的行為
+{
+  let x = 10;
+  {
+    console.log(x); // #=> 10
+  }
+}
+console.log(x); // error undefined
+
+// 以前用 var 最常遇到的問題
+var alerts = [];
+
+for (var i = 0; i < 5; i++) {
+  alerts.push(function inner(){
+    alert(i);
+  })
+}
+alerts[1](); // #=> 5
+
+// 用了 let
+for (let i = 0; i < 5; i++) {
+  alerts.push(function inner(){
+    alert(i);
+  })
+}
+alerts[1](); // #=> 1
+
+// 因為在 ES6 規格提到，每一個 loop 會隱式的定義一個新的 i
+{ let k;
+  for (k=1; k<=5; k++) {
+    let i = k; // <-- new `i` for each iteration!
+    setTimeout(function(){
+        console.log("i:",i);
+    },i*1000);
+  }
+}
+{% endhighlight %}
+
+* [不錯的教學](http://davidwalsh.name/for-and-against-let)
+
+# 迭代器 + For...Of
+迭代器物件 - 當一個物件知道在一個時間點如何存取集合中的某個項目這就是迭代器的觀念，它會持續追蹤目前的元素，上一個下一個等。在 JS 中一個迭代器物件會提供 `next()` 方法，這個方法會回傳一個物件包含兩個屬性 `done`, `value`
+
+在 ES6 中當一個物件或者資料集合可以被遍歷時他就稱為 `iterables`，它們都有一個方法要回傳迭代器(Iterator)。這個方法有一個特殊的鍵值或稱屬性名稱 `Symbol.iterator`
+
+{% highlight js %}
+class ATree {
+  [Symbol.iterator]() {
+    return { // 這是一個 iterator
+      next() {
+        [pre, cur] = [cur, pre + cur];
+        return { done: false, value: cur }
+      }
+    }
+  }
+}
+{% endhighlight %}
+
+迭代器物件提供自定義的方法類似 .NET CLR 的 IEnumerable 介面，真的可迭代的物件或資料結構一般我們使用 `for..in` 的方式要換成 `for...of`。重點是不需要任何陣列來實作，是一種延遲設計模式就像 LINQ 一樣。
+
+{% highlight js %}
+let fib = {
+  [Symbol.iterator]() {
+    let previous = 0, current = 1;
+    return {
+      next() {
+        [previous, current] = [current, current + previous];
+        return { done: false, value: current}
+      }
+    }
+  }
+}
+{% endhighlight %}
+
+* [迭代器與產生器](http://www.2ality.com/2013/06/iterators-generators.html)
+* [ES6-generators](http://davidwalsh.name/es6-generators)
+
+# Generators
+
+
+# Generators 和 Iterators

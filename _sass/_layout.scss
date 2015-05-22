@@ -66,6 +66,11 @@ nav ul a {
 .page-content {
     padding: $spacing-unit 0;
     font-family: 'Open Sans', 'cwTeXMing', serif;
+
+    h1 {
+      letter-spacing: -2px;
+      font-weight: 700;
+    }
 }
 
 .page-heading {
@@ -81,7 +86,8 @@ nav ul a {
   display: block;
   font-size: 28px;
   color: rgba(0, 0, 0, .87);
-  font-weight: 500;
+  font-weight: 600;
+  font-family: 'Open Sans', 'cwTeXMing', serif;
 }
 
 
@@ -96,6 +102,7 @@ nav ul a {
     letter-spacing: 2px;
     line-height: 1;
     font-family: 'Open Sans', 'cwTeXMing', serif;
+    letter-spacing: -2px;
 
     @include media-query($on-laptop) {
         font-size: 36px;

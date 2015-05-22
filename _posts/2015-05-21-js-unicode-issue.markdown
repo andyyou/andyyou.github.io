@@ -7,7 +7,7 @@ categories: Javascript
 
 為了理解 ES6 到底對於 Unicode 萬國碼有哪些新的支援。我們得從原因理解起。
 
-# Javascript 有 Unicode 相關的問題
+# Javascript 在處理 Unicode 時很有多問題
 關於 Javascript 處理 Unicode 的方式...至少可以說是很奇怪。這篇文章闡述在 Javascript 中存取 Unicode 的痛點以及 ES6 如何改善這個問題。
 
 # Unicode 基礎

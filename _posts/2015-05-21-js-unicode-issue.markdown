@@ -331,7 +331,7 @@ esrever.reverse('💩') // U+1F4A9
 String.fromCharCode(0x0041); // U+0041
 // 'A' U+0041
 
-String.formCharCode(0x1F4A9) // U+1F4A9
+String.fromCharCode(0x1F4A9) // U+1F4A9
 // '' 是 U+F4A9, 而不是 U+1F4A9
 {% endhighlight %}
 

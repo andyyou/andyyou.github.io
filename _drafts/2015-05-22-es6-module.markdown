@@ -1,0 +1,101 @@
+---
+layout: post
+title: 'ES6 Module'
+date: 2015-05-22 05:30:00
+categories: Javascript
+---
+
+# 目前 JavaScript 模組載入機制
+JS 並沒有內建的模組機制，但是社群已經建立許多替代方案。其中最重要的兩套標準分別是 CommonJS 和 AMD，很不幸的兩者並不兼容。
+
+* CommonJS 
+CommonJS 的優勢是它是 NodeJS 支援的標準
+
+特點:
+  * 簡潔的語法
+  * 為`同步載入`設計的標準
+  * 主要使用在 Server 端的程式碼
+
+* AMD
+最著名的實作是 RequireJS
+
+特點:
+  * 略為複雜的語法，使 AMD 不需要使用 `eval()` 的方式來載入檔案
+  * 專為`非同步載入`設計
+  * 主要在瀏覽器端使用
+
+以上只是針對兩者作大幅簡化的介紹，如果您需要更多資訊請參考[使用 AMD, CommonJS 和 ES 和諧版標準開發模組](http://addyosmani.com/writing-modular-js/)
+
+# 關於 ES6 的模組載入
+ES6 模組機制的目標在建立一個讓 CommonJS 和 AMD 兩群使用者都滿意的標準，要達到這個目標他們需要:
+
+* 類似 CommonJS 中簡潔的語法，偏愛只有單一的 exports 且解決循環參考的問題
+* 類似於 AMD 支援非同步載入和模組載入可以設定相依性等
+
+內建的 ES6 模組載入更超越 CommonJS 和 AMD。 
+原因如下: 
+
+* 語法比 CommonJS 更加簡潔
+* 其結構可以被用來做靜態分析(最佳化等)
+* 解決循環參考的方法甚至比 CommonJS 還好
+
+關於 ES6 模組標準有兩個部分
+
+* 輸入輸出的宣告語法
+* `Programmatic Loader API` 用來設定模組載入或根據不同條件載入
+
+# ES6 模組機制的語法概覽
+
+有兩種 exports 的方式，分別稱為具名匯出(模組局部匯出)和預設匯出(整個模組匯出)
+
+### 具名匯出(Named exports)
+模組可以透過在前面加上 關鍵字 `export` 來匯出，這些匯出的東西根據其命名來區分所以被稱為具名匯出
+
+{% highlight js %}
+// ---- library.js ----
+export const sqrt = Math.sqrt;
+
+export function square(x) {
+  return x * x;
+}
+
+export function diag(x, y) {
+  return sqrt(square(x) + square(y));
+}
+
+// ---- app.js ----
+import { square, diag } from 'library';
+
+console.log(square(11)); // 121
+console.log(diag(4, 3)); // 5
+{% endhighlight %}
+
+還有其他方式來指定具名匯出，但這個方式其實挺方便的，只需要把想匯出的部分用 `export` 匯出即可。
+
+如果我們要載入全部的函式那我們也可以這麼做
+
+{% highlight js %}
+import * as lib from 'library';
+console.log(lib.square(11)); // 121
+console.log(lib.diag(4, 3)); // 5
+{% endhighlight %}
+
+### 預設匯出
+單一匯出的風格在 Node.js 社群裡比較盛行，但在前端的世界裡也很常被用在 Model 的建構函式或者類別上，一個 ES6 的模組可以設定一個預設匯出，通常是最常用或者最重要的資料
+
+下面的 ES6 模組是一個 function
+
+{% highlight js %}
+// ---- afunc.js ----
+export default function () { ... };
+
+// ---- main.js ----
+import afunc from './afunc';
+
+afunc();
+{% endhighlight %}
+
+
+# 參考
+* [1](http://eviltrout.com/2014/05/03/getting-started-with-es6.html)
+* [2](https://987.tw/2014/03/08/export-this-node-jsmo-zu-de-jie-mian-she-ji-mo-shi/)

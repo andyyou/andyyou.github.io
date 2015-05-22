@@ -183,8 +183,12 @@ var [a, b, ...c] = [1, 2, 3, 4, 5, 6]; // #=> 1 2 [3, 4, 5, 6]
 var {a, b} = { a: 'foo', b: 'bar'}
 {% endhighlight %}
 
-# 預設值, 不定參數, 分割代入參數
+# 預設值, 不定參數(Rest 變數), 分割代入參數(Spread 修飾詞)
 函式可以對參數設定預設值。把連續的變數放到一個陣列中或把一個呼叫時丟的引數陣列分散到連續的參數中。
+
+不定參數提供類似於 `C# params` 的功能，可以避免重複撰寫`功能相同`但是`參數數量不同`的函式，比起以前要用 `arguments` 的寫法更加直覺。
+
+如果直接把 `...` Spread 修飾詞放在陣列前面，則會幫陣列展開分別帶入參數。
 
 {% highlight js %}
 // 使用預設值
@@ -211,10 +215,11 @@ fn(...[1, 2, 3]); // #=> 6
 
 # let 和 const
 
-
 當第一次看到 JS 要提供 `let` 的宣告時我還沒意會過來，原因是在 C#, Java 等語言中一個 block 會建立一個 scope，當我們用 `for`, `if` 的時候都有。而 JS 是用 `Lexical Scope`，背後的意義簡單說就是除了 `function` 的 `context` 會建構出一個類似 scope 的概念，其他 `for` 之類的都沒有。導致我們常常需要用閉包來處理。
 
 `let` 就是新版的 `new` 不過差別是它會在所宣告的 `{ }` 建立一個 scope。
+
+參考MDN的說明，`let` 不允許同一個區塊內重複宣告，若再宣告前即使用則會引發例外錯誤
 
 {% highlight js %}
 // 基本的用法
@@ -307,6 +312,107 @@ let fib = {
 * [ES6-generators](http://davidwalsh.name/es6-generators)
 
 # Generators
+Generators 使用 `function*` 和 `yield` 簡化迭代器的用法。一個加上 `*` 的 function 會回傳一個 `Generator` 物件實例。Generator 是 Iterator 的一種延伸類型，包含著額外的 `next` 和 `throw` 方法。
+同時我們可以透過 `yield` 來輸入輸出資料到 function 內部。
+
+一個比較不同的思維就是讓 function 是可以被暫停的。
+
+{% highlight js %}
+var fib = {
+  [Symbol.iterator]: function *() {
+    var pre = 0, cur = 1;
+    for(;;) {
+      var temp = pre;
+      pre = cur;
+      cur += temp;
+      yield cur
+    }
+  }
+}
+
+for (var n of fib) {
+  if (n > 100)
+    break;
+  console.log(n);
+}
+{% endhighlight %}
+
+# 簡約式(綜合運算能力) Comprehensions
+陣列和 Generator 簡約式提供一種較簡單的宣告方式
+
+{% highlight js %}
+var liveInTaipei = [
+  for (c of customers) {
+    if (c.city == "Taipei")
+      {name: c.name, age: c.age}
+  }
+]
+
+var results = (
+  for(c of customers)
+    if (c.city == "Seattle")
+      { name: c.name, age: c.age }
+)
+{% endhighlight %}
+
+> 預設這個功能是關閉的，除非你啟用開發版實驗的功能
+
+# Unicode
+非破壞性增加支援完整的 Unicode (意思是兼容 ES5)，包含新型的 Unicode 跳脫字元，正規式增加 `u` 修飾符以及新的 API 處理關於 Unicode 在 JS 中產生的問題。
+
+關於 Unicode 的來龍去脈請參考下面文章
+
+* [詳細理解 JavaScript Unicode](http://andyyou.github.io/javascript/2015/05/21/js-unicode-issue.html)
+* [參考](https://mathiasbynens.be/notes/javascript-unicode)
+
+{% highlight js %}
+"𠮷".length == 2 
+// true
+
+Array.from("𠮷").length
+// 1
+
+[..."𠮷"].length
+// 1
+
+"𠮷".match(/./u)[0];
+// .可以匹配出"𠮷"
+
+// 新型的跳脫序列
+"\u{20BB7}" == "𠮷" == "\uD842\uDFB7"
+
+"𠮷".codePointAt(0) == 0x20BB7
+// 134071 => 0x20BB7
+
+// 可以正確的一次只輸出一個字，而不是編碼
+for(var c of "𠮷") {
+  console.log(c);
+}
+{% endhighlight %}
+
+# 模組 Modules
+語言內建支援模組化定義方式。從目前流行的 JavaScript 載入模組機制(AMD, CommonJS)中萃取雙方的優點，目的是為了取代這兩種機制。環境決定預設的執行時期行為。
 
 
-# Generators 和 Iterators
+
+# Module Loaders 模組整合工具
+
+# 新物件 Map, Set, WeakMap, WeakSet
+
+# Proxy 物件
+
+# Symbol
+
+# 可繼承內建物件
+
+# Math + Number + String + Object API
+針對既有的某些物件增加實用的 API
+
+# 二進制語十進制表示式
+
+# Promises
+
+# 映射 API
+
+# 其他參考
+* [JS 指南](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Guide)

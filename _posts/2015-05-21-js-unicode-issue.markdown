@@ -156,7 +156,7 @@ function countSymbols(string) {
 
 或者您也可以使用 `Punycode.js`，`punycode.ucs2.decode` 方法可以取得一個字串並回傳一個包含 Unicode 編碼位置的陣列。如此一來您就可以計算幾個字了。
 
-在 ES6 您可以透過 `Array.form` 做類似的事情，透過使用字串的 iterator 來切割字串成為一個陣列
+在 ES6 您可以透過 `Array.from` 做類似的事情，透過使用字串的 iterator 來切割字串成為一個陣列
 
 {% highlight js %}
 var astral = Array.from("𝐀𝐁💩");

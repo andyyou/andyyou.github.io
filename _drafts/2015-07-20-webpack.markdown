@@ -9,10 +9,12 @@ categories: Javascript
 今時今日所謂的網站正進化成網路應用程式，它不再只是單純的顯示圖片文字資訊，而包含著更多互動與操作行為，同時也意味著一個網站:
 * 具有更多的 Javascript
 * 可以在現代的瀏覽器上做更多事
-* 較少全頁重新載入的行為 -> 甚至更多程式碼在單一頁面
+* 較少全頁重新載入的行為 ➞ 甚至更多程式碼在單一頁面
 
 其結果就是有更多程式碼出現在客戶端(Client side)
-有大量的程式碼需要被組織化。模組化系統提供一種方式讓我們可以切割我們的程式碼使其變成一個一個的模組。
+有大量的程式碼需要被組織化。模組化系統提供一種方式讓我們可以切割我們的程式碼使其變成個別的模組。
+
+> 如果您是實作派的可以直接看 `跟著官方文件實作一遍` 下面除了官方入門，同時也搭配 Pete Hunt 的 webpack-how-to 實作一遍常用的功能
 
 # 模組化系統的風格
 針對如何定義模組之間的相依性，在 JS 世界中有很多不同的標準:
@@ -43,7 +45,7 @@ categories: Javascript
 
 ### CommonJS 同步 `require`
 這種方式採用同步風格的 `require` 方法，類似我們 `C#` 的 `using`, `Ruby` 的 `require` 或 `load`，透過這個方法載入相依的函式庫並匯出一系列介面
-一個模組可以透過在 `exports` 加上屬性(Property)或 `module.exports` 的值來設定其介面，這段話有點抽象換成白話一點的解釋: 根據 CommonJS 標準，一的檔案即一個模組。載入模組使用 require 方法，這個方法會讀取檔案並執行，最後回傳檔案內部 exports 的物件。
+一個模組可以透過在 `exports` 加上屬性(Property)或 `module.exports` 的值來設定其介面，這段話有點抽象換成白話一點的解釋: 根據 CommonJS 標準，一個檔案即一個模組。載入模組使用 require 方法，這個方法會讀取檔案並執行，最後回傳檔案內部 exports 的物件。
 
 {% highlight js %}
 // 基礎的用法
@@ -76,7 +78,7 @@ Car.run(); // Car run...
 
 優點
 * 伺服器端模組可以被重複使用
-* 已經有許多 npm 的模組採用這種風格，
+* 已經有許多 npm 的模組採用這種風格
 * 因為其語法和用起來簡單易懂
 
 缺點
@@ -163,10 +165,10 @@ module "localModule" {}
 * html for templating
 
 還有其他
-* coffeescript -> javascript
-* less stylesheet -> css
-* jade -> html
-* i18n -> something
+* coffeescript ➞ javascript
+* less stylesheet ➞ css
+* jade ➞ html
+* i18n ➞ something
 
 {% highlight js %}
 require("./style.css");
@@ -182,13 +184,13 @@ require("./image.png");
 `webpack` 簡單說就是一個模組的封裝工具(module bundler)，由德國的 Tobias Koppers 所開發。webpack 會將模組與其相依性的模組, 函式庫, 其他需要預先編譯的檔案等整合產生此模組的靜態資源檔
 ![](http://webpack.github.io/assets/what-is-webpack.png) 
 嫌太饒舌，那我們直接看官方的圖片，就是把我們常用的 `.less`, `.scss`, `.jade` `.jsx` 等等的檔案編譯成單純的 `js` + `圖片`(圖片有時候也可以被編譯成 base64 格式的 dataUrl)。
-第一次接觸 Webpack 的人可能會忽略這個重點(小弟就是其一)，那就是編譯後的靜態資源檔真的就如圖上所示，只有 `js` + `圖片`。`CSS`也會被編譯到 js 中，也就不需要在額外匯入。
+第一次接觸 Webpack 的人可能會忽略這個重點(小弟就是其一)，那就是編譯後的靜態資源檔真的就如圖上所示，只有 `js` + `圖片`。`css`也會被編譯到 js 中，也就不需要在額外匯入。
 達到真正的模組化。看看下圖一隻編譯完成的檔案
 
 ![]({{ site.url }}/assets/images/tutorials/webpack-1.png)
 
 # 為什麼不用其他 bundler?
-已存在的 bundler 針對大型專案並不是真的那麼適合，這裡指的是大型的 SPA。為什麼要創造 webpack 最重要的動機就是需要 `Code Splitting` 拆分程式碼，同時像是 CSS, 圖片等等靜態資源檔需要無縫整合。這邊的`拆分程式碼`指的是依照需求，功能來區分模組達到關注點分離。
+已存在的 bundler 針對大型專案並不是真的那麼適合，這裡指的是大型的 SPA。為什麼要創造 webpack 最重要的動機就是需要 `Code Splitting` 拆分程式碼，同時像是 css, 圖片等等靜態資源檔需要無縫整合。這邊的`拆分程式碼`指的是依照需求，功能來區分模組達到關注點分離。
 如果您曾經試過其他 bundler 他們並無法達到這個目的。大部份都只是個別組織 JS 檔案和靜態資源檔案。因此 webpack 為了滿足這個動機而誕生。
 
 # 目標
@@ -202,12 +204,12 @@ require("./image.png");
 # Webpack 有哪些不同?
 
 ### Code Splitting 拆分程式碼
-webpack 在其相依性結構(Dependency tree)中有兩種相依的類型: `sync` 和 `async`。非同步相依作為分割點，形成一個新的片段。當 chunk tree 程式碼片段之間的結構被優化之後，就會透過一個檔案整合發佈每一個 chunk 即每個片段程式碼。
+webpack 在其相依性結構(Dependency tree)中有兩種相依的類型: `sync` 和 `async`。以非同步相依作為分割點，形成一個新的片段。當 chunk tree 程式碼片段之間的結構被優化之後，就會透過一個檔案整合發佈每一個 chunk 即每個片段程式碼。
 
-### Loader 載入器
+### loaders 載入器
 載入器當然是翻得不好，一般來說其意義就是負責載入安裝程式的角色，所以這邊我們還是稱其為 loader。雖然 webpack 本身只能夠處理 Javascript，不過因為有 loaders，可以被用來轉換其他資源為 Javascript ，透過這種方式每一個資源檔都可以被轉換成模組形式。
-換個方式來說明其實 html 的 `<link rel="stylesheet" />` 就是一個 CSS 載入器的角色，又或者有用過 browserify 的人所熟悉的 transforms。
-其功能為轉換 > 載入 > 使用。
+換個方式來比喻其實 html 的 `<link rel="stylesheet" />` 就是一個 css 載入器的角色，又或者有用過 browserify 的人所熟悉的 transforms。
+其功能為轉換解析 ➞ 載入 ➞ 使用。
 
 ### 智慧型解析
 webpack 擁有更聰明的解析工具可以處理幾乎所有的第三方函式庫。甚至允許在相依性設定上使用表達式，例如: `require("./templates/" + name + ".jade")`。
@@ -405,7 +407,7 @@ Webpack 會分析進入點檔案並取得相依的其他檔案。這些檔案(�
 
 # 第一個 loader
 
-現在我們遇到一個問題，我們想要加入 CSS 到該應用程式中，Webpack 預設只能夠處理 JS 檔案，所以我們需要 `css-loader` 來處理 CSS 檔案。接著透過 `style-loader` 來把樣式套用到 DOM 上。
+現在我們遇到一個問題，我們想要加入 css 到該應用程式中，Webpack 預設只能夠處理 JS 檔案，所以我們需要 `css-loader` 來處理 css 檔案。接著透過 `style-loader` 來把樣式套用到 DOM 上。
 
 建立一個空的 `node_modules` 目錄(或者您要使用 npm init)，事實上直接使用 `npm install` 也是會自動建立 `node_module` 目錄。
 執行
@@ -566,7 +568,7 @@ module.exports = {
 * `webpack -d` 包含產出 source maps，即 .js.map 檔案
 
 ### 4. 預先編譯的 JS 語言
-在 webpack 中有個跟 browserify 的 transforms 以及 RequireJS plugin 功能相等的東西，就是 Loader。下面示範如何讓 webpack 載入 CoffeeScript 和 Facebook 的 JSX + ES6 支援(您必須要安裝 `babel-loader coffee-loader`)，因為 babel 內建搭載支援 JSX 所以您不需要再增加額外的 jsx-loader。
+在 webpack 中有個跟 browserify 的 transforms 以及 RequireJS plugin 功能相等的東西，就是 loader。下面示範如何讓 webpack 載入 CoffeeScript 和 Facebook 的 JSX + ES6 支援(您必須要安裝 `babel-loader coffee-loader`)，因為 babel 內建搭載支援 JSX 所以您不需要再增加額外的 jsx-loader。
 
 為了要實際測試，我們需要再目錄中建立一個 coffee, React 元件(JSX + ES6 支援)
 首先先測試 coffee 所以我們新增一隻測試的 coffee
@@ -955,35 +957,35 @@ if (window.location.pathname === '/profile.html') {
 # 深入 loaders
 
 ### 何謂 loaders ?
-loaders 就是轉換工具，用來把資源檔也就是我們的 JS CSS 等等這些模組轉換套用到程式上。它們是 node.js 中執行的函式，將資源檔當作參數取得其中的程式碼，轉換並傳回新的程式碼。舉例來說您可以使用 loaders 來告訴 webpack 如何處理並載入 CoffeeScript 或 JSX
+loaders 就是轉換工具，用來把資源檔也就是我們的 js, css 等等這些模組轉換套用到程式上。它們是 node.js 中執行的函式，將資源檔當作參數取得其中的程式碼，轉換並傳回新的程式碼。舉例來說您可以使用 loaders 來告訴 webpack 如何處理並載入 CoffeeScript 或 JSX
 
 ### 功能
-* Loader 可以被串連使用，即把一個資源檔從 A loader 交付給 B loader。講的太難懂，那我們先舉個在 Linux 底下所謂的 pipeline 的例子 `ls | grep filename` 在 Linux 底下我們可以透過 `|` 來做 pipeline，其行為就是先執行 `ls` 指令再把 `ls` 處理完的結果交給下一個指令。
+* loader 可以被串連使用，即把一個資源檔從 A loader 交付給 B loader。講的太難懂，那我們先舉個在 Linux 底下所謂的 pipeline 的例子 `ls | grep filename` 在 Linux 底下我們可以透過 `|` 來做 pipeline，其行為就是先執行 `ls` 指令再把 `ls` 處理完的結果交給下一個指令。
 在上面的例子中 `require("!style!css!./style.css");` 就是一樣的意思把 `style.css` 交給 `css-loader` 先處理，處理完的結果再交給 `style-loader`。最終 loader 被預期傳回 Javascript，其他過程中的 loader 則可以傳回任意格式。
-* Loader 可以套用同步或者非同步的行為
-* Loader 運行在 node.js 環境中，且應該可以做到任何您想要的功能
-* Loader 允許加入參數，其格式就像 HTTP 的 querystring 一樣，所以我們可以在設定檔或指令中帶入參數
-* Loader 可以針對副檔名或正規表示式來設定要處理的檔案
-* Loader 可以透過 npm 來發佈或安裝
-* 除了正常 `package.json` 的 `main`，一般模組就我們在寫 JS 的 `module.exports` 也可以匯出 Loader
-* Loader 可以存取設定檔
-* 擴充套件可以賦予 Loader 更多功能
-* Loader 可以散播額外的任意檔案
+* loader 可以套用同步或者非同步的行為
+* loader 運行在 node.js 環境中，且應該可以做到任何您想要的功能
+* loader 允許加入參數，其格式就像 HTTP 的 querystring 一樣，所以我們可以在設定檔或指令中帶入參數
+* loader 可以針對副檔名或正規表示式來設定要處理的檔案
+* loader 可以透過 npm 來發佈或安裝
+* 除了正常 `package.json` 的 `main`，一般模組就我們在寫 JS 的 `module.exports` 也可以匯出 loader
+* loader 可以存取設定檔
+* 擴充套件可以賦予 loader 更多功能
+* loader 可以散播額外的任意檔案
 * 其他
 
-如果您對其他 Loader 範例有興趣可以參考[列表](http://webpack.github.io/docs/list-of-loaders.html)
+如果您對其他 loader 範例有興趣可以參考[列表](http://webpack.github.io/docs/list-of-loaders.html)
 
-### 解析 Loader
-Loader 被解析的方式類似於模組。一個 Loader 模組一般來說會需要輸出一個 function，且與 node.js 相容的 Javascript。在大部份的情況下我們透過 npm 來管理 Loader
-不過您也可以將 Loader 當作程式中的檔案來處理
+### 解析 loader
+loader 被解析的方式類似於模組。一個 loader 模組一般來說會需要輸出一個 function，且與 node.js 相容的 Javascript。在大部份的情況下我們透過 npm 來管理 loader
+不過您也可以將 loader 當作程式中的檔案來處理
 
-### 參考(匯入) Loader
-雖然這不是強制的，但依照慣例 Loader 通常命名微 `xxx-loader`，而 `xxx` 就是其功能與描述的名稱也是我們在 pipeline 使用的名稱。例如 `json-loader` 
-您也許會用完整名稱來引用該 Loader(json-loader) 或者透過縮寫即 json
-關於 Loader 命名慣例和搜尋的優先順序被定義在 webpack 設定檔的 `resolveLoader.moduleTemplates` 
+### 參考(匯入) loader
+雖然這不是強制的，但依照慣例 loader 通常命名微 `xxx-loader`，而 `xxx` 就是其功能與描述的名稱也是我們在 pipeline 使用的名稱。例如 `json-loader` 
+您也許會用完整名稱來引用該 loader(json-loader) 或者透過縮寫即 json
+關於 loader 命名慣例和搜尋的優先順序被定義在 webpack 設定檔的 `resolveLoader.moduleTemplates` 
 
 ### 安裝
-如果 Loader 存在，通常我們會直接透過 npm 安裝
+如果 loader 存在，通常我們會直接透過 npm 安裝
 
 {% highlight bash %}
 $ npm install xxx-loader --save
@@ -991,7 +993,7 @@ $ npm install xxx-loader --save-dev
 {% endhighlight %}
 
 ### 使用方式
-在您的專案中可以使用不同的方式來使用 Loader
+在您的專案中可以使用不同的方式來使用 loader
 
 * 明確的寫在 `require` 中
 * 在設定檔指定
@@ -999,8 +1001,8 @@ $ npm install xxx-loader --save-dev
 
 ### 明確的寫在 `require` 中
 
-注意: 盡量避免使用這種方式，而採用設定檔的慣例來設定 Loader 
-這種方式是透過在 `require` 語句(或者 `define`, `require.ensure`) 中指定會採用的 loaders。透過 `!` 將 Loader 區隔。
+注意: 盡量避免使用這種方式，而採用設定檔的慣例來設定 loader 
+這種方式是透過在 `require` 語句(或者 `define`, `require.ensure`) 中指定會採用的 loaders。透過 `!` 將 loader 區隔。
 此時會相對於當前目錄去解析路徑
 
 {% highlight js %}
@@ -1041,10 +1043,10 @@ $ webpack --module-bind jade --module-bind 'css=style!css'
 
 上面的指令會讓 jade-loader 對應處理 `.jade` 檔案，然後 style-loader 和 css-loader 針對 css 檔案
 
-### Loader 參數(Query parameters)
-Loader 可以透過在設定傳入參數，格式類似網址的 query string。這個參數只要在該 loader 後面加上 `?` 舉例來說 `url-loader?mimetype=image/png`
+### loader 參數(Query parameters)
+loader 可以透過在設定傳入參數，格式類似網址的 query string。這個參數只要在該 loader 後面加上 `?` 舉例來說 `url-loader?mimetype=image/png`
 
-注意: 至於 query string 的格式則是由 Loader 來決定。通常會在該 Loader 的文件上說明。大部份的 Loader 參數的格式會是 `?key=value&hey=hi` 或者 `?{"key": "value", "key2": "value2"}`
+注意: 至於 query string 的格式則是由 loader 來決定。通常會在該 loader 的文件上說明。大部份的 loader 參數的格式會是 `?key=value&hey=hi` 或者 `?{"key": "value", "key2": "value2"}`
 整個設定寫起來會如下
 
 {% highlight js %}

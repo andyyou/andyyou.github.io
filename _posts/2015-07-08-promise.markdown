@@ -1,0 +1,98 @@
+---
+layout: post
+title: 'Promise JS 筆記'
+date: 2015-07-08 15:30:00
+categories: Javascript
+---
+
+# 動機
+試想下面這種情況，使用同步的 Javascript function 來讀取檔案然後解析轉換成 JSON。這段範例非常易懂，不過您可能不會使用它，因為這段程式會造成程式阻塞(Blocking)。
+意思是當我們從硬碟中讀取檔案時，其他動作會先暫停。
+
+{% highlight js %}
+function readJSONSync(filename) {
+  return JSON.parse(fs.readFileSync(filename, 'utf8'));
+}
+{% endhighlight %}
+
+為了讓我們的應用程式有效率即使反饋給使用者，我們需要讓所有牽扯到 IO 操作的動作都變成非同步。而最簡單的方式就是使用 callback 來達成，大略的意思就是當 IO 的任務完成後自己去調用 callback 傳入的 function。聽起來很容易不過如果我們沒考慮周全這樣的寫法很可能會出錯
+
+{% highlight js %}
+function readJSON(filename, callback) {
+  fs.readFile(filename, 'utf8', function(err, res) {
+    if (err) return callback(err);
+    callback(null, JSON.parse(res));
+  });
+}
+{% endhighlight %}
+
+* 額外的 `callback 參數` 導致我們混淆，搞不清楚到底什麼是我們該輸入的值以及傳回的資料。
+* 在一些原生的控制流程中根本不能使用
+* 同時在上面這個範例當 `JSON.parse` 出現錯誤時並不會拋出錯誤。
+
+我們當然可以在 `JSON.parse` 中去處理例外的狀況，同時我們也需要注意不要去動 `callback` 拋出的例外。最終我們完成了所有的功能如下
+
+{% highlight js %}
+function readJSON(filename, callback) {
+  fs.readFile(filename, 'utf8', function(err, res) {
+    if (err) return callback(err);
+    try {
+      res = JSON.parse(res);
+    } catch (ex) {
+      return callback(ex);
+    }
+    callback(null, res);
+  });
+}
+{% endhighlight %}
+
+除了處理例外的程式碼有點雜亂，另外的問題就是額外的 callback 參數卡在前面。Promise 協助我們更自然的處理例外，並且因為省去 callback 參數，讓程式碼更加簡潔。
+最重要的是無需修改底層的架構(即：您可以用純 Javascript 實作他們，用來打包一些已存在的非同步操作)
+
+# Promise 是什麼？
+Promise 背後的核心觀念是一個 `promise` 代表一個非同步操作的結果。一個 promise 在同一時間內會處在下面三種狀態的其中一種：
+* pending - Promise 物件剛初始化的狀態
+* fulfilled - 代表 Promise 物件已經成功地完成操作
+* rejected - 表示操作失敗
+
+一旦 Promise 進入到 `fulfilled` 或者 `rejected` 狀態它就是不可變動的，即不可以再次被修改。
+
+# 構建一個 Promise
+一旦所有的 API 回傳的都是 Promise，您就不太需要自己手動建立。與此同時我們會補強(Polyfill)已存在的 APIs。舉例來說
+
+{% highlight js %}
+function readFile(filename, enc) {
+  return new Promise(function(fulfill, reject) {
+    fs.readFile(filename, enc, function(err, res) {
+      if (err) reject(err);
+      else fulfill(res);
+    });
+  });
+}
+{% endhighlight %}
+
+我們使用了 `new Promise` 來建立一個 promise 物件。接著賦予建構子一個 `factory function` 所謂的 `factory function` 指的就是實際產出物件的函式，也就是這個函式用來處理我們實際上要做的工作。這個函式會馬上被執行，且帶入兩個參數。
+第一個參數 `fulfill` 完成 promise 操作，第二個 `reject` 宣告操作失敗。一旦操作完成我們就要從兩者中呼叫一個適當的函式。
+
+# 等待 Promise
+為了使用 Promise 我們必須以某種方式來等待其狀態變成 `fulfilled` 或者 `rejected` ，而這個方式就是使用 `promise.done` (如果您決定使用這些範例，請注意底下警告的部分)
+如此我們便可以很容易使用的 Promise 重寫之前讀 JSON 函數
+
+{% highlight js %}
+function readJSON(filename) {
+  return new Promise(function(fulfill, reject) {
+    readFile(filename, 'utf8').done(function(res) {
+      try {
+        fulfill(JSON.pares(res));
+      } catch (ex) {
+        reject(ex);
+      }
+    }, reject);
+  });
+}
+{% endhighlight %}
+
+到這邊仍然有很多處理例外的程式碼，不過我們不再需要到處傳遞額外的參數了
+
+# 轉換 / 串接
+我們真正想做的事透過 Promise 轉換一個

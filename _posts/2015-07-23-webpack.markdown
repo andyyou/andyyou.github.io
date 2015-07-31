@@ -1257,3 +1257,4 @@ module.exports = {
 [Webpack + React 中文](https://fakefish.github.io/react-webpack-cookbook/Introduction-to-Webpack.html)
 [Webpack with Rails](http://clarkdave.net/2015/01/how-to-use-webpack-with-rails/)
 [react-hot-loader](http://gaearon.github.io/react-hot-loader/getstarted/)
+[深入了解 webpack plugins](http://rhadow.github.io/2015/05/30/webpack-loaders-and-plugins/)

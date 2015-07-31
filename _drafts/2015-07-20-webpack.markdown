@@ -833,7 +833,7 @@ module.exports = {
   output: {
     path: './build',
     // publicPath: 'http://andyyou.github.io/', // 圖片等需要路徑引用的資源檔加上網址或路徑
-    publicPath: './build/', // 因為有設定目錄，所以記得要補路徑，否則 require() 會取錯路徑
+    publicPath: '/build/', // 因為有設定目錄，所以記得要補路徑，否則 require() 會取錯路徑。
     // 注意: 尾巴的 / 要記得加否則會產出類似 http://andyyou.github.io600e2b78b83128cc2be868b3971d0999.jpg 的路徑
     filename: '[name].bundle.js' // [name] 會使用 key 也就是上面大寫的 Main, Feed, Profile 等
   },
@@ -883,7 +883,7 @@ module.exports = {
   output: {
     path: './build',
     // publicPath: 'http://andyyou.github.io/', // 圖片等需要路徑引用的資源檔加上網址或路徑
-    publicPath: './build/', // 因為有設定目錄，所以記得要補路徑，否則 require() 會取錯路徑
+    publicPath: '/build/', // 因為有設定目錄，所以記得要補路徑，否則 require() 會取錯路徑
     // 注意: 尾巴的 / 要記得加否則會產出類似 http://andyyou.github.io600e2b78b83128cc2be868b3971d0999.jpg 的路徑
     filename: '[name].bundle.js'
   },
@@ -953,6 +953,156 @@ if (window.location.pathname === '/profile.html') {
 
 ![]({{ site.url }}/assets/images/tutorials/webpack-5.png)
 
+# webpack-dev-server
+
+webpack-dev-server 是一個小型的 node.js [Express](http://expressjs.com/) 伺服器，其使用 `webpack-dev-middleware` 來取得 webpack 封裝的結果。
+在運行時也有使用 socket.io 使其可以即時發送編譯後的資訊到客戶端
+同時這個開發伺服器也可以根據不同需求使用不同的模式，假設我們採用下面這組設定檔
+
+{% highlight js %}
+module.exports = {
+  entry: {
+    app: ["./app/main.js"]
+  },
+  output: {
+    path: './build',
+    publicPath: "/assets/",
+    filename: "bundle.js"
+  }
+}
+{% endhighlight %}
+
+上面這組設定的意思您現在應該很請楚了，即我們有一隻進入點的程式(檔案)在 `app/main.js` ，webpack 將會打包 entrypoint 成 bundle.js 檔案到 bundle 目錄。
+同時我們也回顧一下光 entry 的設定就多種組合
+
+{% highlight js %}
+module.exports = {
+  // 1
+  entry: {
+    app: ["./app/main.js"]
+  },
+  // 2
+  entry: "./app/main.js",
+  // 3
+  entry: {
+    app: "./app/main.js"
+  },
+  // 4
+  entry: ["./a.js", "./b.js"],
+}
+{% endhighlight %}
+
+如果使用陣列的方式設定，所有的模組會在啟動時被載入，而最後一個檔案會被匯出。另外注意到如果適用第四種方式然後在 output 也使用了 `[name]` 那這個 name 預設是 `main`
+而想要多個 entrypoint 檔案的話則透過物件的格式，webpack 就會產生多個 entrypoint bundle。
+
+### 預設一般模式(Inline mode)
+
+剛剛我們提到 webpack-dev-server 有不同的模式，現在我們就來瞭解一下其中一個 inline 模式。
+一般情況下 webpack-dev-server 會處理當前目錄的檔案(就是你下指令時的那個目錄)，除非您有指定 `content-base`
+
+{% highlight bash %}
+$ webpack-dev-server --content-base build/
+{% endhighlight %}
+
+使用了這個設定，webpack-dev-server 就會處理你指定的那個目錄，預設 webpack-dev-server 就會自動監視該目錄下的檔案，當發生改變就會自動重新編譯。
+不過這些編譯只會放到記憶體並和 `publicPath` 的路徑關聯，而不會產生實體檔案。
+當 bundle 已經存在在相同路徑時也就是已經產生檔案，記憶體中的會優先使用。
+舉上面一開始的設定檔為例，這個 bundle 封裝結果可以透過 `localhost:8080/assets/bundle.js` 存取
+
+為了測試這個結果我們需要建立一個 html 
+
+{% highlight html %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+</head>
+<body>
+  <script src="bundle.js"></script>
+</body>
+</html>
+{% endhighlight %}
+
+當啟動 webpack-dev-server 之後，預設我們就可以透過 `localhost:8080` 來存取網站，而上面的設定檔加上了 `publicPath` 所以結果網址會是 `localhost:8080/assets/`
+
+### 即時更新模式(Hot mode)
+透過把專用的 script 加到 index.html，您的專案就會得到 live reload 的功能。
+
+{% highlight html %}
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+</head>
+<body>
+  <!-- It is important that you point to the full url -->
+  <script src="http://localhost:8080/webpack-dev-server.js"></script>
+  <script src="bundle.js"></script>
+</body>
+</html>
+{% endhighlight %}
+
+對了，這個功能當然也需要修改一點點設定
+
+{% highlight js %}
+module.exports = {
+  entry: {
+    app: ["webpack/hot/dev-server", "./app/main.js"]
+  },
+  output: {
+    path: "./build",
+    filename: "bundle.js"
+  }
+};
+{% endhighlight %}
+
+然後執行指令時要加入 `--hot` 參數
+
+{% highlight bash %}
+$ webpack-dev-server --content-base build/ --hot
+{% endhighlight %}
+
+### 即時更新模式 + 訊息顯示
+
+當您啟動了 webpack-dev-server 您也可以瀏覽 `localhost:8080/webpack-dev-server/` 透過這個連結您不只會看到您的內容，同時上方會有一些訊息提示。
+並且如果您採用這個連結，檔案並不需要加入剛剛那支特殊的 `webpack-dev-server script`
+所以一般建議的開發流程我們的 html 不用特地加入 script 然後使用 `localhost:8080/webpack-dev-server/` 來觀察其結果。
+
+![]({{ site.url }}/assets/images/tutorials/webpack-6.png)
+
+> 因為 index.html 大多數的時候不會需要靠 webpack 編譯(除非您改用 jade 或 slim)，所以當然不會被列在 watch 的檔案中。
+
+### webpack-dev-server 指令與參數
+
+一般來說所有的 webpack 參數同等於 webpack-dev-server 參數，不過 `output` 除外。當然您也可以透過 `--config` 來指定設定檔。
+下面是一些額外的參數
+
+* `--content-base`: 指定專案目錄
+* `--quiet`: 不要輸出任何資訊到 console
+* `--colors`: 彩色的輸出資訊
+* `--no-info`: 去除一些不太必要的資訊
+* `--host`: 設定 hostname 或 IP
+* `--port <number>`: 設定 port
+* `--inline`: 內嵌一個 webpack-dev-server 到封裝裡
+* `--hot`: 加入 `HotModuleReplacementPlugin` 並切換到即時更新模式 hot mode ，注意不能加入該 plugins 兩次
+* `--https`: 啟用 https 協定
+
+上面這些參數都可以加入 webpack.config.js
+
+{% highlight js %}
+module.exports = {
+    // ... webpack.config.js stuff ...
+    devServer: {
+        contentBase: "./build",
+        noInfo: true, //  --no-info option
+        hot: true,
+        inline: true
+    }
+}
+{% endhighlight %}
 
 # 深入 loaders
 
@@ -1073,8 +1223,37 @@ require("url-loader?mimetype=image/png!./file.png");
 # 使用擴充套件
 擴充套件就是文件上說的 plugins，它是透過 webpack.config.js 的 `plugins` 屬性來載入模組之中，如下面設定
 
+{% highlight js %}
+var webpack = require("webpack");
+
+module.exports = {
+    plugins: [
+        new webpack.ResolverPlugin([
+            new webpack.ResolverPlugin.DirectoryDescriptionFilePlugin("bower.json", ["main"])
+        ], ["normal", "loader"])
+    ]
+};
+{% endhighlight %}
+
+### 其他擴充套件
+如果不是內建的 plugins 則通常需要透過 npm 來安裝，裝完之後照下面這樣使用即可
+
+{% highlight js %}
+var ComponentPlugin = require("component-webpack-plugin");
+module.exports = {
+    plugins: [
+        new ComponentPlugin()
+    ]
+}
+{% endhighlight %}
+
+# 總結
+經過一輪練習之後，如果您要使用 webpack-dev-server 在設定上路徑會是比較需要注意的地方，然後就是記得 webpack-dev-server 的輸出會放在記憶體。
+雖然現在官方文件比較沒有詳細的範例，不過您還是可以找到[其他](https://leanpub.com/survivejs_webpack_react)。
+希望在這篇之後各位能夠對這個起手式有些認識也應該都具有使用 webpack 的基礎能力。
 
 
 [示範多檔編譯](https://github.com/webpack/webpack/tree/master/examples/multiple-entry-points)
 [Webpack + React 中文](https://fakefish.github.io/react-webpack-cookbook/Introduction-to-Webpack.html)
 [Webpack with Rails](http://clarkdave.net/2015/01/how-to-use-webpack-with-rails/)
+[react-hot-loader](http://gaearon.github.io/react-hot-loader/getstarted/)

@@ -81,6 +81,24 @@ skin -> modifier
 
 3. 從 code 方面著手，對 code 重構，找出重複的 css rules, 通常會是像設定 background 等針對外觀，也就是說把 skin 抽出來。
 
-# 重點注意事項
+# 重點回顧與注意事項
+* Separate structure and skin 分離結構(html tag 結構)與樣式(ui 的樣式)  
+* Separate container and content 分離容器(layout 佈局)與內容(直接包 content 的 tag) 
+* 讓 css 不要具有相依性也是程式中所謂的低耦合的概念，透過 BEM + OOCSS 的拆分與命名原則可以達到
+* 注意不要掉入`表面外觀語意`的陷阱，`堅持以邏輯和語意來給元素命名`
 
 # 總結
+簡單的來說，OOCSS 即透過兩個主要的原則將我們的 css 分類與抽象化成物件，兩個原則分別為 `Separate structure and skin` 和 `Separate container and content`，接著實作的第一步先找出重複的結構就是 html ，再依據其周遭元素的關係分類成`容器 container`和`內容 content` 再依據不同頁面或者同結構不同長相的部分來做 skin。我們定義好的這一些 class name 就好比是一個一個的物件。
+
+過程中低耦合，即減少選擇器的相依性是主要的重點。如此才能達到重複使用也不會產生改一個爆一個的狀況。
+低耦合的重點:
+* 單純用 class name 選擇器，不要使用 tag, id 等，也不要從`物件`定義的外部來影響樣式。不使用 tag 意味著也不會限制使用的元素，class name 應盡可能讓所有元素都能套用。
+* 堅持以邏輯和語意來給元素命名，搭配使用 BEM 實作起來更有規則
+
+最後搭配 BEM 的圖示讓我們快速記住關係
+
+~~~
+structure -> container (block)
+          -> content (block | element)
+skin -> modifier
+~~~

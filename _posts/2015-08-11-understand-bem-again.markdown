@@ -176,3 +176,7 @@ modifier 是一種特殊的註記用來調整改變 block/element 的`外觀(樣
 .form__submit { /* ... */ }
 .form__submit--disabled { /* ... */ }
 {% endhighlight %}
+
+# 參考資源
+[BEM 101](https://css-tricks.com/bem-101/)
+[getbem](http://getbem.com/introduction/)

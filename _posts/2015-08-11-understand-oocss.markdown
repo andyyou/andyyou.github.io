@@ -103,3 +103,6 @@ structure -> container (block)
           -> content (block | element)
 skin -> modifier
 ~~~
+
+# 參考資源
+[OOCSS觀念篇](http://www.w3cplus.com/css/oocss-concept)

@@ -75,7 +75,7 @@ $ jspm install [registry]:[package name]
 
 多個套件安裝可以在同一個指令用空白隔開，上面的例子我們看到了無論是 npm 或 github 都可以透過這種方式安裝。
 
-大部份的 npm 套件安裝不需要再加上額外的設定，這是因為 npm 的站點套用的轉換規則或者說設定檔適用於所有 Node 和 npm-style 的程式碼，也因此相容 jspm
+大部份的 npm 套件安裝不需要再加上額外的設定，這是因為 npm 的站點套用的轉換規則，其設定檔適用於所有 Node 和 npm-style 的程式碼，也因此相容 jspm
 
 Github 的套件或說程式碼就可能需要對 jspm 加上設定
 
@@ -85,13 +85,13 @@ Github 的套件或說程式碼就可能需要對 jspm 加上設定
 
 而載入模組這件事為什麼需要處理，是因為在 js 的世界裡太多標準，ES6+ 的標準又還沒普及，所以通用的載入器需求就產生了，但 jspm 並不是唯一可以處理這個問題的工具。
 
-jspm 架構在 nodejs 專案之上，意思是 nodejs 專案是透過 package.json 來管理相依的函式庫或套件，而 jspm 主要也是透過 package.json 的組織其設定，它會在 config.js 上面根據解析 package.json 的結果替 system.js 加上設定。
+jspm 架構在 nodejs 專案之上，意思是 nodejs 專案是透過 package.json 來管理相依的函式庫或套件，而 jspm 主要也是透過 package.json 來組織其設定，它會在 config.js 上面根據解析 package.json 的結果在 config.js 裡加上 system.js 的設定。
 也因此 config.js 只要透過 `jspm install` 就可以根據 package.json 的資料重建設定檔
 
 #### 搞懂 npm, jspm, webpack 的使用上的差異
 我們依照模組標準開發出一個函式庫模組並丟到 npm 給大家用，npm 這個詞意義上又分成 npm-cli 指令和 npm 這個收集套件的站點，所以這邊我們提的 npm 指的是指令的部分，即 `npm install` 等等來處理安裝，移除，管理的指令。
 
-而 webpack 或 browserfiy 它們是封裝和載入工具，意思是把你寫的 js 打包，大略實際的行為就是你在程式中用 require 來載入其他檔案最後輸出一隻打包的 js，所以安裝的部分還是用 npm ，而載入則由 webpack 這類的工具負責。
+而 webpack 或 browserfiy 它們是封裝和載入工具，意思是把你寫的 js 打包，大略的實作行為就是你在程式中用 require 來載入其他檔案最後輸出一隻打包的 js，所以安裝的部分還是用 npm ，而載入則由 webpack 這類的工具負責。
 
 那 jspm 呢？第一個不同點就是除了你可以透過 npm 安裝專案專屬 jspm 外(用來鎖定版本)，其他套件或函式庫你都是用 `jspm install [library name]` 的方式來安裝。
 那設定呢？基本上上面就提到了; 如果你是採用 node 或 npm-style 的函式庫或模組是不用設定的，因為 jspm 會幫你把設定加到 config.js 裡面。
@@ -161,7 +161,7 @@ $(function() {
 });
 {% endhighlight %}
 
-接著我們就試著開一個 `index.html` 來先用簡單的 `python -m SimpleHTTPServer` 起一個 server 來測試
+接著我們就試著開一個 `index.html` ，先用簡單的 `python -m SimpleHTTPServer` 起一個 server 來測試
 當然如果你會其他方式例如使用 express 或者架設 apache 等也可以
 
 {% highlight html %}
@@ -279,8 +279,9 @@ $ jspm bundle assets/js/main.jsx! --inject
 另外還可以使用 `jspm bundle-sfx assets/js/main` 來建立一個獨立的 bundle script 如此一來就不用在 html 中使用 `config.js` 和 `system.js`
 
 # 結論
-總結來說 jspm 試圖從安裝函式庫到封裝全部一起處理，且盡可能不需要你去設定。除了速度上有點點慢之後整體用起來到還是蠻簡潔的。
-以 React 的立場來看 webpack 的資源和參考還是多一點。
+總結來說 jspm 試圖從安裝函式庫到封裝全部一起處理，且盡可能不需要你去設定。整體用起來到還是蠻簡潔的。
+要用類似 webpack-dev-server 的可以參考 [jspm-server](https://github.com/geelen/jspm-server)。似乎 webpack 有的東西都在慢慢補齊中。
+不過以 React 的立場來看 webpack 的資源和參考還是多一點。
 
 # 資源
 

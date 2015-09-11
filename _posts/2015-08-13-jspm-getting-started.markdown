@@ -308,7 +308,7 @@ $ jspm bundle assets/js/main.jsx! --inject
   - 安裝，移除，顯示資訊。
   - 透過 package.json 執行寫在裡面的 script
 
-#### jspm 概念上為 npm + webpack
+#### jspm 概念上為 npm + webpack(但目前沒有 webpack 功能那麼全面)
 
   - 因為除了是一個模組(函式庫)的管理工具外還使用 System.js 處理模組載入的部分
 

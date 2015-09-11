@@ -1,0 +1,37 @@
+* ed, ex 一次只在螢幕中擷取一行編輯
+* vi, emacs 全螢幕顯示檔案的一部分來編輯
+* vi = visual editor 幾乎所有 Unix 都有的標準編輯器
+* vi > 指令模式 > 輸入指令
+     > 插入模式 > 撰寫內容
+* vi 並不是所見即所得的編輯器 如 word 即可以編排樣式, 格式化的文件, 如果使用 vi 來編輯格式化文件需要搭配 troff, LATEX, TEX 格式化程式
+* 最基本的從指令模式進入插入模式 > i = insert
+* cw = change word
+* vi 的命令有大小寫的區別 I, i 功能些微不同
+* 命令式不需要搭配 Enter 的
+* / ? 會開啟搜尋模式
+* : 會開啟 ex 命令
+* ex 是 vi 底層的編輯器
+* vi [filename] 開啟檔案
+* : + w [filename] 存檔並命名
+* 編輯時資料 vi 都是先把資料複製一份到記憶體的緩衝區中, 所以我們平時編輯的是副本, 最後儲存的時候稱為寫入緩衝區, 或寫入檔案才是真的存檔
+* 檔名可以包括除了 / 和 ASCII 的 NUL 外其他 8 位元字
+* 要用空白則加上 \ 跳脫
+* vi 中最左邊的 ~ 表示沒有文字連空白行都沒有
+
+* 開啟時看到
+  - visual needs addressable curosr or upline capability
+  - Bad termcap entry
+  - termcap entry too long
+  - terminal: Unkonwn terminal type
+  - Block device required
+  - Not a typewriter
+
+  表示終端機沒設好, terminfo or termcap 有錯誤
+
+* 存檔時要注意底下的狀態 [new file] 是新增檔案有可能是大小寫或目錄弄錯 pwd, ls 可協助檢查
+* vi -R 觀察者模式 不能修改
+* :q! 強制離開
+* ZZ, :wq =  存檔並離開
+
+
+

@@ -208,7 +208,7 @@ container 的設定會影響 item, 位於內部的 item 也有些屬性可以覆
 * wrap - 多行, 塞不下就換行
 * wrap-reverse - 多行, 反向排列
 
-![](http://imgur.com/LvgBxq3)
+![](http://i.imgur.com/LvgBxq3.png)
 
 ### flex-flow
 
@@ -234,13 +234,20 @@ container 的設定會影響 item, 位於內部的 item 也有些屬性可以覆
 
 * flex-start - 預設值, item 對齊主軸的起始點(邊界), 後續的 item 一個接著一個
 * flex-end - item 從主軸的終點邊界開始往回排列, 注意到我們在 Flexbox 裡 item 的順序是獨立出來的, 不要把順序和排列該對齊的位置搞在一起.
-![](http://imgur.com/Mr4Gmrl)
+
+![](http://i.imgur.com/Mr4Gmrl.png)
+
 * center - item 置中, 換個角度看就是把剩下個空白平均分給兩邊
-![](http://imgur.com/C6D8OhN)
+
+![](http://i.imgur.com/C6D8OhN.png)
+
 * space-between - item 被平均分配到主軸上, 也就是說剩下的空間平均分到到 item 之間的間隔, 注意頭尾是貼齊邊界. 也就是說如果沒有多餘的空間其效果跟 flex-start 一樣
-![](http://imgur.com/UQ0ezNi)
+
+![](http://i.imgur.com/UQ0ezNi.png)
+
 * space-around - 把剩餘的空間平均分配到 item 的兩邊, 頭尾並不會貼齊邊緣, 類似下了左右的 margin.
-![](http://imgur.com/9cwAsJ8)
+
+![](http://i.imgur.com/9cwAsJ8.png)
 
 ### align-items
 

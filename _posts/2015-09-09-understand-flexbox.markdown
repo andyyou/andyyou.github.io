@@ -377,4 +377,5 @@ W3C 文件建議我們善用這個屬性取代其他三者
 
 簡單來說 container 處理整體的方向, 空間開如何分配而 item 的屬性部分就是 order 順序, 和當空間超出去或不夠的時候 item 該如何動態增減其長度這個部分主要是針對 main size.
 
-
+# 參考
+[a-guide-to-flexbox](https://css-tricks.com/snippets/css/a-guide-to-flexbox/)

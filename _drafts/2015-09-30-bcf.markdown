@@ -1,0 +1,91 @@
+
+Block formatting context
+
+浮動元素(float: right), 絕對定位元素(position: absolute), 以及不是 block boxes 的 block(inline-block, table-cells, table-captions) 還有 `overflow` 不等於 `visible` 的 boxes 都會產生 BFC
+
+BFC(Block Formatting Context，塊級元素格式化上下文)是 W3C CSS 2.1 規範中的一個概念，它決定了元素如何對其內容進行定位，以及與其他元素的關系和相互作用。
+原文地址:http://www.hkeasychat.com/thread-912585-1-1.html
+內容來源:香港交友討論區 http://www.hkeasychat.com/
+
+在 同一個BFC中，兩個元素才有可能發生垂直Margin的重疊，這個包括相鄰元素，嵌套元素，只要他們之間沒有間隔(即父元素的邊框，非空內容，padding等)就會發生margin重疊，即margin會發生重合。更重要的是︰創建BFC,能消除元素對相鄰元素的布局影響，常見的應用 是︰使用overflow:hidden創建BFC ,來清除浮動元素對後面元素的布局影響 。
+原文地址:http://www.hkeasychat.com/thread-912585-1-1.html
+內容來源:香港交友討論區 http://www.hkeasychat.com/
+
+盒模型 Box Model
+元素的類型和 display 屬性，決定了這个 Box 的類型。 不同類型的 Box，會参與不同的 Formatting Context 因此 Box 内的元素會以不同的方式渲染。
+
+行內元素
+display 属性为 inline、inline-block、inline-table 的元素，會變成行內元素。並参與 inline formatting context。
+
+浮動（Floats）
+絕對定位（Absolute Positioning）
+
+
+普通流（Normal flow）
+CSS 中預設的定位。行內元素由左至右排例，直到佔滿整行後換行。塊級元素由上而下排列，每個塊級元塮都佔滿一行。在普通流中，元素在 HTML 中的位置則決定了該元素的位置。
+
+哪些元素會生成 BFC
+根元素（<html></html>）
+浮動元素（float 不為 none）
+絕對定位元素（position 為 absolute 或 fixed）
+overflow 不為 visiable
+display 為 inline-block、table-cell、table-caption、flex、inline-flex
+屬於同一個 BFC 內的相鄰 Box 的外邊距會發生重疊
+
+http://sdlyu.me/css/2015/03/01/block-formatting-contexts/
+http://www.smallni.com/collapsing-margin/
+
+
+collapsing-margin 外邊距重合疊加
+
+在CSS中，两个或多个毗邻（父子元素或兄弟元素）的普通流中的块元素垂直方向上的 margin 会发生叠加。这种方式形成的外边距即可称为外边距叠加(collapsed margin)。
+1、两个或多个
+
+说明其数量必须是大于一个，又说明，叠加是元素与元素间相互的行为，不存在 A 和 B 折叠，B 没有和 A 叠加的现象。
+2、毗邻
+
+是指没有被非空内容、padding、border 或 clear 分隔开，说明其位置关系。
+
+注意一点，在没有被分隔开的情况下，一个元素(非浮动元素等)的 margin-top 会和它普通流中的第一个子元素的 margin-top 相邻； 只有在一个元素的 height 是 “auto” 的情况下，它的 margin-bottom 才会和它普通流中的最后一个子元素(非浮动元素等)的 margin-bottom 相邻。
+3、垂直方向
+
+是指具体的方位，只有垂直方向的 margin 才会叠加，也就是说，水平方向的 margin 不会发生叠加的现象。
+4、普通流
+
+何为普通流？浮动(float)不是普通流，绝对定位(absolute)也不是普通流，恩，所以我们平常最普通的按序写的结构代码即为普通流。
+
+解決方法
+
+1.父子元素（分2种情况）之间发生margin叠加的条件：
+
+    父元素和第一个子元素发生margin-top叠加
+        父元素没有创建BFC
+        父元素和第一个子元素之间没有非空内容
+        父元素没有border-top
+        父元素没有padding-top
+    父元素和最后一个子元素发生margin-bottom叠加
+        父元素没有创建BFC
+        父元素height为auto、min-height为0
+        父元素和最后一个子元素之间没有非空内容
+        父元素没有border-bottom
+        父元素没有padding-bottom
+
+2种情况都总结了，那么让他们不发生外边距叠加也就显得很容易了：
+
+    为父元素创建BFC
+    为父元素设置相应的padding或者border
+
+ 2.兄弟元素之间发生外边距叠加的条件：
+
+    兄弟元素都不是float元素
+    兄弟元素都不是absolute元素
+    兄弟元素都不是inline-block元素
+
+那么让它们之间不发生外边距叠加也显得很容易了啊：
+
+    让兄弟元素float
+    让兄弟元素absolute
+    让兄弟元素inline-block
+
+http://www.smallni.com/collapsing-margin/
+http://www.w3cplus.com/css/understanding-bfc-and-margin-collapse.html

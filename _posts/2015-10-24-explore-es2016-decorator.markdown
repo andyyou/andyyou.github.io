@@ -290,3 +290,10 @@ car.run(); // => [class] I am running
 # 總結
 
 透過這種方式我們說我們可以在`設計時期`就可能是類別已經寫好了的情況下透過註記來增加功能, 不要用的時候也可以輕易移除.
+
+
+# 參考
+
+* [ES 7 descorator](http://elmasse.github.io/js/decorators-bindings-es7.html)
+* [javascript-decorators](https://github.com/CocktailJS/traits-decorator)
+* [exploring-es7-decorators](https://medium.com/google-developers/exploring-es7-decorators-76ecb65fb841)

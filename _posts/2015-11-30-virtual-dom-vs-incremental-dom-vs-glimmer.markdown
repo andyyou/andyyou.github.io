@@ -136,7 +136,7 @@ Ember 在 1 和 2 之間的改進的程度
 
 一個圖表上無法顯示出來比較重要的點是當使用瀏覽器時 Incremental DOM 感覺會比較快因為幾乎是及時回饋，不會閃一下。
 觀察其他收集的資料顯示 Incremental DOM 調用 Javascript 呼叫的次數相對少。
-不過我們還是得說 Incremental DOM 只是動態更新 DOM 的一套函式庫，而 React 和 Ember 可以處理更多事情，像是ˋ事件啊，資料的傳入等等
+不過我們還是得說 Incremental DOM 只是動態更新 DOM 的一套函式庫，而 React 和 Ember 可以處理更多事情，像是事件啊，資料的傳入等等
 
 可以參考一下這個測試的[彙整表](https://github.com/auth0/blog-dombench/blob/master/article_results/results.csv)
 

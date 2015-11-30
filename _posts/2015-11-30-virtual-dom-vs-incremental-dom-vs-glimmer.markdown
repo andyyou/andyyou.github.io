@@ -71,7 +71,7 @@ Virtual DOM 是 React 開發者給這套 DOM 操作引擎取的名字。Virtual 
 ### Ember 的 Glimmer
 
 Glimmer 是 Ember.js 最新渲染引擎的名字。 Glimmer 是 Ember 開發者試圖要在 Ember 中加入 React Virtual DOM 優點但既有的 API 仍然相容的成果
-Glimmer 幾乎是全部重寫 Emeber 的渲染引擎並且沒有使用任何 Virtual DOM 的程式碼
+Glimmer 幾乎是全部重寫 Ember 的渲染引擎並且沒有使用任何 Virtual DOM 的程式碼
 
 在 Glimmer 中分成靜態和動態的元件，因此降低了需要確認是否更新的元素，這樣的區隔可以被實現多虧了 Handlebar 的樣板
 

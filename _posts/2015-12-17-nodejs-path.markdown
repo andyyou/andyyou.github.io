@@ -15,7 +15,11 @@ categories: Javascript
 path.normalize('/1/../2'); // => /2
 
 // 把所有路徑整合在一起並且正常化
+path.join('a', 'b'); // =>'a/b'
+path.join('a', './b'); // => a/b'
+path.join('a', '/b'); // =>'a/b'
 path.join('/1', '/2/3', '../4'); // => /1/2/4
+
 
 // 從第一個路徑，照著後面切換最後回傳絕對路徑
 path.resolve('/from', '/to/path1', '/to/path2'); // => /to/path2

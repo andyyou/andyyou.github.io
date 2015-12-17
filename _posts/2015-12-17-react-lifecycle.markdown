@@ -6,6 +6,7 @@ categories: Javascript
 ---
 
 ![](http://i.imgur.com/ZXhnb9I.png)
+
 ## 各種情況的生命週期流程
 
 大致上元件執行生命週期方法的情形可分為四種

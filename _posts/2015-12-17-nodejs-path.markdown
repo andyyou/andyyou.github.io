@@ -5,7 +5,9 @@ date: 2015-12-17 05:10:00
 categories: Javascript
 ---
 
-{% highlight js %}
+範例筆記
+
+{% highlight %}
 
 /**
  * 詳細教學

@@ -7,7 +7,7 @@ categories: Javascript
 
 範例筆記
 
-{% highlight %}
+```
 
 /**
  * 詳細教學
@@ -48,4 +48,4 @@ path.parse('/1/2/3.js'); // =>
 // 從物件轉成字串
 path.format({ root: '/', dir: '/1/2', base: '3.js', ext: '.js', name: '3' }); // => /1/2/3.js
 
-{% endhighlight %}
+```

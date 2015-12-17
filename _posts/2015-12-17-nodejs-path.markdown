@@ -6,6 +6,7 @@ categories: Javascript
 ---
 
 {% highlight js %}
+
 /**
  * 詳細教學
  * http://www.tutorialspoint.com/nodejs/nodejs_path_module.htm
@@ -44,4 +45,5 @@ path.parse('/1/2/3.js'); // =>
 
 // 從物件轉成字串
 path.format({ root: '/', dir: '/1/2', base: '3.js', ext: '.js', name: '3' }); // => /1/2/3.js
+
 {% endhighlight %}

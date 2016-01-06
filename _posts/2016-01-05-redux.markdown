@@ -28,7 +28,7 @@ categories: Javascript, React, Redux
 * store
 
 
-### state 單一事件的狀態
+### state 事件的狀態
 
 首先介紹的就是 `state` ，少了這個 `state` 那麼是無法交織出精彩的宮廷劇。這個 `state`表示的是一件事情的狀態，用上面的例子來說就是`蕭景琰是不是親王`。
 

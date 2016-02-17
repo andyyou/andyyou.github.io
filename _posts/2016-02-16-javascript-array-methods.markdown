@@ -5,7 +5,7 @@ date: 2016-02-16 16:30:00
 categories: Javascript
 ---
 
-```
+{% highlight js %}
 // push
 var arr = [1, 2, 3];
 var result = arr.push(4); // result: 4, arr: [1, 2, 3, 4]
@@ -143,7 +143,7 @@ var b = a += 2; // a: NaN, b: NaN => undefined += 2 => NaN
 
 var a = null;
 var b = a += 2; // a:2, b: 2
-```
+{% endhighlight %}
 
 # Array.forEach 額外補充
 

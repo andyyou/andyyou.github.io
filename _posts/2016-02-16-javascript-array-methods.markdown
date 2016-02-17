@@ -5,7 +5,7 @@ date: 2016-02-16 16:30:00
 categories: Javascript
 ---
 
-{% highlight js %}
+```javascript
 // push
 var arr = [1, 2, 3];
 var result = arr.push(4); // result: 4, arr: [1, 2, 3, 4]
@@ -143,14 +143,14 @@ var b = a += 2; // a: NaN, b: NaN => undefined += 2 => NaN
 
 var a = null;
 var b = a += 2; // a:2, b: 2
-{% endhighlight %}
+```
 
 # Array.forEach 額外補充
 
 根據 MDN 的定義 `arr.forEach(callback[, thisArg])` 當我們要在 forEach 的匿名函數中使用 `this` 我們可以透過 `thisArg` 來設定。
 如果不設定(undefined, null)或者不用 `var self = this;` 的方式保留 context，那麼預設會是指向 `global`
 
-```
+```javascript
 var sum = 100;
 function Counter () {
   this.sum = 0;
@@ -170,7 +170,7 @@ console.log(sum); // 106
 
 在 Chrome 或者 Firefox console 底下執行的確會執向 global，但是在 nodejs v5.6.0 底下結果卻是
 
-```
+```javascript
 console.log(o.sum); // 0
 console.log(sum); // 100
 ```
@@ -179,7 +179,7 @@ console.log(sum); // 100
 
 正確的範例如下
 
-```
+```javascript
 function Counter () {
   this.sum = 0;
 }

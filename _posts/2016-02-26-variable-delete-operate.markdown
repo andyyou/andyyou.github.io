@@ -67,3 +67,6 @@ eval('var a = 1; delete a; console.log(a)'); // undefined
 而物件的屬性是可以刪除的。
 
 結論就是第一個 var 的變數被放在 `Variable environment` 是不能 `delete` 的而第二個沒有 var 的變數它是 global 的屬性。
+
+然後你就會問我，那為什麼第一個 `a` 可以用 `window.a` 取得，因為全域的 `variable object` 就是 `global(window)` 本身。
+但誰是`屬性`誰放在`variable environment`是有差的，因為程式碼看起來沒差所以會搞死人啊。

@@ -112,17 +112,6 @@ div:first-child {
 * 當元素被設定 `position` 除了 `static` 以外的值，然後 `z-index` 設定為除了 `auto` 以外的值
 * 當元素設定了 `opacity` 且值`小於 1`
 
-總結來說就是當元素具備 stacking context 才會參與排序，最外層的元素是在 `<html>` 的 `stacking context` 中排，而後以此類推。
-
-{% highlight slim %}
-html /stacking context of html
-  body
-    div /stacking context of 1
-      div /stacking context of 1-1
-      div /stacking context of 1-2
-    div /stacking context of 2
-{% endhighlight %}
-
 上面提到的三種方式中，前兩者大部分的開發者都知道，即使他們不懂原理但還是會使用。第三種方式除了 w3c 規範，大多開發者都不曾提到。
 
 此外除了 `opacity` 另外一些新的屬性像是 `transforms`, `filters`, `css-regions`, `paged media` 等等都會產生 stacking context。

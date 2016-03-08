@@ -1,6 +1,6 @@
 ---
 layout: post
-title: '再讀一遍 Axel 的 Javascript 中的 Expression 和 Statements 一文'
+title: '重讀 Axel 的 Javascript 中的 Expression vs Statement 一文'
 date: 2016-03-06 12:00:00
 categories: javascript
 ---

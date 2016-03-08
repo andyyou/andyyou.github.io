@@ -11,6 +11,7 @@ categories: javascript
 
 > 註: 下面一些範例當我們在瀏覽器 console 執行時，回傳值與程式執行的順序在 Chrome 與 Firefox 會有差別。注意一下`箭頭`符號就知道哪個是 `return` 了。
 例如
+
   {% highlight bash %}
   > function foo () {console.log('foo');}
   > foo();
@@ -34,6 +35,7 @@ categories: javascript
 簡單來說一個表達式 `expressions` 會產生一個值，我們會在撰寫它的地方期望得到一個`值`。舉例來說像是調用 function 中的引數(arguments)，或者指定式 `=` 的右邊都屬於 expressions 的位置。
 
 > 參數(parameters)，引數(arguments)
+
   > * parameters 即在 function 中定義必須在呼叫程序時傳遞，可以用來取值的符號(變數名稱)
   > * arguments 是實際呼叫時，傳入的值
 

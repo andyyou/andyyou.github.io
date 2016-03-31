@@ -95,7 +95,7 @@ CSS 已經具有客製屬性的功能，並且在之前的[文章](http://philip
 
 關於加入型別有非常多的好處，不過大體來說最大的賣點就是讓開發者可以客製 transition 和 animate。這在今天是辦不到的。不懂！？看看下面的例子
 
-~~~css
+{% highlight css %}
 body {
   --primary-theme-color: tomato;
   transition: --primary-theme-color 1s ease-in-out;
@@ -103,15 +103,15 @@ body {
 body.night-theme {
   --primary-theme-color: darkred;
 }
-~~~
+{% endhighlight %}
 
 上面的例子如果 `night-theme` class 被加到 `<body>` 元素那麼該頁面有參考 `--primary-theme-color` 屬性的值將會慢慢的從 `tomato` 轉換到 `darkred`。如下範例
 
-~~~css
+{% highlight css %}
 p {
   color: var(--primary-theme-color);
 }
-~~~
+{% endhighlight %}
 
 在現階段，如果你要完成這個功能你得為每一個元素撰寫 transition，因為現在過渡效果是跟在元素上並不是跟著屬性。另一個有趣的功能就是`註冊 hook`，提供開發者一個方式來修改自訂屬性的最終值，用在 polyfills 方面這可能是非常實用的。
 
@@ -129,7 +129,7 @@ Typed OM 另外一個主要的目標是改善效能。將 CSSOM 目前使用的�
 
 CSS Layout API 讓開發者透過 `registerLayout` 的方法，允許註冊一個 layout 的名稱，然後用一個 Javascript class 來組織邏輯。下面就是一個簡單的範例
 
-~~~js
+{% highlight js %}
 registerLayout('masonry', class {
   static get inputProperties() {
     return ['width', 'height']
@@ -141,21 +141,21 @@ registerLayout('masonry', class {
     // Layout logic goes here.
   }
 }
-~~~
+{% endhighlight %}
 
 如果你感受不到上面範例的意義，也不用擔心。最主要的是說你可以像下面範例這樣使用，你只要找到別人寫好的例如 `masonry.js` 接著在 CSS 中使用就好了。
 
-~~~css
+{% highlight css %}
 body {
   display: layout('masonry');
 }
-~~~
+{% endhighlight %}
 
 # CSS Paint API
 
 `CSS Paint API` 和 `Layout API` 非常類似，不過它提供一個 `registerPaint` 方法。開發者可以在 CSS 中使用 `paint()` 函式，透過傳入的名稱產生一個 CSS 圖片。這邊有個簡單的範例就是繪製一個有顏色的圓形
 
-~~~js
+{% highlight js %}
 registerPaint('circle', class {
   static get inputProperties() { return ['--circle-color']; }
   paint(ctx, geom, properties) {
@@ -172,16 +172,16 @@ registerPaint('circle', class {
     ctx.fill();
   }
 });
-~~~
+{% endhighlight %}
 
 CSS 的用法如下
 
-~~~css
+{% highlight css %}
 .bubble {
   --circle-color: blue;
   background-image: paint('circle');
 }
-~~~
+{% endhighlight %}
 
 現在套用 `.bubble` 的元素會產生一個藍色圓形的背景圖。這個圓會跟元素尺寸一樣且置中。
 

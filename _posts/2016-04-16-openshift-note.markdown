@@ -5,6 +5,8 @@ date: 2016-04-16 12:00:00
 categories: docker, system
 ---
 
+# 常用指令
+
 {% highlight zsh %}
 # 安裝 rhc
 $ gem install rhc
@@ -40,6 +42,8 @@ $ rhc port-forward -a [app name]
 
 
 {% endhighlight %}
+
+# database.yml
 
 {% highlight yml %}
 production:

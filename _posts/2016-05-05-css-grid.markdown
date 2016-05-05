@@ -1,0 +1,160 @@
+---
+layout: post
+title: 'CSS Grid 介紹'
+date: 2016-05-05 12:00:00
+categories: css
+---
+
+當我們要建置複雜的網站時 Grids 是非常重要的。其重要性我們可以從大量的 CSS 框架中窺知ㄧ二，因為幾乎所有的框架都有提供網格(Grids)系統來加速開發。
+隨著 CSS Grid 規範的出現，將來我們將不需要額外的樣式就可以使用網格。另外的好處就是我們將不需要再依賴 `inline` 和 `float` 來完成那些佈局需求
+在這篇文章我們將要介紹一些網格基本的用法，然後透過實作一個基本的部落格佈局來理解其用法。
+
+# 瀏覽器的支援度
+
+即使在這篇文章撰寫的現在仍然只有 IE10+ 和 Edge 支援 Grid Layout - 所以這意味著暫時我們還不能在正式的專案上使用。
+不過我們還是可以透過開啟實驗功能 `chrome://flags` 讓 Chrome 支援，Firefox 則使用 `about:config` 的 `layout.css.grid.enabled` 屬性調整。
+
+另外的方式是使用 [polyfill](https://github.com/FremyCompany/css-grid-polyfill/)。透過上面的這些方式我們可以開始使用網格功能。
+
+> 注意：IE 目前實作的是舊版的規格。不幸的這意味著它可能跟最新的規格不相容。所以當您在實作本文的練習時建議使用 Chrome 或 Firefox。
+
+# 網格係同術語
+
+當我們在設計與執行元素的佈局時 CSS 的網格系統類似於表格的作用。然而比起表格，它有更多的功能與彈性。在這一小節我們要探討一些術語，這些術語是我們在使用網格時會需要理解的。
+
+`fr 單位`：`Flexible Lengths` 這個單位我們用來設定可用空間的比例，意思是我們會用在 `grid-rows` 與 `grid-columns` 上。根據規範的定義
+空間比例的分配會在 row 或 column 的內容或長度一些非彈性的尺寸設定完成之後處理，即分配剩下閒置的空間。
+
+`lines`：線用來定義元素的邊界，可以設定為垂直或水平的。下圖呈現四個垂直與四個水平的線。
+
+`tracks`：兩線之間的空間稱為 tracks。如下圖有三個垂直和三個水平的 track
+
+`cells`：cell 即一個基本單位或說網格中的`格子`，如下圖我們總共有 9 個 cell，或者說用 4 條線組出來的最小單位。
+
+`areas`：區域 area 是一個透過任意數 cell 組成的方形，或者說用 4 條線組出來的就是 area。所以我們可以說一個 track 也是一個 area，一個 cell 也是一個 area
+
+![](http://dab1nmslvvntp.cloudfront.net/wp-content/uploads/2016/04/1461911969celltrackarea.jpg)
+
+# 在 Grid 中設定元素的位置
+
+讓我們從最基本的部分開始，在這一節我們將會學會如何使用 grids 幫元素定位到特定位置。
+為了要使用 CSS Grid 我們會需要一個父元素和一或多個子元素，下面我們示範一個簡單的用法
+
+```html
+<div class="grid-container">
+  <div class="grid-element item-a">A</div>
+  <div class="grid-element item-b">B</div>
+  <div class="grid-element item-c">C</div>
+  <div class="grid-element item-d">D</div>
+  <div class="grid-element item-e">E</div>
+  <div class="grid-element item-f">F</div>
+</div>
+```
+
+在我們處理完 HTML 的結構之後第一個我們要先套用 `display: grid` 或者 `display: inline-grid` 在我們的父元素上
+
+```css
+.grid-container {
+  display: grid;
+  grid-template-columns: 200px 10px 0.3fr 10px 0.7fr;
+  grid-template-rows: auto 20px auto;
+}
+```
+
+上面範例中的 `grid-template-columns` 和 `grid-template-rows` 屬性用來設定 rows 和 columns 的各種寬的值。
+我們在 `grid-template-columns` 中定義了 5 個 columns `10px` 的欄位替兩個元素之間插入一些空白的空間。第一個欄位 `column` 是 `200px` 寬。第三個欄位使用 `0.3` 意思是剩下空間的 30% 而第五使用 `0.7` 也是針對剩餘空間的部分。
+
+在 `grid-template-rows` 第一個參數使用 `auto` 讓列(row)可以依據內容展開擴展需要的空間。`20px` 的部分則表示下一 row 我們用其來顯示列跟列之間的間隔空間。
+
+<p data-height="300" data-theme-id="8540" data-slug-hash="wGRPGq" data-default-tab="result" data-user="andyyou" data-embed-version="2" class="codepen">See the Pen <a href="http://codepen.io/andyyou/pen/wGRPGq/">CSS Grid Layout Demo 1</a> by andyyou (<a href="http://codepen.io/andyyou">@andyyou</a>) on <a href="http://codepen.io">CodePen</a>.</p>
+<script async src="//assets.codepen.io/assets/embed/ei.js"></script>
+
+觀察第二欄的元素 B ，我們就是拿它來當作間隔，如果您不設定子元素的位置那麼預設瀏覽器會依序把子元素放進 `cell`，超過的部分會放到下一列。
+也就是說第二列(row)還有四個 column 的位置。
+
+為了讓元素放置到特定的 cell 我們需要設定位置，在我們開始解釋如何設定之前先看看下面這張圖
+
+![](http://dab1nmslvvntp.cloudfront.net/wp-content/uploads/2016/04/1461913438cssgridtable.png)
+
+在這個範例中，我們將會採用 `line-based placements` 基於線的配置，這種方式的意思是`線`在我們的網格(Grid)系統中扮演指揮的角色負責元素的位置配置與範圍管理。讓我們拿元素 B 來當作範例，水平橫向來看 B 從垂直的 3 號線開始到 4 號線結束，縱向來看從水平的 1 號線到 2 號線。
+我們使用 `grid-column-start` 來指定起始的垂直線，以這個範例來說就是 `3` ，`grid-column-end` 為 `4` 以此類推最後我們得到的樣式如下
+
+```css
+.element-b {
+  grid-column-start: 3;
+  grid-column-end: 4;
+  grid-row-start: 1;
+  grid-row-end: 2;
+}
+```
+
+同樣的要把元素放置到 `F` 位置 CSS 樣式如下
+
+```css
+.element-f {
+  grid-column-start: 5;
+  grid-column-end: 6;
+  grid-row-start: 3;
+  grid-row-end: 4;
+}
+```
+
+# 建立基本的佈局
+
+現在我們知道了關於如何設定網格系統的基礎用法了，讓我們來建立一個簡單的部落格設計佈局。我們假設這個部落格會有 `header`，`footer`，`sidebar`
+和兩個 `section`
+
+```html
+<div class="grid-container">
+  <div class="grid-element header">Header</div>
+  <div class="grid-element sidebar">Sidebar</div>
+  <div class="grid-element main">Main</div>
+  <div class="grid-element extra">Extra Info</div>
+  <div class="grid-element footer">Footer</div>
+</div>
+```
+
+這邊我們要先記住標籤的順序並不會對 Grid 配置的位置造成任何影響，只要我們不改變 CSS，即使您把 footer 標籤放到 header 的上面也不會造成任何改變。當然我們不建議您故意這樣做，這邊的核心觀念是一旦啟用 grid 那麼元素的位置配置就由網格系統決定而不是標籤的順序。
+現在我們需要做的就是弄清楚 `grid-row-end` 這些屬性到底該設置什麼值。就像上面的範例首先我們先畫一個簡單的格線示意圖來決定這些值
+
+![](http://dab1nmslvvntp.cloudfront.net/wp-content/uploads/2016/04/1461912250gridlayoutexample.png)
+
+> 我們現在稱那些垂直的線為 column 線，因為我們靠它來決定 column 的位置，而水平的線則是 row 線
+
+從上面這張圖我們可以得知 header 會從 1 號 column 線(垂直線)到 4 號 column 線，而 row 的部分則是從 1 號 row 線(水平線)到 2 號。
+
+```css
+.header {
+  grid-column-start: 1;
+  grid-column-end: 4;
+  grid-row-start: 1;
+  grid-row-end: 2;
+}
+```
+
+同樣的 `extra content` 從 column 3 到 column 4，row 5 到 6 CSS 如下
+
+```css
+.extra {
+  grid-column-start: 3;
+  grid-column-end: 4;
+  grid-row-start: 5;
+  grid-row-end: 6;
+}
+```
+
+照著規則設定其他元素，最後結果下面的範例
+
+<p data-height="300" data-theme-id="8540" data-slug-hash="qZLpmj" data-default-tab="result" data-user="andyyou" data-embed-version="2" class="codepen">See the Pen <a href="http://codepen.io/andyyou/pen/qZLpmj/">CSS Grid Layout Demo 3</a> by andyyou (<a href="http://codepen.io/andyyou">@andyyou</a>) on <a href="http://codepen.io">CodePen</a>.</p>
+<script async src="//assets.codepen.io/assets/embed/ei.js"></script>
+
+# 結論
+
+CSS Grid 讓我們可以輕鬆的建立複雜的佈局，這麼一來整份 CSS 也將更容易維護，我們不需要再與 float, position, z-index 這些屬性奮鬥，另外一個好處就是把顯示的佈局和標籤結構分離。還有就是即便是動態的內容也能夠處理，如下面影片
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/vPryjyFP5FM" frameborder="0" allowfullscreen></iframe>
+
+# 參考資源
+
+* [Grid Introduce](http://www.sitepoint.com/introducing-the-css-grid-layout/)
+* [Flexbox vs Grid](https://jakearchibald.com/2014/dont-use-flexbox-for-page-layout/)

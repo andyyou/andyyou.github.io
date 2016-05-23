@@ -192,3 +192,4 @@ $ docker-machine config
 * [Mongo with Node 教學](http://ifdattic.com/how-to-mongodb-nodejs-docker/)
 * [持續更新指令](https://gist.github.com/andyyou/b88d74fc180375b9ede9)
 * [錯誤處理](https://github.com/docker/toolbox/issues/346)
+* [DevOps](http://blog.amowu.com/2015/04/devops-continuous-integration-delivery-docker-circleci-aws-beanstalk.html)

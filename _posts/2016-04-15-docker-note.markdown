@@ -39,6 +39,12 @@ categories: docker, system
 # 建立
 $ docker-machine create
 
+# 刪除
+$ docker-machine rm [name]
+
+# 重建
+$ docker-machine create --driver virtualbox default
+
 # 常用
 $ docker-machine [start|stop|restart|status]
 
@@ -184,3 +190,5 @@ $ docker-machine config
 * [設定 AWS 和 Docker Cloud](https://docs.docker.com/docker-cloud/getting-started/link-aws/#limit-dockercloud-user-to-a-specific-ec2-region)
 * [Debian 8 基本安裝](http://blog.programster.org/things-to-do-after-installing-debian-8-0/)
 * [Mongo with Node 教學](http://ifdattic.com/how-to-mongodb-nodejs-docker/)
+* [持續更新指令](https://gist.github.com/andyyou/b88d74fc180375b9ede9)
+* [錯誤處理](https://github.com/docker/toolbox/issues/346)

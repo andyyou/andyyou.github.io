@@ -418,3 +418,10 @@ if (T === 'build') {
   module.exports = merge(common, {})
 }
 ~~~
+
+~~~
+"scripts": {
+  "build": "webpack",
+  "dev": "webpack-dev-server"
+},
+~~~

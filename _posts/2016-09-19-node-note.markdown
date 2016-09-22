@@ -1,0 +1,633 @@
+---
+layout: post
+title: 'Node 筆記'
+date: 2016-09-19 12:00:00
+categories: node, js
+---
+# 前言
+
+這篇文章試著要整理，翻譯[Export This: Interface Design Patterns for Node.js Modules](http://bites.goodeggs.com/posts/export-this/#global_object)這篇非常值得一讀的文章。
+但因為這篇文章有些時日了，部分範例已經不符合現況。故這是一篇加上小弟收集彙整而成的更新翻譯。
+
+# 旅程的開始
+
+當你在 Node 中載入一個模組，我們到底會取回什麼？當我們撰寫一個模組時我們又有哪些選擇可以用來設計程式的介面？
+在我第一次學習 Node 的時候，發現在 Node 中有太多的方式處理這個問題，由於 Javascript 本身非常彈性，加上在社群中的開發者們各自都有不同的實作風格，這讓當時的我感到有點挫折。
+
+在原文作者的學習旅程中曾持續的觀察尋找好的方式以應用在其的工作上，在這篇文章中將會分享觀察到的 Node 模組設計方式。
+大略總結了 7 種設計模式(pattern)
+
+* 匯出命名空間 Namespace
+* 匯出函式 Function
+* 匯出高階函式 High-Order Function
+* 匯出建構子/構建函式 Constructor
+* 匯出單一實例物件 Singleton
+* 擴展全域物件 Extend Global Object
+* 套用猴子補丁 Monkey Patch
+
+# require, exports 和 module.exports
+
+首先我們需要先聊點基礎的知識
+
+在 Node 官方文件中定義了匯入一個檔案就是匯入一個模組。
+
+> In Node.js, files and modules are in one-to-one correspondence. - Node 文件
+
+也就是所有的模組會參考指向(Reference)一個`隱式模組物件`的 `module.exports`。當我們使用 `require()` 時會取得的東西。同時我們也取得 `exports`。
+
+這個 `exports` 就是指向 `module.exports` 的參考。`exports` 會收集該其屬性，如果 `module.exports` 沒有任何屬性就把這些資料交給 `module.exports` ，但如果 `module.exports` 已經具備屬性的話，那麼 `exports` 的所有資料都會被忽略。
+
+為了讓您更好理解關於 `exports` 與 `module.exports` 下面的範例提供了較詳細的說明
+
+```js
+var a = { id: 1 }
+var b = a
+console.log(a) // {id: 1}
+console.log(b) // {id: 1}
+
+// b 參考指向 a，意味著修改 b 的屬性 a 會跟著變動
+b.id = 2
+console.log(a) // {id: 2}
+console.log(b) // {id: 2}
+
+// 但如果將一個全新的物件賦予 b 那麼參考的關係將會中斷
+b = { id: 3 }
+console.log(a) // {id: 2}
+console.log(b) // {id: 3}
+```
+
+另外比較具體的範例
+
+```js
+/* person.js */
+exports.name = function () {
+  console.log('My name is andyyou.')
+}
+...
+/* main.js */
+var person = require('./person.js')
+person.name()
+```
+
+```js
+/* person.js */
+module.exports = 'Hey, andyyou'
+exports.name = function () {
+  console.log('My name is andyyou')
+}
+
+/* main.js */
+var person = require('./person.js')
+// exports 的屬性被忽略了
+person.name() // TypeError: Object Hey, andyyou has no method 'name'
+```
+
+* `exports` 只是指向 `module.exports` 的參考(Reference)
+* `module.exports` 初始值為 `{}` 空物件，於是 `exports` 也會取得該空物件
+* `require()` 回傳的是 `module.exports` 而不是 `exports`
+* 所以您可以使用 `exports.property_name = something` 而不會使用 `exports = something`
+* 一旦使用 `exports = something` 參考關係便會停止，也就是 `exports` 的資料都會被忽略。
+
+本質上我們可以理解為所有模組都隱含實作了下面這行程式碼
+
+```js
+var exports = module.exports = {}
+```
+
+現在我們知道了，當我們要匯出一個 `function` 時我們得使用 `module.exports`。
+如果使用 `exports` 那個 `exports` 的記憶體位置(Reference/參考)將會被修改而 `module.exports` 就不會得到其內容。
+
+另外，我們在許多專案看到下面的這行程式碼
+
+```js
+exports = module.exports = something
+```
+
+這行程式碼作用就是確保 `exports` 在 `module.exports` 被我們覆寫之後，仍可以指向相同的參考。
+
+接著我們就可以透過 `module.exports` 來定義並匯出一個 `function`
+
+```js
+/* function.js */
+module.exports = function () {
+  return { name: 'andyyou' }
+}
+```
+
+使用的方式則是
+
+```js
+var func = require('./function')
+```
+
+關於 `require` 一個很重要的行為就是它會快取(Cache) `module.exports` 的值，未來每一次 require 被調用時都會回傳相同的值。
+它會根據匯入檔案的`絕對路徑`來快取，所以當我們想要模組能夠回傳不同得值時，我們就需要匯出 function，如此一來每次執行函式時就會回傳一個新值。
+
+下面在 Node REPL 中簡易的示範
+
+```zsh
+$ node
+> f1 = require('/Users/andyyou/Projects/export_this/function')
+[Function]
+> f2 = require('./function') // 相同路徑
+[Function]
+> f1 === f2
+true
+> f1() === f2()
+false
+```
+
+您可以觀察到 `require` 回傳了同樣的函式物件實例，但每一次調用函式回傳的物件是不同的。
+更詳細的介紹可以參考[官方文件](http://nodejs.org/api/modules.html)，值得一讀。
+
+現在，我們可以開始探討介面的設計模式(pattern)了。
+
+# 匯出命名空間
+
+一個簡單且常用的設計模式就是匯出一個包含數個屬性的物件，這些屬性具體的內容主要是函式，但並不限於函式。
+如此，我們就能夠透過匯入該模組來取得這個命名空間下一系列相關的功能。
+
+當您匯入一個`命名空間`類型的模組時，我們通常會將模組指定到某一個變數，然後透過它的成員(物件屬性)來存取使用這些功能。
+甚至我們也可以將這些變數成員直接指定到區域變數。
+
+```js
+var fs = require('fs')
+var readFile = fs.readFile
+var ReadStream = fs.ReadStream
+
+readFile('./file.txt', function (err, data) {
+  console.log('readFile contents: %s', data)
+})
+```
+這便是[fs 核心模組](https://github.com/joyent/node/blob/e5346932bcbc523489c9418b82fde31cb666ee99/lib/fs.js#L33)的做法
+
+```js
+var fs = exports
+```
+
+首先將隱式 `exports` 物件設定一個區域變數(即上面提過的 exports)到 `fs`，然後透過 `fs` 的屬性使用各個功能，例如: `fs.Stats = binding.Stats`。
+由於 `fs` 參考 `exports` 並且它是一個物件，所以當我們 `require('fs')` 時，我們就能夠透過屬性使用那些功能。
+
+```js
+fs.readFile = function (path, options, callback_) {
+  // ...
+}
+```
+
+其他東西也是一樣的作法，例如匯出建構子
+
+```js
+fs.ReadStream = ReadStream
+function ReadStream(path, options) {
+  // ...
+}
+ReadStream.prototype.open = function () {
+  // ...
+}
+```
+
+當匯出命名空間時，您可以指定屬性到 `exports` ，就像 `fs` 的作法，又或者可以建立一個新的物件指派給 `module.exports`
+
+```js
+/* exports 作法 */
+exports.verstion = '1.0'
+
+/* 或者 module.exports 作法 */
+module.exports = {
+  version: '1.0',
+  doYourTasks: function () {
+    // ...
+  }
+}
+```
+
+一個常見的作法就是透過一個根模組(root)來彙整並匯出其他模組，如此一來只需要一個 require 便可以使用所有的模組。
+原文作者在[Good Eggs](https://www.goodeggs.com/sfbay/home)工作時，會將資料模型(Model)拆分成個別的模組，並使用`匯出建構子`的方式匯出(請參考下文介紹)，然後透過一個 `index 檔案` 來集合該目錄下所有的資料模型並一起匯出，如此一來在 `models` 命名空間下的所有資料模型都可以使用
+
+```js
+var models = require('./models')
+var User = models.User
+var Product = models.Product
+```
+
+在 ES2015 和 CoffeeScript 中我們甚至還可以使用解構指派來匯入我們需要的功能
+
+```js
+/* CoffeeScript */
+{User, Product} = require './models'
+
+/* ES2015 */
+import {User, Product} from './models'
+```
+
+而剛剛提到的 `index.js` 大概就如下
+
+```js
+exports.User = require('./User')
+exports.Person = require('./person')
+```
+
+實際上這樣分開的寫法還有更精簡的寫法，我們可以透過一個小小的函式庫來匯入在同一階層中所有檔案並搭配 CamelCase 的命名規則匯出。
+於是在我們的 index.js 中看起來就會如下
+
+```js
+module.exports = require('../lib/require_siblings')(__filename)
+```
+
+# 匯出函式
+
+另外一個設計模式是匯出函式當作該模組的介面。常見的作法是匯出一個工廠函式(Factory function)，然後呼叫並回傳一個物件。
+在使用 Express.js 的時候便是這種作法
+
+```js
+var express = require('express')
+var app = express()
+
+app.get('/hello', function (req, res, next) {
+  res.send('Hi there! We are using Express v' + express.version)
+})
+```
+
+Express 匯出該函式，讓我們可以用來建立一個新的 express 應用程式。
+在使用這種模式時，通常我們會使用 factory function 搭配參數讓我們可以設定並回傳初始化後的物件。
+
+想要匯出 function，我們就一定要使用 `module.exports` ，`Express` 便是這麼做
+
+```js
+exports = module.exports = createApplication
+
+...
+function createApplication () {
+  ...
+}
+```
+
+上面指派了 `createApplication` 函式到 `module.exports` 然後再指給 `exports` 確保參考一致。
+同時 Express 也使用下面這種方式將導出函式當作`命名空間的作法`使用。
+
+```js
+exports.version = '3.1.1'
+```
+
+> 這邊要大略解釋一下由於 Javascript 原生並沒有支援命名空間的機制，於是大部分在 JS 中提到的 namespace 指的就是透過物件封裝的方式來達到 namespace 的效果，也就是第一種設計模式。
+
+注意！並沒有任何方式可以阻止我們將匯出的函式作為`命名空間物件`使用，我們可以用其來引用其他的 function，建構子，物件。
+
+> Express 3.3.2 / 2013-07-03 之後已經將 exports.version 移除了
+
+另外在匯出函式的時候最好為其命名，如此一來當出錯的時候我們比較容易從錯誤堆疊資訊中找到問題點。
+
+下面是兩個簡單的例子：
+
+
+```js
+/* bomb1.js */
+module.exports = function () {
+  throw new Error('boom')
+}
+```
+
+```js
+module.exports = function bomb() {
+  throw new Error('boom')
+}
+```
+
+```zsh
+$ node
+> bomb = require('./bomb1');
+[Function]
+> bomb()
+Error: boom
+    at module.exports (/Users/andyyou/Projects/export_this/bomb1.js:2:9)
+    at repl:1:2
+    ...
+> bomb = require('./bomb2');
+[Function: bomb]
+> bomb()
+Error: boom
+    at bomb (/Users/andyyou/Projects/export_this/bomb2.js:2:9)
+    at repl:1:2
+    ...
+```
+
+匯出函式還有些比較特別的案例，值得用另外的名稱以區分它們的不同。
+
+# 匯出高階函式
+
+一個高階函式或 functor 基本上就是一個函式可以接受一個或多個函式為其輸入或輸出。而這邊我們要談論的後者 - `一個函式回傳函式`
+當我們想要模組能夠根據輸入控制回傳函式的行為時，匯出一個高階函式就是一種非常實用的設計模式。
+
+> 補充：[functor & monad](http://www.jdon.com/idea/functor-monad.html)
+
+舉例來說 [Connect](http://www.senchalabs.org/connect/) 就提供了許多可掛載的功能給網頁框架。
+這裡的 middleware 我們先理解成一個有三個參數 `(req, res, next)` 的 function。
+
+> Express 從 v4.x 版之後不再相依於 connect
+
+`connect middleware` 慣例就是匯出的 function 執行後，要回傳一個 `middleware function`。
+在處理 request 的過程中這個回傳的 `middleware function` 就可以接手使用剛剛提到的三個參數，用來在過程中做一些處理或設定。
+同時因為閉包的特性這些設定在整個中介軟體的處理流程中都是有效的。
+
+舉例來說，`compression` 這個 middleware 就可以在處理 responsive 過程中協助壓縮
+
+```js
+var connect = require('connect')
+var app = connect()
+
+// gzip outgoing responses
+var compression = require('compression')
+app.use(compression())
+```
+
+而它的原始碼看起來就如下
+
+```js
+module.exports = compression
+...
+function compression (options) {
+  ...
+  return function compression (req, res, next) {
+    ...
+    next()
+  }
+}
+```
+
+於是每一個 request 都會經過 compression middleware 處理，而代入的 options 也因為閉包的關係會被保留下來
+
+這是一種極具彈性的模組作法，也可能在您的開發項目上幫上許多忙。
+
+> middleware 在這裡您可以大略想成串連執行一系列的 function，自然其 Function Signature 要一致
+
+# 匯出建構子
+
+在一般物件導向語言中，constructor 建構子指的是一小段程式碼協助我們從`類別 Class`建立一個物件。
+
+```csharp
+// C#
+class Car {
+  // c# 建構子
+  // constructor 即 class 中用來初始化物件的 method。
+  public Car(name) {
+    name = name;
+  }
+}
+var car = new Car('BMW');
+```
+
+由於在 ES2015 之前 Javascript 並不支援類別，某種程度上在 Javascript 之中我們可以把任何一個 function 當作類別，或者說一個 function 可以當作 function 執行或者搭配 `new` 關鍵字當作 constructor 來使用。如果想知道更詳細的介紹可以閱讀[MDN 教學](https://developer.mozilla.org/zh-TW/docs/Web/JavaScript/Introduction_to_Object-Oriented_JavaScript)。
+
+欲匯出建構子，我們需要透過構造函式來定義類別，然後透過 `new` 來建立物件實例。
+
+```js
+function Person (name) {
+  this.name = name
+}
+
+Person.prototype.greet = function () {
+  return 'Hi, I am ' + this.name
+}
+
+var person = new Person('andyyou')
+console.log(person.greet()) // Hi, I am andyyou
+```
+
+在這種設計模式底下，我們通常會將每個檔案設計成一個類別，然後匯出建構子。這使得我們的專案架構更加清楚。
+
+```js
+var Person = require('./person')
+var person = new Person()
+```
+
+整個檔案看起來會如下
+
+```js
+/* person.js */
+function Person(name) {
+  this.name = name
+}
+
+Person.prototype.greet = function () {
+  return 'Hi, I am ' + this.name
+}
+
+exports = module.exports = Person
+```
+
+# 匯出單一物件實例 [Signleton](http://openhome.cc/Gossip/DesignPattern/SingletonPattern.htm)
+
+當我們需要所有的模組使用者共享物件的狀態與行為時，就需要匯出單一物件實例。
+
+[Mongoose](http://mongoosejs.com/)是一個 ODM(Object-Document Mapper)函式庫，讓我們可以使用程式中的 Model 物件去操作 MongoDB。
+
+```js
+var mongoose = require('mongoose')
+mongoose.connect('mongodb://localhost/test')
+
+var Cat = mongoose.model('Cat', {name: String})
+
+var kitty = new Cat({name: 'Zildjian'})
+kitty.save(function (err) {
+  if (err)
+    throw Error('save failed')
+  console.log('meow')
+})
+```
+
+那我們 require 取得的 `mongoose` 物件是什麼東西呢？事實上 `mongoose` 模組的內部是這麼處理的
+
+```js
+function Mongoose() {
+  ...
+}
+
+module.exports = exports = new Mongoose()
+```
+
+因為 `require` 的快取了 `module.exports` 的值，於是所有 `reqire('mongoose')` 將會回傳相同的物件實例，之後在整個應用程式之中使用的都會是同一個物件。
+
+Mongoose 使用物件導向的設計模式來封裝，解耦(分離功能之間的相依性)，維護狀態使整體具備可讀性，同時透過匯出一個 Mongoose Class 的物件給使用者，讓我們可以簡單的存取使用。
+
+如果我們有需要，它也可以建立其他的物件實例來作為命名空間使用。實際上 Mongoose 內部提供了存取建構子的方法
+
+```js
+Mongoose.prototype.Mongoose = Mongoose
+```
+
+因此我們可以這麼做
+
+```js
+var mongoose = require('mongoose')
+var Mongoose = mongoose.Mongoose
+
+var anotherMongoose = new Mongoose()
+anotherMongoose.connect('mongodb://localhost/test')
+```
+
+# 擴展全域物件
+
+一個被匯入的模組不只限於單純取得其匯出的資料。它也可以用來修改全域物件或回傳全域物件，自然也能定義新的全域物件。而在這邊的全域物件(Global objects)或稱為標準內建物件像是 `Object`, `Function`, `Array` 指的是在全域能存取到的物件們，而不是當 Javascript 開始執行時所產生代表 global scope 的 global object。
+
+當我們需要擴增或修改全域物件預設行為時就需要使用這種設計模式。當然這樣的方式是有爭議，您必須謹慎使用，特別是在開放原始碼的專案上。
+
+例如：[Should.js](https://github.com/visionmedia/should.js)是一個常被用在單元測試中用來判斷分析 `值` 是否正確的函式庫。
+
+```js
+require('should')
+
+var user = {
+  name: 'andyyou'
+}
+
+user.name.should.equal('andyyou')
+```
+
+這樣您是否比較清楚了，`should.js` 增加了底層的 `Object` 的功能，[加入了一個非列舉型的屬性](https://github.com/visionmedia/should.js/blob/68000f47d01408cacb80441a1d9bf10ba423e54c/lib/should.js#L107-L113) `should` ，讓我們可以用簡潔的語法來撰寫單元測試。
+
+而在內部 `should.js` 做了這樣的事情
+
+```js
+var should = function (obj) {
+  return new Assertion(util.isWrapperType(obj) ? obj.valueOf(): obj)
+}
+...
+exports = module.exports = should
+
+Object.defineProperty(Object.prototype, 'should', {
+  set: function(){},
+  get: function(){
+    return should(this);
+  },
+  configurable: true
+});
+```
+
+就算看到這邊您肯定跟我一樣有滿滿的疑惑，全域物件擴展定義跟 exprots 有啥關聯呢？
+
+事實上
+
+```js
+/* whoami.js */
+exports = module.exports = {
+  name: 'andyyou'
+}
+
+Object.defineProperty(Object.prototype, 'whoami', {
+  set: function () {},
+  get: function () {
+    return 'I am ' + this.name
+  }
+})
+
+/* app.js */
+var whoami = require('whoami')
+console.log(whoami) // { name: 'andyyou' }
+
+var obj = { name: 'lena' }
+console.log(obj.whoami) // I am lena
+```
+
+現在我們明白了上面說的`修改全域物件`的意思了。`should.js` 匯出了一個 `should` 函式但是它主要的使用方式則是把 should 加到 Object 屬性上，透過物件本身來呼叫。
+
+# 套用猴子補丁(Monkey Patch)
+
+在這邊所謂的猴子補丁特別指的是在執行時期動態修改一個類別或者模組，通常會這麼做是希望補強某的第三方套件的 bug 或功能。
+
+假設某個模組沒有提供您客製化功能的介面，而您又需要這個功能的時候，我們就會實作一個模組來補強既有的模組。
+這個設計模式有點類似`擴展全域物件`，但並非修改全域物件，而是依靠 Node 模組系統的快取機制，當其他程式碼匯入該模組時去補強該模組的實例物件。
+
+預設來說 Mongoose 會使用小寫以及複數的慣例替資料模型命名。例如一個資料模型叫做 `CreditCard` 最終我們會得到 collection 的名稱是 `creditcards` 。假如我們希望可以換成 `credit_cards` 並且其他地方也遵循一樣的用法。
+
+下面是我們試著使用猴子補丁的方式來替既有的模組增加功能
+
+```js
+var pluralize = require('pluralize') // 處理複數單字的函式庫
+var mongoose = require('mongoose')
+var Mongoose = mongoose.Mongoose
+
+mongoose.Promise = global.Promise // v4.1+ http://mongoosejs.com/docs/promises.html
+var model = Mongoose.prototype.model
+
+// 補丁
+var fn = function(name, schema, collection, skipInit) {
+  collection = collection || pluralize.plural(name.replace(/([a-z\d])([A-Z])/g, '$1_$2').toLowerCase())
+  return model.call(this, name, schema, collection, skipInit)
+}
+Mongoose.prototype.model = fn
+
+/* 實際測試 */
+mongoose.connect('mongodb://localhost/test')
+var CreditCardSchema = new mongoose.Schema({number: String})
+var CreditCardModel = mongoose.model('CreditCard', CreditCardSchema);
+
+var card = new CreditCardModel({number: '5555444433332222'});
+card.save(function (err) {
+  if (err) {
+    console.log(err)
+  }
+  console.log('success')
+})
+```
+
+> 您不該輕易使用上面這種方式補丁，這邊只是為了說明猴子補丁這種方式，mongoose 已經有提供官方的方式設定名稱
+
+```js
+var schema = new Schema({..}, { collection: 'your_collection_name' })
+```
+
+當這個模組第一次被匯入的時候便會讓 `mongoose` 重新定義 `Mongoose.prototype.model` 並將其設回原本的 model 的實作。
+如此一來所有 `Mongoose` 的實例物件都具備新的行為了。注意到這邊並沒有修改 `exports` 所以當我們 require 的時候得到的是預設的物件
+
+另外如果您想使用上面這種補丁的方式時，記得閱讀原始碼並注意是否產生衝突。
+
+# 請善用匯出的功能
+
+Node模組系統提供了一個簡單的機制來封裝功能，使我們能夠建立了清楚的介面。希望掌握這七種設計模式提供不同的優缺點能對您有所幫助。
+
+在這邊作者並沒有徹底的調查所有的方式，一定有其他選項可供選擇，這邊只有描述幾個最常見且不錯的方法。
+
+# 小結
+
+* namespace: 匯出一個物件包含需要的功能
+  + root module 的方式，使用一個根模組匯出其他模組
+* function: 直接將 `module.exports` 設為 function
+  + Function 物件也可以拿來當作命名空間使用
+  + 為其命名方便偵錯
+  + `exports = module.exports = something` 的作法是為了確保參考(Reference)一致
+* high-order function: 可以透過代入參數控制並回傳 function 。
+  + 可協助實作 middleware 的設計模式
+  + 換句話說 middleware 即一系列相同 [signature](https://developer.mozilla.org/zh-TW/docs/Glossary/Signature/Function) 的 function 串連。一個接一個執行
+* constructor: 匯出類別(function)，使用時再 `new`，具備 OOP 的優點
+* singleton: 匯出單一物件實例，重點在各個檔案可以共享物件狀態
+* global objects: 在全域物件作的修改也會一起被匯出
+* monkey patch: 執行時期，利用 Node 快取機制在 instance 加上補丁
+
+# 筆記
+
+* 一個 javascript 檔案可視為一個模組
+* 解決特定問題或需求，功能完整由單一或多個模組組合而成的整體稱為套件(package)
+* `require` 匯入的模組具有自己的 `scope`
+* `exports` 只是 `module.exports` 的參考，`exports` 會記錄收集屬性如果 `module.exports` 沒有任何屬性就把其資料交給 `module.exports` ，但如果 `module.exports` 已經具備屬性的話，那麼`exports` 的所有資料都會被忽略。
+* 就算 `exports` 置於後方仍會被忽略
+* Node 初始化的順序
+  + Native Module -> Module
+  + StartNodeInstance() -> CreateEnvironment() -> LoadEnvironment() -> Cached
+* Native Module 載入機制
+  + 檢查是否有快取
+  + -> 有; 直接回傳 `this.exports`
+  + -> 沒有; new 一個模組物件
+  + cache()
+  + compile() -> NativeModule.wrap() 將原始碼包進 `function` 字串 -> `runInThisContext()` 建立函式
+  + return NativeModule.exports
+* Node 的 require 會 cache ，也就是說：如果希望模組產生不同的 instance 時應使用 function
+
+
+# 資源
+
+* [官方 module 文件](https://nodejs.org/api/modules.html)
+* [理解 module exports](https://www.sitepoint.com/understanding-module-exports-exports-node-js/)
+* [Export This: Interface Design Patterns for Node.js Modules](http://bites.goodeggs.com/posts/export-this/)
+* [module.exports v.s exports](http://weizhifeng.net/node-js-exports-vs-module-exports.html)
+* [從 node.js 原始碼看 exports 與 module.exports](http://simeneer.blogspot.tw/2016/09/node-i-module.html)
+* [Export This 中文](https://987.tw/2014/03/08/export-this-node-jsmo-zu-de-jie-mian-she-ji-mo-shi/)

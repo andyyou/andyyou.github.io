@@ -52,8 +52,8 @@ $ npm init -y
 
 注意到兩件事
 
-1. 我們使用 `dist/build.js` 這個檔案在編譯之前是不存在的
-2. `{{message}}` 這個語法是 vue.js 處理的
+1. 我們使用 **dist/build.js** 這個檔案在編譯之前是不存在的
+2. **{{message}}** 這個語法是 vue.js 處理的
 
 建立 `src` 目錄與 `src/main.js` 檔案，這邊您可以隨您自己的偏好組織專案架構
 
@@ -522,7 +522,7 @@ var common = {
 
 if (T === 'dev' || !T) {
   var entryWithHotDevServer = Object.assign(common.entry, {
-    main: ['webpack/hot/dev-server', common.main]
+    main: ['webpack/hot/dev-server', common.entry.main]
   })
   module.exports = merge(common, {
     entry: entryWithHotDevServer,

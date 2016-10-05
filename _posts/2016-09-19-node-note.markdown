@@ -33,9 +33,18 @@ categories: node, js
 
 > In Node.js, files and modules are in one-to-one correspondence. - Node 文件
 
-也就是所有的模組會參考指向(Reference)一個`隱式模組物件`的 `module.exports`。當我們使用 `require()` 時會取得的東西。同時我們也取得 `exports`。
+每個模組內都有一個隱式(implicit)的 `module` 物件，這個物件身上有一個屬性 `exports` (即 `module.exports`)。當我們使用 `require()` 時它所傳回的，即是這個模組的 `module.exports` 所指向的東西。
+每個模組的 `module.exports` 預設都是一個空物件 `{}`，而每個模組內帶有一個 `exports` 捷徑變數，預設指向 `module.exports`。
 
-這個 `exports` 就是指向 `module.exports` 的參考。`exports` 會收集該其屬性，如果 `module.exports` 沒有任何屬性就把這些資料交給 `module.exports` ，但如果 `module.exports` 已經具備屬性的話，那麼 `exports` 的所有資料都會被忽略。
+在**預設**情況下，`module.exports` 是一個物件，而 `exports` 又指向該物件，所以在**預設**情況下，以下兩個操作視為等效：
+```js
+exports.foo = 'hello';
+// 等同於
+module.exports.foo = 'hello';
+```
+
+如果，你重新指定了某東西給 `module.exports`，當然 `module.exports` 跟預設物件的關係就因此被打斷，而**此時 `exports` 捷徑變數仍然是指向預設物件的**。前面有提到，當我們使用 `require()` 時，模組是以 `module.exports` 所指向的東西而揭露給外部，因此模組的介面是由 `module.exports` 所決定，與 `exports` 捷徑變數無關。
+因此，一旦 `module.exports` 被指定新值後，使用捷徑變數 `exports` 所掛入預設物件的內容都將無法被揭露，因而可視為無效。
 
 為了讓您更好理解關於 `exports` 與 `module.exports` 下面的範例提供了較詳細的說明
 
@@ -59,6 +68,8 @@ console.log(b) // {id: 3}
 另外比較具體的範例
 
 ```js
+// 模組預設: module.exports = {}, 而 exports = module.exports, 等同於指向預設的空物件
+
 /* person.js */
 exports.name = function () {
   console.log('My name is andyyou.')
@@ -71,8 +82,8 @@ person.name()
 
 ```js
 /* person.js */
-module.exports = 'Hey, andyyou'
-exports.name = function () {
+module.exports = 'Hey, andyyou'		// module.exports 不再是預設物件
+exports.name = function () {        // 透過 exports 捷徑掛進預設物件的內容, 將無法被揭露
   console.log('My name is andyyou')
 }
 
@@ -88,14 +99,14 @@ person.name() // TypeError: Object Hey, andyyou has no method 'name'
 * 所以您可以使用 `exports.property_name = something` 而不會使用 `exports = something`
 * 一旦使用 `exports = something` 參考關係便會停止，也就是 `exports` 的資料都會被忽略。
 
-本質上我們可以理解為所有模組都隱含實作了下面這行程式碼
+本質上我們可以理解為所有模組都隱含實作了下面這行程式碼　(實際上 `module` 與 `exports` 是由 node 模組系統傳入給我們的模組的)
 
 ```js
 var exports = module.exports = {}
 ```
 
 現在我們知道了，當我們要匯出一個 `function` 時我們得使用 `module.exports`。
-如果使用 `exports` 那個 `exports` 的記憶體位置(Reference/參考)將會被修改而 `module.exports` 就不會得到其內容。
+如果令捷徑 `exports` 變數指向該 `function`，僅僅是捷徑 `exports` 對 `module.exports` 的關係被打斷而已，真正揭露的還是 `module.exports`。
 
 另外，我們在許多專案看到下面的這行程式碼
 
@@ -165,8 +176,8 @@ readFile('./file.txt', function (err, data) {
 var fs = exports
 ```
 
-首先將隱式 `exports` 物件設定一個區域變數(即上面提過的 exports)到 `fs`，然後透過 `fs` 的屬性使用各個功能，例如: `fs.Stats = binding.Stats`。
-由於 `fs` 參考 `exports` 並且它是一個物件，所以當我們 `require('fs')` 時，我們就能夠透過屬性使用那些功能。
+首先用一個新的區域變數 `fs`，令其為捷徑 `exports`，因此預設情況下 `fs` 就指向了 `module.exports` 身上的預設物件。上面這一行我們可以說，只是將捷徑變數換個名稱成為 `fs` 如此而已。
+接下來，我們就可以使用新的捷徑 `fs` 了，例如: `fs.Stats = binding.Stats`。
 
 ```js
 fs.readFile = function (path, options, callback_) {
@@ -241,7 +252,7 @@ module.exports = require('../lib/require_siblings')(__filename)
 
 ```js
 var express = require('express')
-var app = express()
+var app = express()	// 實際上 express() 傳回的 app 是一個 function，在 JS 中函式也是物件
 
 app.get('/hello', function (req, res, next) {
   res.send('Hi there! We are using Express v' + express.version)
@@ -362,7 +373,7 @@ function compression (options) {
 
 # 匯出建構子
 
-在一般物件導向語言中，constructor 建構子指的是一小段程式碼協助我們從`類別 Class`建立一個物件。
+在一般物件導向語言中，constructor 建構子指的是協助我們從`類別 Class`建立一個該類別物件實例的一段程式碼。
 
 ```csharp
 // C#
@@ -503,7 +514,7 @@ Object.defineProperty(Object.prototype, 'should', {
 });
 ```
 
-就算看到這邊您肯定跟我一樣有滿滿的疑惑，全域物件擴展定義跟 exprots 有啥關聯呢？
+就算看到這邊您肯定跟我一樣有滿滿的疑惑，全域物件擴展定義跟 exports 有啥關聯呢？
 
 事實上
 
@@ -532,7 +543,7 @@ console.log(obj.whoami) // I am lena
 
 # 套用猴子補丁(Monkey Patch)
 
-在這邊所謂的猴子補丁特別指的是在執行時期動態修改一個類別或者模組，通常會這麼做是希望補強某的第三方套件的 bug 或功能。
+在這邊所謂的猴子補丁特別指的是在執行時期動態修改一個類別、模組或物件(也稱 object augmentation)，通常會這麼做是希望補強某的第三方套件的 bug 或功能。
 
 假設某個模組沒有提供您客製化功能的介面，而您又需要這個功能的時候，我們就會實作一個模組來補強既有的模組。
 這個設計模式有點類似`擴展全域物件`，但並非修改全域物件，而是依靠 Node 模組系統的快取機制，當其他程式碼匯入該模組時去補強該模組的實例物件。

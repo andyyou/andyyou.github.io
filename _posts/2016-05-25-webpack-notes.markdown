@@ -81,7 +81,7 @@ Do not mount Vue to <html> or <body> - mount to normal elements instead.
 
 ##### 1. 安裝 webpack, webpack-dev-server 與相關 loaders
 
-> 本次更新，為了專注在基本的說明，已將一些不屬於基本功能的模組移除。
+> 為了專注在基本的說明，本次更新已將一些不屬於基本功能的模組移除。
 
 ~~~
 # 2016-10-04 更新
@@ -330,7 +330,24 @@ module.exports = config
 
 要完成這功能，我們會需要 `webpack-dev-server` 以及套件 `vue-hot-reload-api`。然後執行。
 
-您可以選擇在全域安裝 webpack-dev-server
+在這之前，我們需要修改一下 webpack.config.js 加入 `webpack/hot/dev-server`
+
+```js
+var webpack = require('webpack')
+
+var config = {
+  entry: [
+    'webpack/hot/dev-server',
+    path.join(__dirname, 'src', 'main')
+  ],
+  ...
+  plugins: [
+    new webpack.HotModuleReplacementPlugin()
+  ]
+}
+```
+
+接著，您可以選擇在全域安裝 webpack-dev-server
 
 ~~~bash
 $ npm i webpack-dev-server -g
@@ -461,6 +478,8 @@ $ npm i babel-core babel-loader babel-plugin-transform-runtime babel-preset-es20
 
 # (Optional)安裝 vue-loader
 $ npm i vue-loader vue-hot-reload-api -D
+
+# 安裝 vue 與所需的模組
 ~~~
 
 ~~~rc
@@ -551,5 +570,5 @@ if (T === 'build') {
 "scripts": {
   "build": "webpack",
   "dev": "webpack-dev-server"
-},
+}
 ~~~

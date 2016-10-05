@@ -30,6 +30,7 @@ categories: js, webpack
 $ mkdir [project_name]
 $ cd [project_name]
 $ npm init -y
+$ npm install vue -S
 ~~~
 
 我們先把需要的程式與目錄結構準備好，需求是使用 `Vue` + `ES2015` 來開發。第一步在根目錄建立一個 `index.html` 下面是一個簡單的 vue 範例
@@ -188,6 +189,8 @@ module.exports = config
 上面我們已經完成基本的設定，雖然我們一口氣安裝了很多 loaders 但相關設定我們只先設定了 babel 的部份。到了這一步我們的專案架構已經可以被編譯執行了。
 
 ~~~bash
+# 如果在這一步您想先執行編譯看看可以安裝全域的 webpack
+$ npm i webpack -g
 $ webpack
 $ open index.html # 編譯後檢視內容
 ~~~
@@ -263,8 +266,6 @@ export default {
   color: pink;
   font-size: 1.4em;
 }
-</style>
-
 </style>
 ~~~
 
@@ -521,11 +522,7 @@ var common = {
 }
 
 if (T === 'dev' || !T) {
-  var entryWithHotDevServer = Object.assign(common.entry, {
-    main: ['webpack/hot/dev-server', common.entry.main]
-  })
-  module.exports = merge(common, {
-    entry: entryWithHotDevServer,
+  var config = merge(common, {
     devServer: {
       historyApiFallback: true,
       hot: true,
@@ -540,6 +537,9 @@ if (T === 'dev' || !T) {
       new webpack.HotModuleReplacementPlugin()
     ]
   })
+
+  config.entry.main = ['webpack/hot/dev-server', config.entry.main]
+  module.exports = config
 }
 
 if (T === 'build') {

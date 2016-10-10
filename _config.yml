@@ -69,3 +69,4 @@ theme: icarus
 ## Docs: https://hexo.io/docs/deployment.html
 deploy:
   type: git
+  repo: git@github.com:andyyou/andyyou.github.io.git

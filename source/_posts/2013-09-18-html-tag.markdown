@@ -1,0 +1,74 @@
+---
+layout: post
+title: 'HTML Tag'
+date: 2013-09-18 09:34:00
+categories: Program
+tags: html
+---
+
+* `<h1> - <h6>` 標題
+* `<p>` 文字段落，注意在裡面的空白，無論連續幾個都會被當做一個。此時可以使用 `&nbsp;`
+<!--more-->
+* `<b>` 粗體
+* `<i>` 斜體
+* `<sup>` 文字一半，並往上半部移動 ex 數學 2 的平方
+* `<sub>` 文字一半，往下移動 ex 化學符號
+* `<br>` 換行
+* `<hr>` 加入橫線
+* `<strong>` 語意表示重要強調，視覺會變粗體。
+* `<em>` 強調，表示語氣轉變。視覺會變斜體。
+* `<blockquote>` 引用一整段文字。
+* `<q>` 短句或單字引用，視覺會出現 " " ，但是 IE 不會。
+* `<abbr title='description'>Desc</abbr>` 縮寫，title 可以放入完整單字。
+* `<cite>` 引用，出處。視覺會變斜體。
+* `<dfn>` 定義專業術語。
+* `<address>` 作者資訊，可搭配 hCards 格式內容。範例如下：
+
+				<div id="hcard-Joe-Monkey" class="vcard">
+				<span class="fn">Joe Monkey</span>
+				<div class="org">ACME Banana</div>
+				<div class="adr">
+					<span class="type">Work</span>:
+					<div class="street-address">314 Monkey Avenue</div>
+						<span class="locality">Monkey Island</span>,
+						<abbr class="region" title="California">CA</abbr>
+						<span class="postal-code">94301</span>
+						<div class="country-name">USA</div>
+					</div>
+					<div class="tel">
+						<span class="type">Work</span> +1-555-555-5555
+					</div>
+					<div class="tel">
+						<span class="type">Fax</span> +1-555-555-5555
+					</div>
+					<div>Email:
+						<span class="email">joe@acmebanana.com</span>
+					</div>
+					<a class="url" href="aim:goim?screenname=monkeybites">AIM</a>
+				</div>
+
+* `<ins>` 插入文字，會有底線。
+* `<del>` 刪除文字，中間會有橫線杠掉。
+* `<s>` 表示資料不再精確，跟 del 一樣會橫線杠掉，但這不代表刪除的語義。
+
+* `<a>` 有三種用法 一般網頁連結, 錨點, Email
+* `<img>`
+* `<figure>`
+* `<figcaption>`
+* `<table>`
+* `<thead>`
+* `<tbody>`
+* `<tfooter>`
+*	`<tr>`
+* `<td>`
+* `<th>`
+* `<ol>`
+* `<ul>`
+* `<li>`
+* `<dl>`
+* `<dt>`
+* `<dd>`
+* `<form>`
+* `<input>`
+* `<select>`
+* `<textarea>`

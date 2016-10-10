@@ -1,0 +1,192 @@
+---
+layout: post
+title: '深入 css z-index 屬性'
+data: 2016-03-03 12:00:00
+categories: Program
+tags: css
+---
+
+說來汗顏，一直以來對於 css 常常是不求勝解。直到自己需要打造自己的`輪子`才發現對 `z-index` 完全不熟悉。
+關於 `z-index` 的問題其實非常少人完全明白它到底是怎麼運作的。事實上這並不複雜，不過如果你不曾花些時間閱讀規範可能你不曾察覺一些重要的觀念。
+<!--more-->
+# 問題
+
+在下面的 HTML 中我們有三個 `<div>` 元素，每一個元素包含著一個 `<span>`，我們給 `<span>` 設定背景色 - 分別是綠, 紅, 藍。
+每個 `<span>` 同時也設定 `absolute` 位置設在文件的左上角。約略的重疊在其他 `<span>` 這樣我們就可以觀察整個堆疊的行為。
+
+第一個 `<span>` 的 `z-index: 1`，其他兩者不設。
+
+下面是我們的程式碼：
+
+~~~slim
+div
+  span class="red" RED
+div
+  span class="green" GREEN
+div
+  span class="blue" BLUE
+~~~
+
+~~~css
+.red, .green, .blue {
+  width: 100px;
+  color: white;
+  line-height: 100px;
+  text-align: center;
+  position: absolute;
+}
+
+.red {
+  z-index: 1;
+  background: red;
+  top: 20px;
+  left: 20px;
+}
+
+.green {
+  background: green;
+  top: 40px;
+  left: 40px;
+}
+
+.blue {
+  background: blue;
+  top: 60px;
+  left: 60px;
+}
+~~~
+
+<p data-height="268" data-theme-id="8540" data-slug-hash="ZWGvwV" data-default-tab="result" data-user="andyyou" class="codepen">See the Pen <a href="http://codepen.io/andyyou/pen/ZWGvwV/">ZWGvwV</a> by andyyou (<a href="http://codepen.io/andyyou">@andyyou</a>) on <a href="http://codepen.io">CodePen</a>.</p>
+<script async src="//assets.codepen.io/assets/embed/ei.js"></script>
+
+
+這邊有個小小的挑戰: 試看看能不能把紅色區塊的 `<span>` 排到藍色和綠色 `<span>` 的後面，但要遵循下面的規則。
+
+* 不能修改 HTML 結構
+* 不能加入或修改任何元素的 `z-index`
+* 不能加入或修改任何 `position` 屬性
+
+目標要完成下面這樣，先不要偷看解答自己想一想。
+
+<p data-height="268" data-theme-id="8540" data-slug-hash="oxXEvx" data-default-tab="result" data-user="andyyou" class="codepen">See the Pen <a href="http://codepen.io/andyyou/pen/oxXEvx/">oxXEvx</a> by andyyou (<a href="http://codepen.io/andyyou">@andyyou</a>) on <a href="http://codepen.io">CodePen</a>.</p>
+<script async src="//assets.codepen.io/assets/embed/ei.js"></script>
+
+# 解答
+
+這個解決方案是透過加入一個`小於 1`的 `opacity` 到紅色 `<span>` 的爸爸元素即 `<div>`
+
+上面是透過加上
+
+~~~css
+div:first-child {
+  opacity: .99;
+}
+~~~
+
+如果你現在跟我當初一樣驚訝，不相信為什麼加了 `opacity: .99` 可以改變元素的順序。希望剩下的文章可以幫助你更清楚這些機制。
+
+# 呈現堆疊的順序
+
+`z-index` 看起來非常簡單，至少在我第一次看到這個屬性的時候，我只知道越大的 `z-index` 應該要被排在最前面(上面)，對吧？
+但事實上事情沒那麼單純。看起來很簡單以至於大部分的開發者都沒有花時間去理解它的規則。
+
+在 HTML 中的任何元素可以被調整到其他元素的前面或後面，這也就是我們所知的堆疊順序(stacking order)。這樣順序的規則被很明確的定義在規範上，但如同我剛剛提到的，大多的開發者沒有認真的完全參透。
+
+當我們沒有 `z-index` 和 `position` 屬性的時候，規則非常簡單，就是按照文件中 `tag` 撰寫的先後順序。好吧實際上還是有點複雜，請參考[規範說明](https://www.w3.org/TR/CSS2/zindex.html)。不過呢，只要我們不使用`負的 margin`來覆蓋 `inline` 的元素，大致上我們不會遇到這些極端的情況。
+
+當我們開始加入 `position`，任何被設定 `position` 的元素和它們的後代會呈現在其他沒有設定 `position` 的元素之前，這裡說的設定 `position` 指的是除了設為 `static` 以外得值例如: `relative`, `absolute`。
+
+最後當我們也加入 `z-index` ，事情就變得更複雜了一點。很自然的我們會認為具備較大 `z-index` 的元素會排在前面，有 `z-index` 也會蓋在沒有的前面。
+但是實際上卻沒那麼簡單，首先是 `z-index` 只對那些有設定 `position` 的元素有效。如果你試著把 `z-index` 設在 `static` 的元素上，那麼什麼事都不會發生。第二點 `z-index` 會建立一個 `stacking context` ，此時就是進入重點的地方了。
+
+# Stacking Context
+
+當我們有一個 `<div id="parent">` 包著一群 `<div class="child">` 元素時，它們的堆疊順序通常會一起被移動(從父原則)，這整個群組的順序就是 `stacking context`，要完全理解 `stacking context` 我們就必須要參透 `z-index` 是怎麼排序 `stacking order`。
+
+每一個 `stacking context` 有一個唯一的 HTML 元素當作其根元素，當一個新的 `stacking context` 或者我們翻作`堆疊環境`被建立在`一個`元素上時，這個堆疊環境就會控管它內部的子元素的順序 `stacking order`，意思是如果其中一個元素在這個堆疊環境中順序被排在最底下，那它就完全沒機會出現在另外一個元素排位較高的`堆疊環境`前面，就算他的 z-index 設成 9999999。
+
+從另外一個角度來說，每一個被設定 `position` 的元素除了自己的 `stacking order` 另外如果內部還有子元素，就會有一個 `stacking context` 來管制底下的元素。
+
+要建立一個`堆疊環境 stacking context`有下面三者方式，只要使用其一即可：
+
+* 當元素是網頁文件的根元素通常就是 `<html>`
+* 當元素被設定 `position` 除了 `static` 以外的值，然後 `z-index` 設定為除了 `auto` 以外的值
+* 當元素設定了 `opacity` 且值`小於 1`
+
+上面提到的三種方式中，前兩者大部分的開發者都知道，即使他們不懂原理但還是會使用。第三種方式除了 w3c 規範，大多開發者都不曾提到。
+
+此外除了 `opacity` 另外一些新的屬性像是 `transforms`, `filters`, `css-regions`, `paged media` 等等都會產生 stacking context。
+還有當 css 屬性需要在超出螢幕的地方渲染，他也會產生一個 stacking context。
+
+# 如何決定元素在堆疊環境中的位置
+
+實際上在 global stacking 決定整個頁面元素的排序包含 borders, background, 文字是極度複雜的而且已經超出這篇文章的範圍。
+不過針對大多數的應用，對於排序有些基本的認識有助於往後的開發工作，所以讓我們來一步步拆解說明
+
+### 在單一堆疊環境 Stacking Context 中的順序
+
+在單一的堆疊環境從最下面(後)到上面(前)規則如下
+
+1. 執行堆疊的根元素。
+2. 有設定 `position` 且 `z-index` 為`負數`的元素和它們的子元素，`-1 在 -2 前面`。
+3. 沒有設定 `position` 的元素，一般元素。
+4. 有設定 `position` 且 `z-index` 為 `auto`，設定 `opacity` 小於 1 和其他 `transforms` 等屬性也在此列。
+5. 有設定 `position` 且 `z-index` 為`正數`。
+
+都一樣的時候就比文件中程式碼出現的先後順序，後出現的蓋在上面。
+
+注意：2 號情況在一個 stacking context 會被排在最下面(後面)，意思是他會躲在其他元素後面。也因此這讓元素藏在其父元素後面變成了可能。
+你可能會疑惑上面那句話，試想如下面這樣的結構
+
+~~~slim
+div[z-index: 1, position: relative]  /<- 這邊建立了 stacking context
+  div[class: 'parent']
+    div[z-index: -2, position: absolute] /<- 這個元素跟 parent 在同一層 stacking context 所以就躲起來了
+~~~
+
+### 全域的堆疊排序 Global Stacking Order
+
+清楚的了解一個堆疊環境 stacking contetxt 是如何形成的以及掌握如何排序的原則後，我們不難理解一個元素在全域的堆疊環境下會如何呈現排序，就是把 `<html>` 作為我們最上層的 stacking context。接著原則就一樣。
+
+避免搞死自己的關鍵點就是每當我們建立了一個新的堆疊環境我們要很清楚這是為了什麼。當你把 `z-index` 設得很大但卻沒有產生變化，往上層元素看看，可能就會發現已經有人具備了 `stacking context` 的條件了。
+
+# 總結
+
+回到我們一開始的問題，這次我們就直接透過 html 結構來指出這些順序吧
+
+~~~html
+<div><!-- 1 -->
+  <span class="red"><!-- 6 --></span>
+</div>
+<div><!-- 2 -->
+  <span class="green"><!-- 4 --><span>
+</div>
+<div><!-- 3 -->
+  <span class="blue"><!-- 5 --></span>
+</div>
+~~~
+
+當我們在第一個 div 加上 `opacity` 後，由下至上的排序應該是
+
+~~~html
+<div><!-- 3 -->
+  <span class="red"><!-- 3.1 --></span>
+</div>
+<div><!-- 1 -->
+  <span class="green"><!-- 4 --><span>
+</div>
+<div><!-- 2 -->
+  <span class="blue"><!-- 5 --></span>
+</div>
+~~~
+
+本來是 6 的 span 因為上層的 div 也具備 `stacking context` 但是順序比下面 4, 5 的 span 小。自己又因為`從父原則`導致順序被往前推了。
+希望這篇文章能讓你對於 `z-index` 有能更加清楚。
+
+# 資源
+
+* [w3c 規範](https://www.w3.org/TR/CSS2/zindex.html)
+* [詳細說明 - 中文](http://www.neoease.com/css-z-index-property-and-layering-tree/)
+* [MDN stacking context](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Positioning/Understanding_z_index/The_stacking_context)
+* [概覽 z-index](https://www.smashingmagazine.com/2009/09/the-z-index-css-property-a-comprehensive-look/)
+* [No one told you about z-index](http://philipwalton.com/articles/what-no-one-told-you-about-z-index/)

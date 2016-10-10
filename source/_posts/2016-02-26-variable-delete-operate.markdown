@@ -3,7 +3,7 @@ layout: post
 title: '關於 delete 變數詭異行為與解釋'
 date: 2016-02-25 12:00:00
 categories: Program
-tags: javascript, RoR
+tags: [javascript, RoR]
 ---
 
 # 問題

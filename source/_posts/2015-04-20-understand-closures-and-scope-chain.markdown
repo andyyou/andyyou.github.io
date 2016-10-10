@@ -3,7 +3,7 @@ layout: post
 title: '參透Javascript閉包與Scope Chain'
 date: 2015-04-20 14:00:00
 categories: Program
-tags: javascript
+tags: [javascript]
 ---
 
 從[上一篇](http://andyyou.github.io/javascript/2015/04/18/what-is-the-execution-context-in-javascript.html)文章中我們知道了每一個 function 有一個對應的`執行環境` 其中包含著一個由在該範圍內所有的變數，function 參考，參數定義所組成的 `variable object`(變數物件 VO)。

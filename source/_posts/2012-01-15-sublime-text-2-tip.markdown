@@ -3,7 +3,7 @@ layout: post
 title: 'Sublime Text 2 小技巧：開啓Browser'
 date: 2012-01-15 05:30:00
 categories: Tools
-tags: osx
+tags: [osx]
 ---
 
 # Open In Browser 設定

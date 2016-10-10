@@ -3,7 +3,7 @@ layout: post
 title: '關於 Reactjs 的核心觀念'
 date: 2014-09-12 16:14:00
 categories: Program
-tags: reactjs
+tags: [reactjs]
 ---
 這篇文章為官方部落格的文章隻翻譯。[原文](http://facebook.github.io/react/docs/thinking-in-react.html)。
 

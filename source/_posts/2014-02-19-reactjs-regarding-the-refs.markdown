@@ -3,7 +3,7 @@ layout: post
 title: 'React 關於 Refs '
 date: 2014-02-19 21:56:00
 categories: Program
-tags: reactjs
+tags: [reactjs]
 ---
 
 # 關於 Refs

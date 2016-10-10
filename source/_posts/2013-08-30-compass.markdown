@@ -3,7 +3,7 @@ layout: post
 title: 'Compass 整理筆記'
 date: 2013-08-30 16:15:00
 categories: Program
-tags: sass
+tags: [sass]
 ---
 
 使用 Compass 之前需要先安裝 ruby，這裡我們可以透過[官方](https://www.ruby-lang.org/en/downloads/)

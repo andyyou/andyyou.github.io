@@ -3,7 +3,7 @@ layout: post
 title: '從<琅琊榜>學 Redux'
 date: 2016-01-04 14:00
 categories: Program
-tags: javascript, reactjs, redux
+tags: [javascript, reactjs, redux]
 ---
 # 前言
 

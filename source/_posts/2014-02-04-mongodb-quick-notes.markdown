@@ -3,7 +3,7 @@ layout: post
 title: 'MongoDB Quick Notes'
 date: 2014-02-04 21:40:00
 categories: Database
-tags: mongodb
+tags: [mongodb]
 ---
 
 ## Mac

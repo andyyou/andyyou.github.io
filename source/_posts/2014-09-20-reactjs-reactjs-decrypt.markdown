@@ -3,7 +3,7 @@ layout: post
 title: 'React 大解密'
 date: 2014-09-20 00:43:00
 categories: Program
-tags: reactjs
+tags: [reactjs]
 ---
 ## React 揭秘
 關於這篇文章將會試著解釋關於 React 核心的概念。

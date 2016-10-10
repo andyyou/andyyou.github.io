@@ -3,7 +3,7 @@ layout: post
 title: 'React 與 DOM 的差異'
 date: 2014-09-14 13:44:00
 categories: Program
-tags: reactjs
+tags: [reactjs]
 ---
 ## DOM 的差異
 

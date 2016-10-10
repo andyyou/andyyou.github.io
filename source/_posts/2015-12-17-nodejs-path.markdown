@@ -3,7 +3,7 @@ layout: post
 title: 'NodeJS path'
 date: 2015-12-17 05:10:00
 categories: Program
-tags: javascript, nodejs
+tags: [javascript, nodejs]
 ---
 
 範例筆記

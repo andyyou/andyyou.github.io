@@ -3,7 +3,7 @@ layout: post
 title: '為什麼使用 React ?'
 date: 2014-02-08 13:48:00
 categories: Program
-tags: reactjs
+tags: [reactjs]
 ---
 [原文](http://facebook.github.io/react/docs/why-react.html)
 

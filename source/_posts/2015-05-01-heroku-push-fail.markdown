@@ -3,7 +3,7 @@ layout: post
 title: 'Heroku 無法 fetch gem'
 date: 2015-05-01 05:30:00
 categories: Cloud
-tags: ruby, RoR, heroku
+tags: [ruby, RoR, heroku]
 ---
 
 當我們在本機設定 gem 的時候有時候會採用直接從 github 下載的方式

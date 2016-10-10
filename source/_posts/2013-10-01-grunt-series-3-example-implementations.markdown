@@ -3,7 +3,7 @@ layout: post
 title: 'Grunt 系列(3) 範例實作'
 date: 2013-10-01 19:13:00
 categories: Tools
-tags: grunt, javascript, package manager
+tags: [grunt, javascript, package manager]
 ---
 
 下面我們將透過一個使用了 5 個常用套件的 `Gruntfile` 來實作練習並討論關於 Gruntfile。

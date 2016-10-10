@@ -3,7 +3,7 @@ layout: post
 title: '再讀一遍 BEM'
 date: 2015-08-11 05:30:00
 categories: Program
-tags: css
+tags: [css]
 ---
 
 # 前言

@@ -3,7 +3,7 @@ layout: post
 title: 'React 關於表單'
 date: 2014-02-15 01:00:00
 categories: Program
-tags: reactjs
+tags: [reactjs]
 ---
 
 # 表單

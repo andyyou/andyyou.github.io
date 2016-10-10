@@ -3,7 +3,7 @@ layout: post
 title: 'iOS UIScrollView 使用 Autolayout'
 date: 2014-08-09 20:15:00
 categories: Mobile
-tags: ios
+tags: [ios]
 ---
 ## 前言
 

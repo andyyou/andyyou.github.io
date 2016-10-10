@@ -3,7 +3,7 @@ layout: post
 title: '理解 Javascript 的 Function.prototype.bind'
 date: 2014-09-11 15:51:00
 categories: Program
-tags: javascript
+tags: [javascript]
 ---
 Function.prototype.bind 函式繫結大概是當您開始學習 Javascript 時最後關注到的議題。
 通常是當您遇到一種狀況：需要在其他 `Function` 保留 `this` 的執行環境(Context)。

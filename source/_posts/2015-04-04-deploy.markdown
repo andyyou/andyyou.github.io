@@ -3,7 +3,7 @@ layout: post
 title: 'CentOS Rails 環境安裝'
 date: 2015-04-04 12:00:00
 categories: System
-tags: ruby, RoR, centos
+tags: [ruby, RoR, centos]
 ---
 
 # CentOS Rails 環境安裝

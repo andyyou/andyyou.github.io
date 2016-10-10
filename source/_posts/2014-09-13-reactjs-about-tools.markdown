@@ -3,7 +3,7 @@ layout: post
 title: 'React 關於工具整合'
 date: 2014-09-13 09:37:00
 categories: Program
-tags: reactjs
+tags: [reactjs]
 ---
 
 ## 工具整合

@@ -3,7 +3,7 @@ layout: post
 title: 'Box 屬性意義'
 date: 2013-08-29 10:29:00
 categories: Program
-tags: css
+tags: [css]
 ---
 
 * `display: block` : 前後會插入換行，寬會填滿父元素，高則是配合內容。可以用 width, height 設定。

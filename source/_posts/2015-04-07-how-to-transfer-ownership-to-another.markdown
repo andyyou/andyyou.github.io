@@ -3,7 +3,7 @@ layout: post
 title: '如何將 Azure 帳號或擁有的專案轉給另一個使用者'
 date: 2015-04-07 10:46:00
 categories: Cloud
-tags: azure
+tags: [azure]
 ---
 
 有些時候，我們會需要將一些權限或者帳單轉交給其他負責人或者公司。為了處理這個問題，你需要提交一個帳務類型的支援回報給 Microsoft。

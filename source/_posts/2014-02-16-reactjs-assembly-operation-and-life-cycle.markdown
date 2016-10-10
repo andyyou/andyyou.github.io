@@ -3,7 +3,7 @@ layout: post
 title: 'React 元件運作與生命週期'
 date: 2014-02-16 23:15:00
 categories: Program
-tags: reactjs
+tags: [reactjs]
 ---
 
 # 與瀏覽器之間的運作

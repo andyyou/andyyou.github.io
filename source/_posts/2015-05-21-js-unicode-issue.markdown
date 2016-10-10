@@ -3,7 +3,7 @@ layout: post
 title: "Javascript Unicode"
 date: 2015-05-21 12:50:00
 categories: Program
-tags: es6, javascript
+tags: [es6, javascript]
 ---
 
 為了理解 ES6 到底對於 Unicode 萬國碼有哪些新的支援。我們得從原因理解起。

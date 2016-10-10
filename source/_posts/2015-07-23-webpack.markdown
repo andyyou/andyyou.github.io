@@ -3,7 +3,7 @@ layout: post
 title: 'Webpack 筆記'
 date: 2015-07-23 08:30:00
 categories: Tools
-tags: webpack, javascript, bundler
+tags: [webpack, javascript, bundler]
 ---
 
 # 動機

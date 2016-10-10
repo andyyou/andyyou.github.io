@@ -3,7 +3,7 @@ layout: post
 title: 'React 動畫'
 date: 2014-09-13 23:02:00
 categories: Program
-tags: reactjs
+tags: [reactjs]
 ---
 
 ## 動畫

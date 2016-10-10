@@ -3,7 +3,7 @@ layout: post
 title: 'Gulp 初體驗'
 date: 2014-02-09 20:16:00
 categories: Tools
-tags: javascript, gulp, task runner
+tags: [javascript, gulp, task runner]
 ---
 # Gulp 初體驗
 從轉用 Grunt 以來其實我沒有遇到太多問題，加上大部份的 Framework 都把 Task 寫得好好的，對我來說用就好了。特別要客製的地方大概也都是小改一下別人的 Gruntfile 。

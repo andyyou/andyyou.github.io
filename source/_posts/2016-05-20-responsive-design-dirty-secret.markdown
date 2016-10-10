@@ -3,7 +3,7 @@ layout: post
 title: '響應式設計中百分比 % 的問題'
 date: 2016-05-20 12:00:00
 categories: Program
-tags: css
+tags: [css]
 ---
 
 ![](https://dab1nmslvvntp.cloudfront.net/wp-content/uploads/2016/04/1462419245A-Tale-of-CSS-and-Sass-Precision-feature.jpg)

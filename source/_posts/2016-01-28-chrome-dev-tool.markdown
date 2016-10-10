@@ -3,7 +3,7 @@ layout: post
 title: 'Chrome Dev tool 筆記'
 date: 2016-01-28 16:30:00
 categories: Tools
-tags: chrome, javascript
+tags: [chrome, javascript]
 ---
 
 # Element Panel

@@ -3,7 +3,7 @@ layout: post
 title: '快速 JS 筆記'
 date: 2015-04-28 05:30:00
 categories: Program
-tags: javascript
+tags: [javascript]
 ---
 
 基本的 Javascript 型別定義有 6 個

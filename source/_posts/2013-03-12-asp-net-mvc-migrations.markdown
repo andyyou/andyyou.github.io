@@ -3,7 +3,7 @@ layout: post
 title: 'Entity Framework Code First Migration'
 date: 2013-03-12 07:04:00
 categories: Database
-tags: entity framework
+tags: [entity framework]
 ---
 
 # 大綱

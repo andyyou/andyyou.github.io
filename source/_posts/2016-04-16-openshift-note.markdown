@@ -3,7 +3,7 @@ layout: post
 title: 'Openshift 筆記'
 date: 2016-04-16 12:00:00
 categories: System
-tags: docker
+tags: [docker]
 ---
 
 # 常用指令

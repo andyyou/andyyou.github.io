@@ -3,7 +3,7 @@ layout: post
 title: 'React 不變性的輔助函式'
 date: 2014-09-18 10:34:00
 categories: Program
-tags: reactjs
+tags: [reactjs]
 ---
 ## 不變性的輔助函式(Immutability Helpers)
 

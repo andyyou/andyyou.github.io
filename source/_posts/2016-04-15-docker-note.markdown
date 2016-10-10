@@ -3,7 +3,7 @@ layout: post
 title: 'Docker 入門筆記 - OSX'
 date: 2016-04-15 12:00:00
 categories: System
-tags: docker
+tags: [docker]
 ---
 
 首先需要先安裝 Docker Toolbox，工具包包含下面幾種工具

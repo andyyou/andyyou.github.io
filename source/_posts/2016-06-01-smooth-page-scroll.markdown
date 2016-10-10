@@ -3,7 +3,7 @@ layout: post
 title: '[譯] scroll-behavior 滑順的捲動效果'
 data: 2016-06-03 12:00:00
 categories: Program
-tags: javascript
+tags: [javascript]
 ---
 
 眾所皆知 HTML 錨點(anchor link)透過給定標籤 `id` 屬性跳到頁面上特定位置的功能。不過這個效果感覺上就像是閃一下就切換到該位置。

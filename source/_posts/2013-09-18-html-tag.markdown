@@ -3,7 +3,7 @@ layout: post
 title: 'HTML Tag'
 date: 2013-09-18 09:34:00
 categories: Program
-tags: html
+tags: [html]
 ---
 
 * `<h1> - <h6>` 標題

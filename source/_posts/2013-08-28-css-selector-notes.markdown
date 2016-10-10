@@ -3,7 +3,7 @@ layout: post
 title: 'CSS 選擇器筆記'
 date: 2013-08-28 10:25:00
 categories: Program
-tags: css
+tags: [css]
 ---
 
 ### *

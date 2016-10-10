@@ -3,7 +3,7 @@ layout: post
 title:  "歡迎使用 Jekyll"
 date:   2015-04-04 12:00:00
 categories: Program
-tags: jekyll
+tags: [jekyll]
 ---
 
 哈囉 `jekyll` ！這是一篇展示的文章。使用 `Markdown` 格式所撰寫

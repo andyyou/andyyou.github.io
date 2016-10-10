@@ -3,7 +3,7 @@ layout: post
 title: 'React Virtual DOM vs Incremental DOM vs Ember’s Glimmer'
 date: 2015-11-30 05:30:00
 categories: Program
-tags: framework, javascript
+tags: [framework, javascript]
 ---
 
 這篇文章翻譯自 [React Virtual DOM vs Incremental DOM vs Ember’s Glimmer: Fight](https://auth0.com/blog/2015/11/20/face-off-virtual-dom-vs-incremental-dom-vs-glimmer/)

@@ -3,7 +3,7 @@ layout: post
 title: '理解 Function.prototype.bind'
 date: 2014-09-16 11:47:00
 categories: Program
-tags: reactjs
+tags: [reactjs]
 ---
 
 # 前言

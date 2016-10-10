@@ -3,7 +3,7 @@ layout: post
 title: '使用 Javascript 取得元素的座標'
 date: 2015-04-07 17:31:00
 categories: Program
-tags: javascript
+tags: [javascript]
 ---
 # 前言
 由於使用 Javasript 偵測元素尺寸的方式並不直覺，每個元素有 6 個 DOM 的尺寸的屬性 `offsetWidth`, `offsetHight`, `clientWidth`, `clientHeight`, `scrollWidth`, `scrollHeight`。

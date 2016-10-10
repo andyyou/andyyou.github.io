@@ -3,7 +3,7 @@ layout: post
 title: '第一次用 CSS - Flexbox 就上手'
 date: 2015-09-09 05:30:00
 categories: Program
-tags: css
+tags: [css]
 ---
 
 Flexbox 是一種新的 CSS 3 佈局模式, 在這之前 CSS 有四種佈局模式

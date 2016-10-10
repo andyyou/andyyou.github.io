@@ -3,7 +3,7 @@ layout: post
 title: '使用 Selenium 搭配 Cloud-based 壓力測試'
 date: 2014-12-23 16:47:00
 categories: Cloud
-tags: azure, selenium
+tags: [azure, selenium]
 ---
 
 這是一篇記流水帳的操作步驟，文章翻譯自[微軟 Developer Tools Blogs](http://blogs.msdn.com/b/visualstudioalm/archive/2014/11/17/using-selenium-with-cloud-load-testing.aspx)

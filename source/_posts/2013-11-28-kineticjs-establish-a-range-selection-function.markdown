@@ -3,7 +3,7 @@ layout: post
 title: 'KineticJS 建立範圍選取功能'
 date: 2013-11-28 14:17:00
 categories: Program
-tags: javascript
+tags: [javascript]
 ---
 
 # KineticJS 介紹

@@ -3,7 +3,7 @@ layout: post
 title:  "Jekyll - Psych::Nodes (NameError)"
 date:   2015-04-04 14:49:00
 categories: Program
-tags: jekyll
+tags: [jekyll]
 ---
 
 ## Jekyll 遇到 uninitialized constant Psych::Nodes (NameError)

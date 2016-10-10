@@ -3,7 +3,7 @@ layout: post
 title: 'React 第一個實戰範例'
 date: 2014-02-07 15:36:00
 categories: Program
-tags: reactjs
+tags: [reactjs]
 ---
 
 # 學習手冊

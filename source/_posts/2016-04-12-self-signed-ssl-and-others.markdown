@@ -3,7 +3,7 @@ layout: post
 title: 'SSL 相關筆記'
 date: 2016-04-12 12:00:00
 categories: System
-tags: ssl
+tags: [ssl]
 ---
 
 # 如何自己簽一張 SSL 憑證用於測試

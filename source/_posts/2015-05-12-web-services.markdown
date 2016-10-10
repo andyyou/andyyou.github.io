@@ -3,7 +3,7 @@ layout: post
 title: 'XML 筆記'
 date: 2015-05-14 05:10:00
 categories: Program
-tags: xml
+tags: [xml]
 ---
 
 # XML

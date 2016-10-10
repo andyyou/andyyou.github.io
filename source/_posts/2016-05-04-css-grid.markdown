@@ -3,7 +3,7 @@ layout: post
 title: 'CSS Grid 介紹'
 date: 2016-05-04 12:00:00
 categories: Program
-tags: css
+tags: [css]
 ---
 
 當我們要建置複雜的網站時 Grids 是非常重要的。其重要性我們可以從大量的 CSS 框架中窺知ㄧ二，因為幾乎所有的框架都有提供網格(Grids)系統來加速開發。

@@ -3,7 +3,7 @@ layout: post
 title: 'Node 實作 jwt 驗證 API'
 date: 2016-06-09 12:00:00
 categories: Program
-tags: javascript, jwt, api, nodejs
+tags: [javascript, jwt, api, nodejs]
 ---
 
 # 基於 token 的驗證機制

@@ -3,7 +3,7 @@ layout: post
 title: 'requestAnimationFrame 筆記'
 date: 2016-05-12 12:00:00
 categories: Program
-tags: javascript
+tags: [javascript]
 ---
 
 在 Javascript 我們曾經只有一種方式來處理跟特定時間有關的循環事件: `setInterval()`。簡單說就是當你需要重複某些任務時(依據時間)。

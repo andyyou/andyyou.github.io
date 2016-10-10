@@ -3,7 +3,7 @@ layout: post
 title: '認識 ES6 Decorator '
 date: 2015-10-15 05:30:00
 categories: Program
-tags: es6, javascript
+tags: [es6, javascript]
 ---
 
 在這篇文章中我們將要探討如何使用 ES7 的新功能.

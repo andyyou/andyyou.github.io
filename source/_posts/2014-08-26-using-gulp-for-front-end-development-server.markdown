@@ -3,7 +3,7 @@ layout: post
 title: '使用 Gulp 為前端開發伺服器'
 date: 2014-08-26 19:59:00
 categories: Tools
-tags: javascript, task runner, gulp
+tags: [javascript, task runner, gulp]
 ---
 
 因為 `Gulp` 這個任務執行工具最近越來越流行，所以想說試著用它來做些事情，其實它跟 Grunt 一樣可以拿來處理很多事情像是整合 Javascript 檔案，壓縮圖片等等。如果你之前從來沒聽過 Gulp 這裡建議您先閱讀 [英文教學](http://code.tutsplus.com/tutorials/managing-your-build-tasks-with-gulpjs--net-36910), [Gulp 初體驗](http://andyyou.logdown.com/posts/178360-gulp-first-experience)。

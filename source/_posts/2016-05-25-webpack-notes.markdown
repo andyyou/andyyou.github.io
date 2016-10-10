@@ -3,7 +3,7 @@ layout: post
 title: 'Vue + webpack 起手式'
 date: 2016-10-04 12:00:00
 categories: Program
-tags: vuejs, webpack, javascript
+tags: [vuejs, webpack, javascript]
 ---
 # 介紹
 

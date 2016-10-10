@@ -3,7 +3,7 @@ layout: post
 title: 'Grunt 系列(2) 設定'
 date: 2013-09-29 12:19:00
 categories: Tools
-tags: javascript, grunt, package manager
+tags: [javascript, grunt, package manager]
 ---
 
 這篇教學將會解釋如何使用 Gruntfile 為你的專案設定任務。如果你還不知道什麼是 Gruntfile 請回到上一篇 [Grunt 入門](http://andyyou.logdown.com/posts/141718-grunt) 閱讀。

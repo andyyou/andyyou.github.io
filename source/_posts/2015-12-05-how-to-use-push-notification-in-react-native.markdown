@@ -3,7 +3,7 @@ layout: post
 title: 'React Native Push Notifications'
 date: 2015-12-08 05:00:00
 categories: Mobile
-tags: javascript, reactjs, react native
+tags: [javascript, reactjs, react native]
 ---
 
 # 在 React Native 中的 Push Notifications

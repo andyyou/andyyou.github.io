@@ -3,7 +3,7 @@ layout: post
 title: "Facebook Bot 開發小技巧"
 date: 2016-08-26 12:00:00
 categories: Tools
-tags: bot, facebook, javascript
+tags: [bot, facebook, javascript]
 ---
 
 ## 流程

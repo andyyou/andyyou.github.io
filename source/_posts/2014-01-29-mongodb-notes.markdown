@@ -3,7 +3,7 @@ layout: post
 title: 'MongoDB 快速入門筆記'
 date: 2014-01-29 13:13:00
 categories: Database
-tags: mongodb
+tags: [mongodb]
 ---
 
 ## 安裝

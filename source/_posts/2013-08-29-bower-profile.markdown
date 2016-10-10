@@ -3,7 +3,7 @@ layout: post
 title: 'Bower 簡介'
 date: 2013-08-29 14:09:00
 categories: Tools
-tags: javascript, package manager
+tags: [javascript, package manager]
 ---
 
 Bower 是一套管理網頁套件的工具，他提供了一種通用且不受限制的方案來解決管理前端相關的套件如：jquery。

@@ -3,7 +3,7 @@ layout: post
 title: 'OSX EL - Install Apache, MySQL, PHP Note '
 date: 2015-10-04 05:30:00
 categories: System
-tags: php, osx
+tags: [php, osx]
 ---
 
 # Use Apache OSX 10.11

@@ -3,7 +3,7 @@ layout: post
 title: 'Devise 快速上手'
 date: 2015-04-04 12:05:00
 categories: Program
-tags: ruby, RoR, devise
+tags: [ruby, RoR, devise]
 ---
 
 ## devise 使用筆記

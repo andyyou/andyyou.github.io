@@ -3,7 +3,7 @@ layout: post
 title:  "ActiveRecord 雜記"
 date: 2015-04-04 12:00:00
 categories: Program
-tags: ruby, RoR
+tags: [ruby, RoR]
 ---
 
 ## 優化 Model count

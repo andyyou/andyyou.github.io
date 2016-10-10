@@ -3,7 +3,7 @@ layout: post
 title: '第一次用 jspm 就上手'
 date: 2015-08-13 15:00:00
 categories: Tools
-tags: jspm, javascript, bundler, package manager, nodejs
+tags: [jspm, javascript, bundler, package manager, nodejs]
 ---
 
 # 何謂 jspm ?

@@ -3,7 +3,7 @@ layout: post
 title: 'React cloneWithProps 與實作 Tabs'
 date: 2014-09-16 16:16:00
 categories: Program
-tags: reactjs
+tags: [reactjs]
 ---
 
 # 實作一個 Tabs 元件

@@ -3,7 +3,7 @@ layout: post
 title: 'IISExpress 使用 IP 連線'
 date: 2015-05-14 05:30:00
 categories: System
-tags: windows, iisexpress
+tags: [windows, iisexpress]
 ---
 
 這個需求是我在 OSX VM 底下用 Windows 開發 Web 時希望從 OSX 這邊或者給內網的其他使用者快速連到 Visual Studio 的 Development Server 而產生的。

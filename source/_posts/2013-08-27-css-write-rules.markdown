@@ -3,7 +3,7 @@ layout: post
 title: 'CSS 覆寫規則'
 date: 2013-08-27 11:55:00
 categories: Program
-tags: css
+tags: [css]
 ---
 你是否曾經遇過這種情形，當您試著要套用某個 CSS 規則到元素的時候，它就是不產生變化。
 網頁看起來就是忽略了您的 CSS ，然後根本搞不清楚到底是為什麼。

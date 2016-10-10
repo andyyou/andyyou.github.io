@@ -3,7 +3,7 @@ layout: post
 title: 'React 複合式元件'
 date: 2014-02-12 23:56:00
 categories: Program
-tags: reactjs
+tags: [reactjs]
 ---
 
 # 複合式元件

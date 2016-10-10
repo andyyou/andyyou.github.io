@@ -3,7 +3,7 @@ layout: post
 title: 'CSS 背景圖片排版'
 date: 2015-04-09 16:30:00
 categories: Program
-tags: css
+tags: [css]
 ---
 
 使用 CSS 套用背景圖片到元素中可能是您前端設計過程中最常用到的功能。

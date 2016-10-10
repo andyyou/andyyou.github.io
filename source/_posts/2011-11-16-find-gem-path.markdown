@@ -3,7 +3,7 @@ layout: post
 title: 'Get gem path'
 date: 2011-11-16 23:20:00
 categories: Program
-tags: ruby
+tags: [ruby]
 ---
 
 ## 取得Gem環境資訊

@@ -3,7 +3,7 @@ layout: post
 title: 'ES6 Generators 基礎'
 date: 2015-05-20 05:30:00
 categories: Program
-tags: es6, javascript
+tags: [es6, javascript]
 ---
 
 在 Javascript ES6 的新功能中，有一個新品種的 function 稱為 `generator` 這個名字有點奇怪，不過它的行為在第一次看到的時候似乎更加奇怪。這篇筆記目的在解釋關於 generator 基本的運作原理。

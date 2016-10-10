@@ -3,7 +3,7 @@ layout: post
 title: 'Flux 概念詳述篇'
 date: 2014-11-11 12:25:00
 categories: Program
-tags: reactjs, flux
+tags: [reactjs, flux]
 ---
 
 # 介紹

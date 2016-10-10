@@ -3,7 +3,7 @@ layout: post
 title: '深入 React 生命週期'
 date: 2015-12-17 05:00:00
 categories: Program
-tags: reactjs, javascript
+tags: [reactjs, javascript]
 ---
 
 ![](http://i.imgur.com/ZXhnb9I.png)

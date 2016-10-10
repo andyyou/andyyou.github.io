@@ -3,7 +3,7 @@ layout: post
 title: '[譯] CSS 載入的未來'
 date: 2016-02-18 00:30:00
 categories: Program
-tags: css
+tags: [css]
 ---
 
 這週閱讀到這篇有意思的[文章](https://jakearchibald.com/2016/link-in-body/)，於是便動手

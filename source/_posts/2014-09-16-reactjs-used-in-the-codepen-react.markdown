@@ -3,7 +3,7 @@ layout: post
 title: '在 CodePen 中使用 React'
 date: 2014-09-16 13:20:00
 categories: Program
-tags: reactjs
+tags: [reactjs]
 ---
 
 ## 在 codepen.io 上使用 React

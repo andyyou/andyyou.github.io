@@ -3,7 +3,7 @@ layout: post
 title: 'JSX 常見的陷阱'
 date: 2014-02-10 11:00:00
 categories: Program
-tags: reactjs
+tags: [reactjs]
 ---
 
 # JSX 常見的陷阱

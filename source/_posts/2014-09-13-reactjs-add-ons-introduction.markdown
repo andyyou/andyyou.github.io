@@ -3,7 +3,7 @@ layout: post
 title: 'React 附加組件介紹'
 date: 2014-09-13 10:15:00
 categories: Program
-tags: reactjs
+tags: [reactjs]
 ---
 ## 附加組件(Add-ons)
 官方會把一些實用的共用工具放置在 `React.addons`。這些工具應該暫時被視為還在實驗階段，但最後官方應該會將其整合進核心功能或者如下列共用的工具函式庫:

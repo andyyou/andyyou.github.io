@@ -3,7 +3,7 @@ layout: post
 title: '筆記 Javascript 的 constructors, prototypes, new 關鍵字'
 date: 2016-09-22 12:00:00
 categories: Program
-tags: javascript
+tags: [javascript]
 ---
 
 您是否曾困惑關於 Javascript 中的 `new` 關鍵字呢？是否曾想理解關於 function 和 constructor 的不同是什麼？

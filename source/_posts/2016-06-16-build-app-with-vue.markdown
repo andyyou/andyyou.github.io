@@ -3,7 +3,7 @@ layout: post
 title: "Vue 實作簡易驗證機制 App"
 date: 2016-06-18 12:00:00
 categories: Program
-tags: vuejs, javascript
+tags: [vuejs, javascript]
 ---
 
 為了顯示出 Vue.js 強大的能力 ，本文將會逐步指導建置一個簡單的前端應用程式。搭配 Node 所建置的後端程式範例。前後端兩個程式是完全分離的，後端使用 RESTful API 的方式負責取得資料與驗證。本文旨在說明如何替 Vue.js 程式加上驗證機制，過程中我們會使用 `vue-router`, `vue-resource` 實作 `Login` 與 `Signup` 元件展示如何檢索和儲存使用者的 `jwt token`，最後執行驗證機制取得那些需要授權的資料。

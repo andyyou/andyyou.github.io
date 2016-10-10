@@ -3,7 +3,7 @@ layout: post
 title: 'Gulp 使用問題與記錄'
 date: 2014-09-10 20:14:00
 categories: Tools
-tags: gulp, task runner, javascript
+tags: [gulp, task runner, javascript]
 ---
 
 這篇文章除了記錄一下最後只是堪用的解法，如果有高手知道更好的做法煩請賜教。

@@ -3,7 +3,7 @@ layout: post
 title: '[譯] 透過重新實作來學習參透閉包'
 date: 2016-02-23 12:00:00
 categories: Program
-tags: javascript
+tags: [javascript]
 ---
 
 原文出處: [連結](http://www.sitepoint.com/quick-tip-master-closures-by-reimplementing-them-from-scratch/?utm_medium=email&utm_campaign=SitePoint%20JavaScript%20Newsletter%20%20February%2022%202016&utm_content=SitePoint%20JavaScript%20Newsletter%20%20February%2022%202016+Version+A+CID_b7922c27f8cf7091c1aec57998c5ddf6&utm_source=CampaignMonitor%20SitePoint&utm_term=Master%20Closures%20by%20Reimplementing%20Them%20from%20Scratch)

@@ -3,7 +3,7 @@ layout: post
 title: 'React 實作一個 Tabs 元件'
 date: 2014-10-07 09:13:00
 categories: Program
-tags: reactjs
+tags: [reactjs]
 ---
 
 # 實作一個 Tabs 元件

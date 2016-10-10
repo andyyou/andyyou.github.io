@@ -3,7 +3,7 @@ layout: post
 title: '[譯] Houdini: 你還沒聽說！這可能是 CSS 開發中最令人興奮的事！'
 date: 2016-03-31 17:30:00
 categories: Program
-tags: css
+tags: [css]
 ---
 
 > 其實...我想說這可能是最令我感到興奮..但又害怕頭痛的功能... - [原文連結](https://www.smashingmagazine.com/2016/03/houdini-maybe-the-most-exciting-development-in-css-youve-never-heard-of/)

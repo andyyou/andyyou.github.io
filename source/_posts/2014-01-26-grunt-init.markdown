@@ -3,7 +3,7 @@ layout: post
 title: 'grunt-init 使用教學與 grunt-init-simple-server'
 date: 2014-01-26 12:13:00
 categories: Tools
-tags: grunt, javascript
+tags: [grunt, javascript]
 ---
 
 在開始如何製作自己的 `grunt-init` 樣板的教學之前，先分享[grunt-init-simple-server](https://github.com/AndyYou/grunt-init-simple-server)。由於小弟玩性太重三天兩頭就喜歡換 framework 所以才寫了這個簡單的 grunt task。可以方便在學習新的前端技術的時候快速地幫專案加上一個簡易地 server。

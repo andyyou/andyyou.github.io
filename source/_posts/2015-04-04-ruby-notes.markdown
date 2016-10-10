@@ -3,7 +3,7 @@ layout: post
 title: 'Ruby 快速筆記'
 date: 2015-04-04 12:00:00
 categories: Program
-tags: ruby
+tags: [ruby]
 ---
 
 ## Ruby 快速筆記

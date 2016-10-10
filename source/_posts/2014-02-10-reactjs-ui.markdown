@@ -3,7 +3,7 @@ layout: post
 title: 'React 互動式動態 UI'
 date: 2014-02-10 21:43:00
 categories: Program
-tags: reactjs
+tags: [reactjs]
 ---
 # 互動式動態 UI
 

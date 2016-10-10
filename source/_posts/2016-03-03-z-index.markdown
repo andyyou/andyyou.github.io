@@ -3,7 +3,7 @@ layout: post
 title: '深入 css z-index 屬性'
 data: 2016-03-03 12:00:00
 categories: Program
-tags: css
+tags: [css]
 ---
 
 說來汗顏，一直以來對於 css 常常是不求勝解。直到自己需要打造自己的`輪子`才發現對 `z-index` 完全不熟悉。

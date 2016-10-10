@@ -3,7 +3,7 @@ layout: post
 title: '參透 OOCSS'
 date: 2015-08-11 05:40:00
 categories: Program
-tags: oocss, css
+tags: [oocss, css]
 ---
 
 # OOCSS 的兩個核心觀念

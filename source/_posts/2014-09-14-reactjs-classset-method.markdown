@@ -3,7 +3,7 @@ layout: post
 title: 'React classSet 方法'
 date: 2014-09-14 13:18:00
 categories: Program
-tags: reactjs
+tags: [reactjs]
 ---
 ## 操作樣式名稱(Class)
 `classSet()` 是一個協助您快速操作 DOM 裏 `class` 字串的工具。

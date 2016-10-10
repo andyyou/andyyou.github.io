@@ -3,7 +3,7 @@ layout: post
 title: 'Javascript Array 筆記'
 date: 2016-02-16 16:30:00
 categories: Program
-tags: javascript
+tags: [javascript]
 ---
 
 方法範例

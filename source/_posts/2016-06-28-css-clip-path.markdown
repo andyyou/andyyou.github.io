@@ -3,7 +3,7 @@ layout: post
 title: "[譯] 學習 CSS clip-path 屬性"
 date: 2016-06-28 12:00:00
 categories: Program
-tags: css
+tags: [css]
 ---
 
 整體來說網頁主要是由`矩形`所構成的，另一方面印刷品則具備相對多樣性。造成這樣差異的原因有很多，不過其中一個即是缺少合適的工具。

@@ -3,7 +3,7 @@ layout: post
 title: 'React 單元測試'
 date: 2014-09-15 18:12:00
 categories: Program
-tags: reactjs
+tags: [reactjs]
 ---
 
 ## 單元測試

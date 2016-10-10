@@ -3,7 +3,7 @@ layout: post
 title: '重讀 Axel 的 Javascript 中的 Expression vs Statement 一文'
 date: 2016-03-06 12:00:00
 categories: Program
-tags: javascript
+tags: [javascript]
 ---
 
 # 前言

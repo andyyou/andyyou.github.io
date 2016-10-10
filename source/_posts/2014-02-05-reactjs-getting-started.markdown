@@ -3,7 +3,7 @@ layout: post
 title: 'React 快速概覽'
 date: 2014-02-05 11:17:00
 categories: Program
-tags: reactjs
+tags: [reactjs]
 ---
 
 # 入門

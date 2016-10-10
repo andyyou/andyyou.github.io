@@ -3,7 +3,7 @@ layout: post
 title: 'Develop environment install note'
 date: 2014-01-28 12:06:00
 categories: System
-tags: osx
+tags: [osx]
 ---
 
 * [Solarized](http://ethanschoonover.com/solarized)

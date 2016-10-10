@@ -3,7 +3,7 @@ layout: post
 title: "Javascript 三種宣告的差異"
 date: 2016-03-01 12:00:00
 categories: Program
-tags: javascript
+tags: [javascript]
 ---
 
 關於下面這三種宣告的差異

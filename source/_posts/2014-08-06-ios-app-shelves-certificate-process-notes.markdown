@@ -3,7 +3,7 @@ layout: post
 title: 'iOS App Store 上架憑證流程筆記'
 date: 2014-08-06 15:01:00
 categories: Mobile
-tags: ios
+tags: [ios]
 ---
 
 在開發幾個 App 之後對於上架簽署憑證之間的關係一直沒有搞的很清楚，所以做了一下筆記。

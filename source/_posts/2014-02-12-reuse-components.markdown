@@ -3,7 +3,7 @@ layout: post
 title: 'React 重複利用元件'
 date: 2014-02-12 23:58:00
 categories: Program
-tags: reactjs
+tags: [reactjs]
 ---
 
 # 重複利用元件

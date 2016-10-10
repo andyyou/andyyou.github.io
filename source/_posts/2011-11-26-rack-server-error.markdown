@@ -3,7 +3,7 @@ layout: post
 title: '處理 Rack Server Error'
 date: 2011-11-26 04:05:00
 categories: Program
-tags: ruby, RoR
+tags: [ruby, RoR, rack server]
 ---
 
 ## 錯誤訊息：

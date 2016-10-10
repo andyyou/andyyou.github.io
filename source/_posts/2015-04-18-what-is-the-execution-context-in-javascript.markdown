@@ -3,7 +3,7 @@ layout: post
 title: '理解 Javascript 執行環境'
 date: 2015-04-18 05:30:00
 categories: Program
-tags: javascript
+tags: [javascript]
 ---
 
 # Javascript 中的執行環境與堆疊

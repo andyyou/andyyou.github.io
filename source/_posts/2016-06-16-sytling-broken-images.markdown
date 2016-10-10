@@ -3,7 +3,7 @@ layout: post
 title: '[譯] 美化無法載入的圖片 <img>'
 date: 2016-06-16 12:00:00
 categories: Program
-tags: css
+tags: [css]
 ---
 
 當網頁中無法載入圖片(通常是圖片連結失效或錯誤)時，瀏覽器預設會幫我們顯示一個小小的圖示告知我們連結失效了。

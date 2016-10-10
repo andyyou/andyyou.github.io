@@ -3,7 +3,7 @@ layout: post
 title: '手把手深入理解 webpack dev middleware 原理與相關 plugins'
 date: 2016-05-30 12:00:00
 categories: Tools
-tags: webpack, javascript
+tags: [webpack, javascript]
 ---
 
 本文將對 webpack 周邊的 middleware 與 plugin 套件等作些介紹，若您對於 webpack 還不了解可以參考這篇[彙整的翻譯](http://andyyou.github.io/javascript/2015/07/23/webpack.html)

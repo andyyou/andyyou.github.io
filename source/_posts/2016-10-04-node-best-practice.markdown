@@ -3,7 +3,7 @@ layout: post
 title: "npm 最佳實作的小技巧"
 date: 2016-10-04 12:00:00
 categories: Program
-tags: javascript, nodejs, package manager
+tags: [javascript, nodejs, package manager]
 ---
 
 # npm 最佳實作

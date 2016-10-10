@@ -3,7 +3,7 @@ layout: post
 title: 'PHP 環境 OSX 10.9'
 date: 2013-10-29 20:04:00
 categories: System
-tags: php, osx
+tags: [php, osx]
 ---
 
 更新 Mavericks 小牛之後會發現 `httpd.conf` 被取代了。不過舊的檔案放在 `/private/etc/apache2/httpd.conf.pre-update`

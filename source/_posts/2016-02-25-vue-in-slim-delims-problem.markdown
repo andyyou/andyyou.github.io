@@ -3,7 +3,7 @@ layout: post
 title: 'Vue.js in Slim 語法的小問題 Slim::Parser::SyntaxError'
 date: 2016-02-25 12:00:00
 categories: Program
-tags: vuejs, slim, javascript, RoR
+tags: [vuejs, slim, javascript, RoR]
 ---
 
 當我們使用 `Vue.js` 搭配 `slim` 時(事實上 `Angular` 應該也有相同的問題)時

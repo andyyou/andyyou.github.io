@@ -3,7 +3,7 @@ layout: post
 title: 'Linux/Windows RSA Key 常用指令'
 date: 2011-11-16 05:30:00
 categories: System
-tags: linux
+tags: [linux]
 ---
 
 ~~~bash

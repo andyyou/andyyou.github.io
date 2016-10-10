@@ -3,7 +3,7 @@ layout: post
 title: 'Psql 學習記錄'
 date: 2015-04-06 20:18:00
 categories: Database
-tags: postgresql
+tags: [postgresql]
 ---
 
 # 何謂 `psql`

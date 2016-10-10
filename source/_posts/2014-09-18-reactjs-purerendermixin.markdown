@@ -3,7 +3,7 @@ layout: post
 title: 'React PureRenderMixin'
 date: 2014-09-18 11:53:00
 categories: Program
-tags: reactjs
+tags: [reactjs]
 ---
 
 ## PureRenderMixin

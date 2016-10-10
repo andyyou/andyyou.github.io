@@ -3,7 +3,7 @@ layout: post
 title: 'Cache 筆記'
 date: 2016-03-08 19:00:00
 categories: Program
-tags: cache, mechanism
+tags: [cache, mechanism]
 ---
 
 * 瀏覽器 cache 是一種機制，透過特定狀態告知瀏覽器不需要重新下載檔案

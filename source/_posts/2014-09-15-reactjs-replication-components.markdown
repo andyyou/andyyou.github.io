@@ -3,7 +3,7 @@ layout: post
 title: 'React 複製元件'
 date: 2014-09-15 21:40:00
 categories: Program
-tags: reactjs
+tags: [reactjs]
 ---
 ## 複製元件
 在少數的情況下，某個元件可能想要變更不屬於自己的 `props`(例如: 修改 `this.props.children` 的 `className` )。

@@ -3,7 +3,7 @@ layout: post
 title: '輕鬆學 Flux'
 date: 2014-11-15 20:58:00
 categories: Program
-tags: reactjs
+tags: [reactjs]
 ---
 
 # 前言

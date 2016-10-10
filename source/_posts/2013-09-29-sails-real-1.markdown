@@ -3,7 +3,7 @@ layout: post
 title: 'Sails 實作筆記'
 date: 2013-09-29 10:14:00
 categories: Program
-tags: framework, javascript
+tags: [framework, javascript]
 ---
 
 # 何謂 sails.js

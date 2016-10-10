@@ -3,7 +3,7 @@ layout: post
 title: 'viewport 與 media query'
 date: 2013-08-28 14:11:00
 categories: Program
-tags: css
+tags: [css]
 ---
 
 # 簡易觀念

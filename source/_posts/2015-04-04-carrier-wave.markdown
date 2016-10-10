@@ -3,7 +3,7 @@ layout: post
 title:  "Carrier Wave 使用筆記"
 date: 2015-04-04 12:00:00
 categories: Program
-tags: ruby, RoR, carrier wave
+tags: [ruby, RoR, carrier wave]
 ---
 
 ## Carrier Wave

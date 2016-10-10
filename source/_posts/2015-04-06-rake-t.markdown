@@ -3,7 +3,7 @@ layout: post
 title: 'rake db 常用指令備註'
 date: 2015-04-06 05:30:00
 categories: Program
-tags: ruby, RoR
+tags: [ruby, RoR]
 ---
 
 ~~~bash

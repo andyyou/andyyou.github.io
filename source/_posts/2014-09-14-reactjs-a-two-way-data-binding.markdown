@@ -3,7 +3,7 @@ layout: post
 title: 'React 雙向資料繫結'
 date: 2014-09-14 12:19:00
 categories: Program
-tags: reactjs
+tags: [reactjs]
 ---
 ## 雙向繫結(Two-way binding)輔助函式
 `React` 可以搭配 `ReactLink` 是一種實作雙向資料繫結較簡單的方式。

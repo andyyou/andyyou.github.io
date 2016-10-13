@@ -3,7 +3,7 @@ layout: post
 title: 'RaspberryPi with node 安裝筆記'
 date: 2016-03-08 19:00:00
 categories: System
-tags: [raspberry]-pi, javascript, nodejs
+tags: [raspberry-pi, javascript, nodejs]
 ---
 
 安裝完 NOOBS 之後...

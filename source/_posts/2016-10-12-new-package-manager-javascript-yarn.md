@@ -5,11 +5,11 @@ categories:
 tags:
 ---
 
-> 本文轉譯至[Yarn: A new package manager for JavaScript](https://code.facebook.com/posts/1840075619545360)。
+> 本文轉譯並補充自 - [Yarn: A new package manager for JavaScript](https://code.facebook.com/posts/1840075619545360)。
 
-在 Javascript 社群中，開發者們分享成千上萬的原始碼讓我們可以省去重造輪子，不用重新打造函式庫，框架，元件等。
+在 Javascript 社群中，開發者們分享成千上萬的原始碼讓我們可以省去重造輪子的時間，不用重新打造函式庫，框架，元件等。
 而每段原始碼都有可能相依於其他原始碼片段，這些相依的程式碼通常會透過套件管理（package manager）來管理。
-其中在 Javascript 裡，最熱門的就屬 `npm` ，在上面有 5 百萬個開發者提供了超過 300,000 模組，更驚人的是每個月有超過 5 億次的下載量。
+其中在 Javascript 裡，最熱門的就屬 `npm` ，在上面有 5 百萬個開發者，套件庫提供了超過 300,000 模組，更驚人的是每個月有超過 5 億次的下載量。
 
 <!--more-->
 
@@ -18,7 +18,7 @@ Facebook 的團隊使用 npm 客戶端工具已經好幾年了，隨著原始碼
 
 這東西叫做 `Yarn` - 一個快速，可靠，更安全取代 npm 客戶端的工具。
 
-我們很開心的發佈釋出 Yarn 為開放原始碼專案，並和 Exponent, Google, Tilde 協作。使用 Yarn ，開發者仍然存取 npm 套件庫 （npm registry），但可以更快速的安裝和管理套件，保持套件的一致性，確保離線環境的安全性。
+我們很開心的發佈釋出 Yarn 為開放原始碼專案，並和 Exponent, Google, Tilde 協作。使用 Yarn ，開發者仍然存取 npm 套件庫 （npm registry），但可以更快速的安裝和管理套件，保持套件的一致性，可靠的離線環境~~的安全性~~。
 Yarn 讓開發者在使用這些分享的開源碼時可以自信的更新，替換，因此開發者們可以專注在他們的任務 - 開發產品和功能。
 
 > npm registry 收錄開發者提供模組的檔案庫與其對應資訊列表，翻譯為註冊表，但譯者認為套件庫較能表達其意義。
@@ -33,7 +33,7 @@ Facebook 的許多專案像是 React，也相依於 npm 上面的程式碼。然
 
 起初，跟著官方的最佳實踐，我們只檢查 `package.json` 然後要求開發者手動執行 `npm install`。這對開發者來說運作還算良好，不過卻在我們持續整合環境（continuous integration environments）中出現問題，因為該環境處於沙箱模式，並且基於安全性的因素不與外部網路連接。
 
-接著我們的解決方案則是檢查所有的 `node_modules` 然後存到套件庫（registry）。雖然它能運作，但同時讓一些簡單的操作變得非常困難。舉例來說更新次版號的 babel 會產生高達 800,000 行的 commit 導致完整下載，執行 lint 規則檢查像是不符合規範的 utf8 字節序列，windows 行結尾，非 png 壓縮圖片，等等等這些任務很難完成。合併 node_modules 的修改很可能就耗掉開發者一整天。
+接著我們的解決方案則是檢查所有的 `node_modules` 然後存到檔案庫裡~~套件庫（registry）~~。雖然它能運作，但同時讓一些簡單的操作變得非常困難。舉例來說更新次版號的 babel 會產生高達 800,000 行的 commit 導致完整下載，執行 lint 規則檢查像是不符合規範的 utf8 字節序列，windows 行結尾，非 png 壓縮圖片，等等等這些任務變得很難完成。合併 node_modules 的修改很可能就耗掉開發者一整天。
 
 我們的版本控制團隊也指出那些我們 check-in 的 `node_modules` 目錄包含了太大量的 metadata。例如：React Native 的 `package.json` 現在就有 68 個相依的模組，然後在執行 `npm install` 之後 node_modules 目錄包含了 121,358 個檔案。
 
@@ -72,6 +72,7 @@ Yarn 是一個新的套件管理工具，主要用來取代既有的工作流程
 在 Node 的生態圈裡，相依的模組會被放在專案下的 node_modules 目錄。然而隨著合併重複模組的狀況，這個檔案結構可能不同於真實的目錄結構
 
 > 譯者補充：npm 顯示的相依階層跟實際目錄結構不同。
+
 ![](http://imgur.com/Dpf7pVy.png)
 
 npm 客戶端工具安裝相依模組到 node_modules 目錄並不會依據模組結構（不確定性）。意味著它只會依序安裝模組，而 node_modules 目錄中的結構每一個人可能是不一樣的。這些差異可能最造成『我可以跑啊』的狀況，通常需要很長的時間去找問題點。
@@ -95,7 +96,7 @@ Yarn 會嚴格把關整個安裝流程，協助您掌控安裝流程。套件的
 
 * 與 npm 和 bower 相容，同時也支援不同的套件庫（registry）
 * 嚴格限制安裝套件的 Licenses 和輸出相關訊息
-* 提供 API 協助建置工具取得輸出一些工具（譯者註：此部分[尚未完成，更多資訊參考此 Issue](https://github.com/yarnpkg/yarn/issues/906)）
+* 提供 API 協助建置工具取得輸出~~一些工具~~的資訊（譯者註：此部分[尚未完成，更多資訊參考此 Issue](https://github.com/yarnpkg/yarn/issues/906)）
 * 精簡有意義且美觀的指令輸出資訊
 
 # 使用 Yarn 於正式環境

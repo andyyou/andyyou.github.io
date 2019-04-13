@@ -13,7 +13,7 @@
 <meta property="og:site_name" content="DEVLOG of andyyou">
 <meta property="og:description" content="如果您曾好奇為什麼在網路上搜尋到關於 Let’s encrypt 的設定有各式各樣的作法，或者想要好好的理解一下 certbot 的使用方式那麼本篇筆記就是您所需要的。">
 <meta property="og:locale" content="zh-TW">
-<meta property="og:updated_time" content="2019-04-13T02:53:40.000Z">
+<meta property="og:updated_time" content="2019-04-13T03:55:44.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="解析 Certbot（Let&#39;s encrypt） 使用方式">
 <meta name="twitter:description" content="如果您曾好奇為什麼在網路上搜尋到關於 Let’s encrypt 的設定有各式各樣的作法，或者想要好好的理解一下 certbot 的使用方式那麼本篇筆記就是您所需要的。">
@@ -262,7 +262,7 @@ ga('send', 'pageview');
 <li>webroot （自備 HTTP 伺服器，自行設定 acme-challenge 部分）<code>certbot certonly --webroot</code></li>
 <li>手動（自備 HTTP 伺服器 、其他主機）<code>certbot certonly --manual</code></li>
 <li>DNS 套件 <code>certbot certonly --dns-PLUGIN</code></li>
-<li>Standalone（Certbot 提供獨立 HTTP 伺服器部分）<code>certonly --standalone</code></li>
+<li>Standalone（Certbot 提供獨立 HTTP 伺服器部分）<code>certbot certonly --standalone</code></li>
 </ul>
 <p>上面筆者只是依照常用的作法概略列出好讓您理解其中的差異，但這並沒有羅列所有作法，分類上也不嚴謹您應該參考<a href="https://certbot.eff.org/docs/using.html#getting-certificates-and-choosing-plugins" target="_blank" rel="noopener">官方文件的說明</a>。</p>
 <h5 id="全自動設定"><a href="#全自動設定" class="headerlink" title="全自動設定"></a>全自動設定</h5><p>執行下面指令會自動取得憑證且 Certbox 會編輯 Nginx 的設定協助完成流程，一道指令完成設定。但前提是您的伺服器和 DNS 須先設定好一般 <em>http</em> 連線的部分。</p>

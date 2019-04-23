@@ -3,7 +3,7 @@ layout: post
 title: 'Model Binding Validation 資料模型的驗證機制'
 date: 2013-03-13 05:10
 categories: Program
-tags: .net mvc
+tags: [".net mvc"]
 ---
 
 

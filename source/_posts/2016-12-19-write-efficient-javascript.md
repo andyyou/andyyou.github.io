@@ -2,7 +2,7 @@
 title: 撰寫高效能的 Javascript 小技巧
 categories: Program
 date: 2016-12-19 15:28:45
-tags: javascript
+tags: [javascript]
 ---
 
 這篇文章將會介紹簡單的技巧來優化我們的程式碼讓 Javascript 編譯的過程更具效率，最終我們的程式碼可以執行的更加快速。

@@ -1,8 +1,8 @@
 ---
 title: "[譯] Yarn - Javascript 新一代套件管理"
 date: 2016-10-12 09:08:12
-categories:
-tags:
+categories: Program
+tags: ["javascript"]
 ---
 
 > 本文轉譯並補充自 - [Yarn: A new package manager for JavaScript](https://code.facebook.com/posts/1840075619545360)。

@@ -1,7 +1,7 @@
 ---
 title: AWS 入門
 categories: Cloud
-tags: aws
+tags: [aws]
 ---
 
 # 存取管理 AWS 的方式

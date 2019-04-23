@@ -2,7 +2,7 @@
 title: AWS IAM 筆記
 date: 2016-10-14 11:42:15
 categories: Cloud
-tags: aws
+tags: [aws]
 ---
 
 

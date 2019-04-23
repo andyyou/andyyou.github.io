@@ -2,7 +2,7 @@
 title: "關於 Javascript {} + {}"
 date: 2016-12-26 19:32:29
 categories: Program
-tags: javascript
+tags: ["javascript"]
 ---
 
 這篇文章源自 [What is {} + {} in JavaScript?](http://www.2ality.com/2012/01/object-plus-object.html) 其實早在 2012 年就問世了。

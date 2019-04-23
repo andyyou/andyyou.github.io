@@ -14,9 +14,9 @@ tags: [css]
 
 <!--more-->
 
-~~~css
+```css
 @media screen and (max-width:420px){  // css here }
-~~~  
+```
 
 來針對各種 size 的 width 做對應的設計，而裝置瀏覽器的解析度又可以使用 meta 來設定，就可以使用百分比來處理設計。
 原理的概念大致就如上敘述。

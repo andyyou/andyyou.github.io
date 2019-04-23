@@ -52,3 +52,5 @@ console.log(add(4, 5)) // 9
 # require 的運作機制
 
 模組在 Node 載入機制第一次載入時是會快取（cache）。這表示不管您呼叫 `require('awesome-module')` 多少次，都會取得相同的物件實例。
+
+https://blog.risingstack.com/node-js-at-scale-module-system-commonjs-require/

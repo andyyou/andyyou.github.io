@@ -5,18 +5,18 @@
     
     <title>更新 heroku-18 | DEVLOG of andyyou</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <meta name="description" content="因舊有 Heroku Cedar-14 stack 不再支援須更新。">
+    <meta name="description" content="因舊有 Heroku Cedar-14 stack 將進入 EOL。">
 <meta name="keywords" content="heroku,rails,ruby">
 <meta property="og:type" content="article">
 <meta property="og:title" content="更新 heroku-18">
 <meta property="og:url" content="//andyyou.github.io/2019/05/02/upgrade-heroku-18/index.html">
 <meta property="og:site_name" content="DEVLOG of andyyou">
-<meta property="og:description" content="因舊有 Heroku Cedar-14 stack 不再支援須更新。">
+<meta property="og:description" content="因舊有 Heroku Cedar-14 stack 將進入 EOL。">
 <meta property="og:locale" content="zh-TW">
-<meta property="og:updated_time" content="2019-05-02T02:51:04.000Z">
+<meta property="og:updated_time" content="2019-05-02T02:53:37.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="更新 heroku-18">
-<meta name="twitter:description" content="因舊有 Heroku Cedar-14 stack 不再支援須更新。">
+<meta name="twitter:description" content="因舊有 Heroku Cedar-14 stack 將進入 EOL。">
     
 
     
@@ -241,7 +241,7 @@ ga('send', 'pageview');
         <div class="article-entry" itemprop="articleBody">
         
             
-            <p>因舊有 <code>Heroku Cedar-14 stack</code> 不再支援須更新。</p>
+            <p>因舊有 <code>Heroku Cedar-14 stack</code> 將進入 EOL。</p>
 <a id="more"></a>
 <p>官方提供了<a href="https://devcenter.heroku.com/articles/upgrading-to-the-latest-stack" target="_blank" rel="noopener">完整的教學</a>。<br>這裡只是簡易的筆記。</p>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">$ heroku plugins:install apps-table</span><br><span class="line">$ heroku apps:table --filter=<span class="string">"STACK=cedar-14"</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Clone &amp; Upgrade</span></span><br><span class="line">$ heroku stack:<span class="built_in">set</span> heroku-18 -a &lt;app_name&gt;</span><br><span class="line">$ heroku git:<span class="built_in">clone</span> -a &lt;app_name&gt;</span><br><span class="line">$ <span class="built_in">cd</span> &lt;app_name&gt;</span><br><span class="line"><span class="comment"># Rails 於 ruby v2.3.1 請更新 ruby 版本和 puma 至 v3.12+</span></span><br><span class="line">$ git commit --allow-empty -m <span class="string">"Upgrading to heroku-18"</span></span><br><span class="line">$ git push heroku master</span><br></pre></td></tr></table></figure>

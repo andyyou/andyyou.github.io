@@ -5,18 +5,18 @@
     
     <title>匯出 PostgreSQL | DEVLOG of andyyou</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <meta name="description" content="1234567891011121314151617# 0. 取得連線字串# 1. RDS Instance 的 Security group 記得允許您的 IP 存取# 2. 測試連線$ psql -h [ENDPOINT_URL] \       -U [USERNAME] \       -d [DATABASE_NAME]#     輸入密碼#     檢查 - 列出所有資料庫$ \l#">
+    <meta name="description" content="1234567891011121314151617# 0. 取得連線字串# 1. Instance Security 記得允許您的 IP 存取# 2. 測試連線$ psql -h [ENDPOINT_URL] \       -U [USERNAME] \       -d [DATABASE_NAME]#     輸入密碼#     檢查 - 列出所有資料庫$ \l#     檢查 - 列出所有">
 <meta name="keywords" content="aws,postgresql">
 <meta property="og:type" content="article">
 <meta property="og:title" content="匯出 PostgreSQL">
 <meta property="og:url" content="//andyyou.github.io/2019/05/17/dump-psql/index.html">
 <meta property="og:site_name" content="DEVLOG of andyyou">
-<meta property="og:description" content="1234567891011121314151617# 0. 取得連線字串# 1. RDS Instance 的 Security group 記得允許您的 IP 存取# 2. 測試連線$ psql -h [ENDPOINT_URL] \       -U [USERNAME] \       -d [DATABASE_NAME]#     輸入密碼#     檢查 - 列出所有資料庫$ \l#">
+<meta property="og:description" content="1234567891011121314151617# 0. 取得連線字串# 1. Instance Security 記得允許您的 IP 存取# 2. 測試連線$ psql -h [ENDPOINT_URL] \       -U [USERNAME] \       -d [DATABASE_NAME]#     輸入密碼#     檢查 - 列出所有資料庫$ \l#     檢查 - 列出所有">
 <meta property="og:locale" content="zh-TW">
-<meta property="og:updated_time" content="2019-05-17T02:23:14.000Z">
+<meta property="og:updated_time" content="2019-05-17T02:38:16.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="匯出 PostgreSQL">
-<meta name="twitter:description" content="1234567891011121314151617# 0. 取得連線字串# 1. RDS Instance 的 Security group 記得允許您的 IP 存取# 2. 測試連線$ psql -h [ENDPOINT_URL] \       -U [USERNAME] \       -d [DATABASE_NAME]#     輸入密碼#     檢查 - 列出所有資料庫$ \l#">
+<meta name="twitter:description" content="1234567891011121314151617# 0. 取得連線字串# 1. Instance Security 記得允許您的 IP 存取# 2. 測試連線$ psql -h [ENDPOINT_URL] \       -U [USERNAME] \       -d [DATABASE_NAME]#     輸入密碼#     檢查 - 列出所有資料庫$ \l#     檢查 - 列出所有">
     
 
     
@@ -241,7 +241,7 @@ ga('send', 'pageview');
         <div class="article-entry" itemprop="articleBody">
         
             
-            <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 0. 取得連線字串</span></span><br><span class="line"><span class="comment"># 1. RDS Instance 的 Security group 記得允許您的 IP 存取</span></span><br><span class="line"><span class="comment"># 2. 測試連線</span></span><br><span class="line">$ psql -h [ENDPOINT_URL] \</span><br><span class="line">       -U [USERNAME] \</span><br><span class="line">       -d [DATABASE_NAME]</span><br><span class="line"><span class="comment">#     輸入密碼</span></span><br><span class="line"><span class="comment">#     檢查 - 列出所有資料庫</span></span><br><span class="line">$ \l</span><br><span class="line"></span><br><span class="line"><span class="comment">#     檢查 - 列出所有 Tables</span></span><br><span class="line">$ \d</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 匯出</span></span><br><span class="line">$ pg_dump -h [ENDPOINT_URL] \</span><br><span class="line">          -U [USERNAME] \</span><br><span class="line">          -f [FILENAME].sql [DATABASE_NAME]</span><br></pre></td></tr></table></figure>
+            <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 0. 取得連線字串</span></span><br><span class="line"><span class="comment"># 1. Instance Security 記得允許您的 IP 存取</span></span><br><span class="line"><span class="comment"># 2. 測試連線</span></span><br><span class="line">$ psql -h [ENDPOINT_URL] \</span><br><span class="line">       -U [USERNAME] \</span><br><span class="line">       -d [DATABASE_NAME]</span><br><span class="line"><span class="comment">#     輸入密碼</span></span><br><span class="line"><span class="comment">#     檢查 - 列出所有資料庫</span></span><br><span class="line">$ \l</span><br><span class="line"></span><br><span class="line"><span class="comment">#     檢查 - 列出所有 Tables</span></span><br><span class="line">$ \d</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 匯出</span></span><br><span class="line">$ pg_dump -h [ENDPOINT_URL] \</span><br><span class="line">          -U [USERNAME] \</span><br><span class="line">          -f [FILENAME].sql [DATABASE_NAME]</span><br></pre></td></tr></table></figure>
 
         
         </div>

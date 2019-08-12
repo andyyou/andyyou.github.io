@@ -3,7 +3,7 @@
 <head><meta name="generator" content="Hexo 3.8.0">
     <meta charset="utf-8">
     
-    <title>use-react-hooks-and-context-replace-redux | DEVLOG of andyyou</title>
+    <title>如何使用 React Hooks 搭配 Context API 取代 Redux 快速範例入門 | DEVLOG of andyyou</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
     <!-- Google Tag Manager -->
     <script>(function (w, d, s, l, i) {
@@ -15,18 +15,18 @@
             'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
       })(window, document, 'script', 'dataLayer', 'GTM-57LT2GG');</script>
     <!-- End Google Tag Manager -->
-    <meta name="description" content="如何使用 React Hooks 搭配 Context API 取代 Redux 快速範例入門本筆記為閱讀 How to Replace Redux with React Hooks and the Context API 後自行實作調整簡化之範例。對於希望直接從範例學習的讀者可自行練習，本範例並非非常完整的教學，不過在能帶給您在使用 Hook 和 Context 上一些啟發：">
+    <meta name="description" content="本筆記為閱讀 How to Replace Redux with React Hooks and the Context API 後自行實作調整簡化之範例。對於希望直接從範例學習的讀者可自行練習，本範例並非非常完整的教學，不過在能帶給您在使用 Hook 和 Context 上一些啟發：">
 <meta name="keywords" content="javascript,react">
 <meta property="og:type" content="article">
-<meta property="og:title" content="use-react-hooks-and-context-replace-redux">
+<meta property="og:title" content="如何使用 React Hooks 搭配 Context API 取代 Redux 快速範例入門">
 <meta property="og:url" content="//andyyou.github.io/2019/08/11/use-react-hooks-and-context-replace-redux/index.html">
 <meta property="og:site_name" content="DEVLOG of andyyou">
-<meta property="og:description" content="如何使用 React Hooks 搭配 Context API 取代 Redux 快速範例入門本筆記為閱讀 How to Replace Redux with React Hooks and the Context API 後自行實作調整簡化之範例。對於希望直接從範例學習的讀者可自行練習，本範例並非非常完整的教學，不過在能帶給您在使用 Hook 和 Context 上一些啟發：">
+<meta property="og:description" content="本筆記為閱讀 How to Replace Redux with React Hooks and the Context API 後自行實作調整簡化之範例。對於希望直接從範例學習的讀者可自行練習，本範例並非非常完整的教學，不過在能帶給您在使用 Hook 和 Context 上一些啟發：">
 <meta property="og:locale" content="zh-TW">
-<meta property="og:updated_time" content="2019-08-11T13:25:52.000Z">
+<meta property="og:updated_time" content="2019-08-12T00:17:17.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="use-react-hooks-and-context-replace-redux">
-<meta name="twitter:description" content="如何使用 React Hooks 搭配 Context API 取代 Redux 快速範例入門本筆記為閱讀 How to Replace Redux with React Hooks and the Context API 後自行實作調整簡化之範例。對於希望直接從範例學習的讀者可自行練習，本範例並非非常完整的教學，不過在能帶給您在使用 Hook 和 Context 上一些啟發：">
+<meta name="twitter:title" content="如何使用 React Hooks 搭配 Context API 取代 Redux 快速範例入門">
+<meta name="twitter:description" content="本筆記為閱讀 How to Replace Redux with React Hooks and the Context API 後自行實作調整簡化之範例。對於希望直接從範例學習的讀者可自行練習，本範例並非非常完整的教學，不過在能帶給您在使用 Hook 和 Context 上一些啟發：">
     
 
     
@@ -220,7 +220,7 @@ ga('send', 'pageview');
                 
     
         <h1 class="article-title" itemprop="name">
-            use-react-hooks-and-context-replace-redux
+            如何使用 React Hooks 搭配 Context API 取代 Redux 快速範例入門
         </h1>
     
 
@@ -255,7 +255,7 @@ ga('send', 'pageview');
         <div class="article-entry" itemprop="articleBody">
         
             
-            <h1 id="如何使用-React-Hooks-搭配-Context-API-取代-Redux-快速範例入門"><a href="#如何使用-React-Hooks-搭配-Context-API-取代-Redux-快速範例入門" class="headerlink" title="如何使用 React Hooks 搭配 Context API 取代 Redux 快速範例入門"></a>如何使用 React Hooks 搭配 Context API 取代 Redux 快速範例入門</h1><p>本筆記為閱讀 <a href="https://www.sitepoint.com/replace-redux-react-hooks-context-api/" target="_blank" rel="noopener">How to Replace Redux with React Hooks and the Context API</a> 後自行實作調整簡化之範例。對於希望直接從範例學習的讀者可自行練習，本範例並非非常完整的教學，不過在能帶給您在使用 Hook 和 Context 上一些啟發：</p>
+            <p>本筆記為閱讀 <a href="https://www.sitepoint.com/replace-redux-react-hooks-context-api/" target="_blank" rel="noopener">How to Replace Redux with React Hooks and the Context API</a> 後自行實作調整簡化之範例。對於希望直接從範例學習的讀者可自行練習，本範例並非非常完整的教學，不過在能帶給您在使用 Hook 和 Context 上一些啟發：</p>
 <a id="more"></a>
 <figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 為簡化專案本範例使用 Parcel</span></span><br><span class="line">$ npm i -g parcel-bundler</span><br></pre></td></tr></table></figure>
 <h2 id="建立-Parcel-專案"><a href="#建立-Parcel-專案" class="headerlink" title="建立 Parcel 專案"></a>建立 Parcel 專案</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ mkdir demo-hooks-context</span><br><span class="line">$ <span class="built_in">cd</span> demo-hooks-context</span><br><span class="line">$ npm init -y</span><br><span class="line">$ touch index.html</span><br><span class="line">$ touch index.js</span><br></pre></td></tr></table></figure>

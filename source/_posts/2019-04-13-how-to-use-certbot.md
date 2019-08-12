@@ -153,7 +153,7 @@ server {
 }
 
 # 3. 執行 Certbot 取得憑證，這裡的 /var/www/html/ 是因為我們直接使用 Nginx 預設站點
-$ $ sudo certbot certonly --webroot -w /var/www/html/ -d <您的網址>
+$ sudo certbot certonly --webroot -w /var/www/html/ -d <您的網址>
 
 # 4. 成功之後會取得下面提升訊息
 
@@ -285,6 +285,9 @@ Certbot 套件內建自動排程可以在到期之前自動更新憑證。因為
 
 ```bash
 $ sudo certbot renew --dry-run
+
+# 檢查自動更新
+$ sudo systemctl status certbot.timer
 ```
 
 
@@ -366,3 +369,4 @@ SSL 憑證有三個屬性：**驗證方式**、**加密強度**、**對應主旨
 * [官方取得憑證文件](https://certbot.eff.org/docs/using.html#getting-certificates-and-choosing-plugins)
 * [HTTPS 简介及使用官方工具 Certbot 配置 Let’s Encrypt SSL 安全证书详细教程](https://linuxstory.org/deploy-lets-encrypt-ssl-certificate-with-certbot/)
 * [安裝 Nginx](https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-ubuntu-18-04)
+* [自動排程 renew](https://tmn.io/lets-encrypt-with-nginx-auto-renewal/)

@@ -1,7 +1,9 @@
 ---
 title: 如何使用 react-intl
 date: 2019-07-03 16:31:26
+categories: Program
 tags:
+  - react
 ---
 
 # React 國際化

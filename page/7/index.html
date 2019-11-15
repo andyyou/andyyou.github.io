@@ -1137,7 +1137,7 @@ ga('send', 'pageview');
 
 
 
-    <article id="post-raspberrypi-with-node" class="article article-type-post" itemscope="" itemprop="blogPost">
+    <article id="post-cache-notes" class="article article-type-post" itemscope="" itemprop="blogPost">
     <div class="article-inner">
         
         
@@ -1145,7 +1145,7 @@ ga('send', 'pageview');
                 
     
         <h1 itemprop="name">
-            <a class="article-title" href="/2016/03/08/raspberrypi-with-node/">RaspberryPi with node 安裝筆記</a>
+            <a class="article-title" href="/2016/03/08/cache-notes/">Cache 筆記</a>
         </h1>
     
 
@@ -1154,7 +1154,7 @@ ga('send', 'pageview');
                         
     <div class="article-date">
         <i class="fa fa-calendar"></i>
-        <a href="/2016/03/08/raspberrypi-with-node/">
+        <a href="/2016/03/08/cache-notes/">
             <time datetime="2016-03-08T11:00:00.000Z" itemprop="datePublished">2016-03-08</time>
         </a>
     </div>
@@ -1163,13 +1163,13 @@ ga('send', 'pageview');
                         
     <div class="article-category">
     	<i class="fa fa-folder"></i>
-        <a class="article-category-link" href="/categories/System/">System</a>
+        <a class="article-category-link" href="/categories/Program/">Program</a>
     </div>
 
                         
     <div class="article-tag">
         <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/javascript/">javascript</a>, <a class="tag-link" href="/tags/nodejs/">nodejs</a>, <a class="tag-link" href="/tags/raspberry-pi/">raspberry-pi</a>
+        <a class="tag-link" href="/tags/cache/">cache</a>, <a class="tag-link" href="/tags/mechanism/">mechanism</a>
     </div>
 
                     </div>
@@ -1179,9 +1179,16 @@ ga('send', 'pageview');
         
         <div class="article-entry" itemprop="articleBody">
         
-            <p></p><p>安裝完 NOOBS 之後…</p><p></p>
+            <p><ul>
+<li>瀏覽器 cache 是一種機制，透過特定狀態告知瀏覽器不需要重新下載檔案</li>
+<li>cache 最早使用 Expires 和 Pragma，現今主要使用 Cache-Control 來控制</li>
+<li>cache 大略流程，在實際下載檔案之前發生：<ol start="0">
+<li>cache 的實際處理機制存在瀏覽器中，也就是我們需要透過指令(cache-directives)告訴瀏覽器該怎麼處理</li>
+<li>瀏覽器設定為不提供 cache ，完全忽略下面步驟直接請求資源</li>
+<li>瀏覽器發送請求，此時可包含 cache-request-directive 這部分的資訊主要是拿來和 server 協商比對用的</li>
+<li>伺服器判斷是否有更新並回傳通知 cache-response-directive</li></ol></li></ul></p>
             <p class="article-more-link">
-                <a href="/2016/03/08/raspberrypi-with-node/#more">繼續閱讀</a>
+                <a href="/2016/03/08/cache-notes/#more">繼續閱讀</a>
             </p>
         
         </div>
@@ -1192,7 +1199,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="//andyyou.github.io/2016/03/08/raspberrypi-with-node/" data-id="cjzmdshab007w1h2rnsxpkmeb" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="//andyyou.github.io/2016/03/08/cache-notes/" data-id="cjzmdsha8007p1h2r3uew4xgy" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1408,7 +1415,7 @@ ga('send', 'pageview');
 
 
 
-    <article id="post-cache-notes" class="article article-type-post" itemscope="" itemprop="blogPost">
+    <article id="post-raspberrypi-with-node" class="article article-type-post" itemscope="" itemprop="blogPost">
     <div class="article-inner">
         
         
@@ -1416,7 +1423,7 @@ ga('send', 'pageview');
                 
     
         <h1 itemprop="name">
-            <a class="article-title" href="/2016/03/08/cache-notes/">Cache 筆記</a>
+            <a class="article-title" href="/2016/03/08/raspberrypi-with-node/">RaspberryPi with node 安裝筆記</a>
         </h1>
     
 
@@ -1425,7 +1432,7 @@ ga('send', 'pageview');
                         
     <div class="article-date">
         <i class="fa fa-calendar"></i>
-        <a href="/2016/03/08/cache-notes/">
+        <a href="/2016/03/08/raspberrypi-with-node/">
             <time datetime="2016-03-08T11:00:00.000Z" itemprop="datePublished">2016-03-08</time>
         </a>
     </div>
@@ -1434,13 +1441,13 @@ ga('send', 'pageview');
                         
     <div class="article-category">
     	<i class="fa fa-folder"></i>
-        <a class="article-category-link" href="/categories/Program/">Program</a>
+        <a class="article-category-link" href="/categories/System/">System</a>
     </div>
 
                         
     <div class="article-tag">
         <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/cache/">cache</a>, <a class="tag-link" href="/tags/mechanism/">mechanism</a>
+        <a class="tag-link" href="/tags/javascript/">javascript</a>, <a class="tag-link" href="/tags/nodejs/">nodejs</a>, <a class="tag-link" href="/tags/raspberry-pi/">raspberry-pi</a>
     </div>
 
                     </div>
@@ -1450,16 +1457,9 @@ ga('send', 'pageview');
         
         <div class="article-entry" itemprop="articleBody">
         
-            <p><ul>
-<li>瀏覽器 cache 是一種機制，透過特定狀態告知瀏覽器不需要重新下載檔案</li>
-<li>cache 最早使用 Expires 和 Pragma，現今主要使用 Cache-Control 來控制</li>
-<li>cache 大略流程，在實際下載檔案之前發生：<ol start="0">
-<li>cache 的實際處理機制存在瀏覽器中，也就是我們需要透過指令(cache-directives)告訴瀏覽器該怎麼處理</li>
-<li>瀏覽器設定為不提供 cache ，完全忽略下面步驟直接請求資源</li>
-<li>瀏覽器發送請求，此時可包含 cache-request-directive 這部分的資訊主要是拿來和 server 協商比對用的</li>
-<li>伺服器判斷是否有更新並回傳通知 cache-response-directive</li></ol></li></ul></p>
+            <p></p><p>安裝完 NOOBS 之後…</p><p></p>
             <p class="article-more-link">
-                <a href="/2016/03/08/cache-notes/#more">繼續閱讀</a>
+                <a href="/2016/03/08/raspberrypi-with-node/#more">繼續閱讀</a>
             </p>
         
         </div>
@@ -1470,7 +1470,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="//andyyou.github.io/2016/03/08/cache-notes/" data-id="cjzmdsha8007p1h2r3uew4xgy" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="//andyyou.github.io/2016/03/08/raspberrypi-with-node/" data-id="cjzmdshab007w1h2rnsxpkmeb" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding

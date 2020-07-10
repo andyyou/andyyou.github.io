@@ -23,12 +23,12 @@
 <meta property="og:site_name" content="DEVLOG of andyyou">
 <meta property="og:description" content="Sanctum 是一套輕量化的 API 認證機制套件。本文會介紹如何使用 Sanctum 支援 React 單頁應用程式認證（會員登入）。我們假設應用程式的前端和後端使用相同 TLD 頂級網域下的子網域，如此才可以使用 Sanctum 基於 Cookie 的驗證流程。利用這種作法可以省去處理 API Token 。為此我們使用 Homestead 設定兩個網域 api.sanctum.test 指">
 <meta property="og:locale" content="zh-TW">
-<meta property="og:image" content="//andyyou.github.io/Volumes/SD/Typora/dev/laravel/sanctum/1.png">
-<meta property="og:updated_time" content="2020-07-10T07:09:42.140Z">
+<meta property="og:image" content="//andyyou.github.io/2020/07/10/sanctum-with-react/1.png">
+<meta property="og:updated_time" content="2020-07-10T07:24:14.010Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="使用 Sancutm 實作 React SPA 認證">
 <meta name="twitter:description" content="Sanctum 是一套輕量化的 API 認證機制套件。本文會介紹如何使用 Sanctum 支援 React 單頁應用程式認證（會員登入）。我們假設應用程式的前端和後端使用相同 TLD 頂級網域下的子網域，如此才可以使用 Sanctum 基於 Cookie 的驗證流程。利用這種作法可以省去處理 API Token 。為此我們使用 Homestead 設定兩個網域 api.sanctum.test 指">
-<meta name="twitter:image" content="//andyyou.github.io/Volumes/SD/Typora/dev/laravel/sanctum/1.png">
+<meta name="twitter:image" content="//andyyou.github.io/2020/07/10/sanctum-with-react/1.png">
     
 
     
@@ -346,7 +346,7 @@ ga('send', 'pageview');
 <figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">'paths'</span> =&gt; [<span class="string">'api/*'</span>, <span class="string">'login'</span>, <span class="string">'sanctum/csrf-cookie'</span>],</span><br></pre></td></tr></table></figure>
 <p>在我們點擊送出按鈕之前請先開啟瀏覽器的開發者工具，到 Firefox 的儲存空間（Storage）或 Chrome 的 Application。您應該可以查閱 Cookie。此時您應該看到 Cookie 為空。點擊送出還是沒有 Cookie…！ 為什麼？</p>
 <p>查看瀏覽器開發工具的 Network 我們的確呼叫了 <code>sanctum/csrf-cookie</code> 並取得 204 的回應</p>
-<p><img src="/Volumes/SD/Typora/dev/laravel/sanctum/1.png" alt=""></p>
+<img src="/2020/07/10/sanctum-with-react/1.png">
 <p>的確有 <code>laravel_session</code> 和 <code>XSRF-TOKEN</code> 但儲存空間 Cookie 那邊卻沒有。</p>
 <p>答案是和 <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Cookies#Scope_of_cookies" target="_blank" rel="noopener">Cookie 存取限制有關</a>，也是文章一開始我們提到為什麼要使用一樣頂級網域的原因。從伺服器來的 <code>Set-Cookie</code> 可以設定 <code>domain</code> 指定對哪些網域發送請求的時候要包含該 Cookie。我們看一下 Header 中 <code>XSRF-TOKEN</code> 的部分</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">XSRF-TOKEN=&lt;token&gt;; expires=Wed, 08-Jul-2020 04:13:20 GMT; Max-Age=7200; path=/; samesite=lax</span><br></pre></td></tr></table></figure>

@@ -15,18 +15,18 @@
             'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
       })(window, document, 'script', 'dataLayer', 'GTM-57LT2GG');</script>
     <!-- End Google Tag Manager -->
-    <meta name="description" content="自 Laravel 5.3 之後，看到過許多專案的 Eloquent 關聯與查詢都不是使用相對有效率的用法。這些情況之所以存在是因為有不同的方法可以取得同一個資料集，而且多數看起來非常像。除非您非常了解底層做了什麼，不然判斷哪個方法比較好也不是那麼容易。 例如在 $blog-&amp;gt;posts 和 $blog-&amp;gt;posts() 之間的選擇。  $blog-&amp;gt;posts 會讀取資料庫，讀">
+    <meta name="description" content="自 Laravel 5.3 之後，看到過許多專案的 Eloquent 關聯與查詢都不是使用相對有效率的用法。這些情況之所以存在是因為有不同的方法可以取得同一個資料集，而且多數看起來非常像。除非您非常了解底層做了什麼，不然判斷哪個方法比較好也不是那麼容易。">
 <meta name="keywords" content="laravel">
 <meta property="og:type" content="article">
 <meta property="og:title" content="正確使用 Laravel Eloquent">
 <meta property="og:url" content="//andyyou.github.io/2020/09/08/using-laravel-eloquent-correctly/index.html">
 <meta property="og:site_name" content="DEVLOG of andyyou">
-<meta property="og:description" content="自 Laravel 5.3 之後，看到過許多專案的 Eloquent 關聯與查詢都不是使用相對有效率的用法。這些情況之所以存在是因為有不同的方法可以取得同一個資料集，而且多數看起來非常像。除非您非常了解底層做了什麼，不然判斷哪個方法比較好也不是那麼容易。 例如在 $blog-&amp;gt;posts 和 $blog-&amp;gt;posts() 之間的選擇。  $blog-&amp;gt;posts 會讀取資料庫，讀">
+<meta property="og:description" content="自 Laravel 5.3 之後，看到過許多專案的 Eloquent 關聯與查詢都不是使用相對有效率的用法。這些情況之所以存在是因為有不同的方法可以取得同一個資料集，而且多數看起來非常像。除非您非常了解底層做了什麼，不然判斷哪個方法比較好也不是那麼容易。">
 <meta property="og:locale" content="zh-TW">
-<meta property="og:updated_time" content="2020-09-08T07:07:39.010Z">
+<meta property="og:updated_time" content="2020-09-08T07:18:54.910Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="正確使用 Laravel Eloquent">
-<meta name="twitter:description" content="自 Laravel 5.3 之後，看到過許多專案的 Eloquent 關聯與查詢都不是使用相對有效率的用法。這些情況之所以存在是因為有不同的方法可以取得同一個資料集，而且多數看起來非常像。除非您非常了解底層做了什麼，不然判斷哪個方法比較好也不是那麼容易。 例如在 $blog-&amp;gt;posts 和 $blog-&amp;gt;posts() 之間的選擇。  $blog-&amp;gt;posts 會讀取資料庫，讀">
+<meta name="twitter:description" content="自 Laravel 5.3 之後，看到過許多專案的 Eloquent 關聯與查詢都不是使用相對有效率的用法。這些情況之所以存在是因為有不同的方法可以取得同一個資料集，而且多數看起來非常像。除非您非常了解底層做了什麼，不然判斷哪個方法比較好也不是那麼容易。">
     
 
     
@@ -256,6 +256,7 @@ ga('send', 'pageview');
         
             
             <p>自 Laravel 5.3 之後，看到過許多專案的 Eloquent 關聯與查詢都不是使用相對有效率的用法。這些情況之所以存在是因為有不同的方法可以取得同一個資料集，而且多數看起來非常像。除非您非常了解底層做了什麼，不然判斷哪個方法比較好也不是那麼容易。</p>
+<a id="more"></a>
 <p>例如在 <code>$blog-&gt;posts</code> 和 <code>$blog-&gt;posts()</code> 之間的選擇。</p>
 <p> <code>$blog-&gt;posts</code> 會讀取資料庫，讀取跟 <code>$blog</code> 相關的文章，然後建立一個 <code>Post</code> Model 的 <code>Collection</code>。這個操作是很耗費效能的，因爲需要為每個相關的 Model 建立物件實例並賦值。</p>
 <p>首先，您應該要先問問自己 - 是否需要 Model 的物件實例？一般來說，您可能只需要幾個欄位的資料，除非您需要欄位自動轉型之類的例如 <code>Carbon</code> 日期型別的資料，不然您應該直接從資料庫取得資料就好。</p>

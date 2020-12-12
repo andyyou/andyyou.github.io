@@ -321,8 +321,19 @@ $ sudo apt-get remove certbot python-certbot-nginx
 
 ```
 https://crt.sh/?q=<您的網址>
+
+
+# 查詢憑證資訊
+$ sudo certbot certificates
 ```
 
+### 檢查自動化 Job
+
+```
+/etc/crontab/
+/etc/cron.*/*
+systemctl list-timers
+```
 
 
 ## 總結

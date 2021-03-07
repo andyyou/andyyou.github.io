@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    
+    <title>解析 Certbot（Let&#39;s encrypt） 使用方式 | DEVLOG of andyyou</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <!-- Google Tag Manager -->
+    <script>(function (w, d, s, l, i) {
+        w[l] = w[l] || []; w[l].push({
+          'gtm.start':
+            new Date().getTime(), event: 'gtm.js'
+        }); var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+            'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+      })(window, document, 'script', 'dataLayer', 'GTM-57LT2GG');</script>
+    <!-- End Google Tag Manager -->
+    <meta name="description" content="如果您曾好奇為什麼在網路上搜尋到關於 Let’s encrypt 的設定有各式各樣的作法，或者想要好好的理解一下 certbot 的使用方式那麼本篇筆記就是您所需要的。">
+<meta name="keywords" content="ssl,letsencrypt">
+<meta property="og:type" content="article">
+<meta property="og:title" content="解析 Certbot（Let&#39;s encrypt） 使用方式">
+<meta property="og:url" content="//andyyou.github.io/2019/04/13/how-to-use-certbot/index.html">
+<meta property="og:site_name" content="DEVLOG of andyyou">
+<meta property="og:description" content="如果您曾好奇為什麼在網路上搜尋到關於 Let’s encrypt 的設定有各式各樣的作法，或者想要好好的理解一下 certbot 的使用方式那麼本篇筆記就是您所需要的。">
+<meta property="og:locale" content="zh-TW">
+<meta property="og:updated_time" content="2019-10-21T03:58:27.110Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="解析 Certbot（Let&#39;s encrypt） 使用方式">
+<meta name="twitter:description" content="如果您曾好奇為什麼在網路上搜尋到關於 Let’s encrypt 的設定有各式各樣的作法，或者想要好好的理解一下 certbot 的使用方式那麼本篇筆記就是您所需要的。">
+    
+
+    
+
+    
+        <link rel="icon" href="/images/favicon.png">
+    
+
+    <link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/lib/open-sans/styles.css">
+    <link rel="stylesheet" href="/lib/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/lib/jquery/2.1.3/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/lib/lightgallery/css/lightgallery.min.css">
+    
+    
+    
+        <script type="text/javascript">
+(function(i,s,o,g,r,a,m) {i['GoogleAnalyticsObject']=r;i[r]=i[r]||function() {
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-39208536-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+    
+    
+    
+
+
+</head>
+</html>
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-57LT2GG" height="0" width="0"
+        style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    <div id="container">
+        <header id="header">
+    <div id="header-main" class="header-inner">
+        <div class="outer">
+            <a href="/" id="logo">
+                <i class="logo"></i>
+                <span class="site-title">DEVLOG of andyyou</span>
+            </a>
+            <nav id="main-nav">
+                
+                    <a class="main-nav-link" href="/.">Home</a>
+                
+                    <a class="main-nav-link" href="/archives">Archives</a>
+                
+                    <a class="main-nav-link" href="/categories">Categories</a>
+                
+                    <a class="main-nav-link" href="/tags">Tags</a>
+                
+            </nav>
+            
+                
+                <nav id="sub-nav">
+                    <div class="profile" id="profile-nav">
+                        <a id="profile-anchor" href="javascript:;">
+                            <img class="avatar" src="https://avatars2.githubusercontent.com/u/665690?v=3&amp;s=466">
+                            <i class="fa fa-caret-down"></i>
+                        </a>
+                    </div>
+                </nav>
+            
+            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜尋">
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="Type something...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: 'Pages',
+            CATEGORIES: '分類',
+            TAGS: '標籤',
+            UNTITLED: '(Untitled)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+        </div>
+    </div>
+    <div id="main-nav-mobile" class="header-sub header-inner">
+        <table class="menu outer">
+            <tr>
+                
+                    <td><a class="main-nav-link" href="/.">Home</a></td>
+                
+                    <td><a class="main-nav-link" href="/archives">Archives</a></td>
+                
+                    <td><a class="main-nav-link" href="/categories">Categories</a></td>
+                
+                    <td><a class="main-nav-link" href="/tags">Tags</a></td>
+                
+                <td>
+                    
+    <div class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜尋">
+    </div>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+</header>
+
+        <div class="outer">
+            
+                
+
+<aside id="profile">
+    <div class="inner profile-inner">
+        <div class="base-info profile-block">
+            <img id="avatar" src="https://avatars2.githubusercontent.com/u/665690?v=3&amp;s=466">
+            <h2 id="name">andyyou</h2>
+            <h3 id="title">Web Developer</h3>
+            <span id="location"><i class="fa fa-map-marker"></i>Taipei, Taiwan</span>
+            <a id="follow" target="_blank" href="https://github.com/andyyou">關注我</a>
+        </div>
+        <div class="article-info profile-block">
+            <div class="article-info-block">
+                184
+                <span>文章</span>
+            </div>
+            <div class="article-info-block">
+                79
+                <span>標籤</span>
+            </div>
+        </div>
+        
+        <div class="profile-block social-links">
+            <table>
+                <tr>
+                    
+                    
+                    <td>
+                        <a href="https://github.com/andyyou" target="_blank" title="github" class="tooltip">
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="https://www.linkedin.com/pub/zongyan-you/2a/493/16" target="_blank" title="linkedin" class="tooltip">
+                            <i class="fa fa-linkedin"></i>
+                        </a>
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
+        
+    </div>
+</aside>
+
+            
+            <section id="main"><article id="post-how-to-use-certbot" class="article article-type-post" itemscope="" itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+            解析 Certbot（Let&#39;s encrypt） 使用方式
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2019/04/13/how-to-use-certbot/">
+            <time datetime="2019-04-13T01:39:20.000Z" itemprop="datePublished">2019-04-13</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/System/">System</a>
+    </div>
+
+                        
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/letsencrypt/">letsencrypt</a>, <a class="tag-link" href="/tags/ssl/">ssl</a>
+    </div>
+
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <p>如果您曾好奇為什麼在網路上搜尋到關於 Let’s encrypt 的設定有各式各樣的作法，或者想要好好的理解一下 certbot 的使用方式那麼本篇筆記就是您所需要的。</p>
+<a id="more"></a>
+<h2 id="Certbot"><a href="#Certbot" class="headerlink" title="Certbot"></a>Certbot</h2><p>Certbot 是可在託管伺服器上執行的指令。如果您不具有 shell 的存取權限並且不熟悉相關指令，您應該確認託管供應商是否提供內建 Let’s Encrypt 功能，<a href="https://community.letsencrypt.org/t/web-hosting-who-support-lets-encrypt/6920" target="_blank" rel="noopener">支援供應商列表</a>。</p>
+<h3 id="安裝"><a href="#安裝" class="headerlink" title="安裝"></a>安裝</h3><blockquote>
+<p>為了能夠快速的實作練習，筆者推薦使用任一雲端服務建立 VM 來測試。<a href="/2019/04/13/google-cloud-platform-getting-start/" title="使用 Google Cloud Platform 為例">使用 Google Cloud Platform 為例</a><br>本文指令以 Ubuntu 18.04 環境為例。</p>
+</blockquote>
+<p>Certbot 團隊自行維護 PPA(Personal Package Archive)。您可以將其加入檔案庫並依據下列指令安裝</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ sudo apt-get update</span><br><span class="line">$ sudo apt-get install software-properties-common</span><br><span class="line">$ sudo add-apt-repository universe</span><br><span class="line">$ sudo add-apt-repository ppa:certbot/certbot</span><br><span class="line">$ sudo apt-get update</span><br><span class="line">$ sudo apt-get install certbot python-certbot-nginx</span><br></pre></td></tr></table></figure>
+<h5 id="DNS-套件（可選）"><a href="#DNS-套件（可選）" class="headerlink" title="DNS 套件（可選）"></a>DNS 套件（可選）</h5><p>如果您希望從 Let’s Encrypt 的 <em>ACMEv2 伺服器</em>自動取得憑證或在其他主機上取得憑證，您可以使用 DNS 套件，參考<a href="https://certbot.eff.org/docs/using.html#dns-plugins" target="_blank" rel="noopener">套件列表</a>取得更多使用資訊。<br>要安裝其他套件可以將上面 <code>sudo apt-get install certbot python-certbot-nginx</code> 指令換成 <code>sudo apt-get install python3-certbot-dns-PLUGIN</code>，大寫 PLUGIN 則是套件名稱。</p>
+<blockquote>
+<p>如果您在其他教學看到使用 <code>certbot-auto</code> 指令，本質上和 <code>certbot</code> 是一樣的東西，不過<code>certbot-auto</code> 會自動安裝相依套件。但<strong>請注意</strong>：<code>certbot-auto</code> 目前（2019-04-12）不支援 DNS 套件，您還是得自行安裝套件後搭配 <code>certonly</code> 取得憑證。</p>
+</blockquote>
+<h3 id="基本使用"><a href="#基本使用" class="headerlink" title="基本使用"></a>基本使用</h3><p>在網路上有許多關於 Certbot 的教學，您可能感到困惑許多教學的指令或設定流程並不相同。其原因是 Certbot 根據不同的情境提供不同的指令和作法，本質上分成單純取得憑證和自動化取得憑證搭配是否自動設定伺服器的部分就產生多種作法。</p>
+<p>如果要支援自動化就必須通過 acme-challenge（http-01 或 dns-01 ）驗證，設定流程複雜的部分多來自於驗證階段的設定。</p>
+<p>後續我們將依據下面列表逐一介紹</p>
+<ul>
+<li>全自動 (自備 HTTP 伺服器)  <code>certbot</code></li>
+<li>半自動（自備 HTTP 伺服器，不調整 HTTP 伺服器設定）<code>certbot certonly</code></li>
+<li>webroot （自備 HTTP 伺服器，自行設定 acme-challenge 部分）<code>certbot certonly --webroot</code></li>
+<li>手動（自備 HTTP 伺服器 、其他主機）<code>certbot certonly --manual</code></li>
+<li>DNS 套件 <code>certbot certonly --dns-PLUGIN</code></li>
+<li>Standalone（Certbot 提供獨立 HTTP 伺服器部分）<code>certbot certonly --standalone</code></li>
+</ul>
+<p>上面筆者只是依照常用的作法概略列出好讓您理解其中的差異，但這並沒有羅列所有作法，分類上也不嚴謹您應該參考<a href="https://certbot.eff.org/docs/using.html#getting-certificates-and-choosing-plugins" target="_blank" rel="noopener">官方文件的說明</a>。</p>
+<h5 id="全自動設定"><a href="#全自動設定" class="headerlink" title="全自動設定"></a>全自動設定</h5><p>執行下面指令會自動取得憑證且 Certbox 會編輯 Nginx 的設定協助完成流程，一道指令完成設定。但前提是您的伺服器和 DNS 須先設定好一般 <em>http</em> 連線的部分。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">$ sudo certbot --nginx</span><br><span class="line"></span><br><span class="line"><span class="comment"># 步驟說明（以下步驟皆於伺服器主機上執行）：</span></span><br><span class="line"><span class="comment"># 1. 建置一台 Linux 主機或 VM（Ubuntu 18.04）</span></span><br><span class="line"><span class="comment"># 2. 安裝 Nginx</span></span><br><span class="line"><span class="comment"># 3. 安裝 Certbox</span></span><br><span class="line"><span class="comment"># 4. 確認與設定 DNS 設定 A 紀錄指向主機，如果 DNS 沒設定，acme-challenge 會驗證失敗，失敗仍然可以取得憑證但後續無法自動更新。無論是 http-01  或 dns-01 都是驗證您是否擁有網域的控制權以得到後續自動操作的權限，只是驗證的方式有些微不同。</span></span><br><span class="line"><span class="comment"># 5. 執行 certbot 全自動指令</span></span><br><span class="line"><span class="comment"># 6. 完成</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment"># 成功提升訊息</span></span><br><span class="line"><span class="comment"># Congratulations! You have successfully enabled &lt;您的網址&gt;</span></span><br><span class="line"><span class="comment"># You should test your configuration at:</span></span><br><span class="line"><span class="comment"># https://www.ssllabs.com/ssltest/analyze.html?d=&lt;您的網址&gt;</span></span><br></pre></td></tr></table></figure>
+<h5 id="半自動"><a href="#半自動" class="headerlink" title="半自動"></a>半自動</h5><p>如果您是保守派希望自己設定 Nginx ，則可以使用 <code>certonly</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">$ sudo certbot --nginx certonly</span><br><span class="line"></span><br><span class="line"><span class="comment"># certonly 具體執行的步驟</span></span><br><span class="line"><span class="comment"># 1. 暫時的變更設定，加入新的 *Server 區塊設定* 以通過 ACME Challenge。</span></span><br><span class="line"><span class="comment"># 2. 重載 Nginx 設定。(sudo nginx -s reload)</span></span><br><span class="line"><span class="comment"># 3. 還原變更的設定。</span></span><br><span class="line"><span class="comment"># 4. 重載 Nginx 設定。</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 接著您要自行設定 Nginx 安裝憑證。</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><a href="https://tools.ietf.org/html/draft-ietf-acme-acme-02#section-7.3" target="_blank" rel="noopener">ACME Challenge</a></p>
+<p>ACME Challenge 是為了要證明您具有網域控制權的一種驗證方式，主要是通過您設定一組 A/AAAA （IPv4/IPv6）紀錄指向伺服器，並在伺服器上驗證 challenge 憑證。這也是為什麼自動安裝憑證的流程需要您的網站以及網址是處於線上的狀態（DNS 指向伺服器，伺服器提供對應證明 hash）。</p>
+</blockquote>
+<p><strong>全自動和半自動的差別是在最後是否自動在 Nginx 設定的 <code>server {}</code> 的部分為您自動加入 <em>ssl</em> 相關設定</strong>，如果您不想讓 Certbot 接觸 Nginx 設定或著有線上的服務不能中斷的需求，您可以使用 <code>webroot</code> 套件。</p>
+<blockquote>
+<p>注意：全自動和半自動只是筆者依據行為命名好讓您比較容易立即，實際上僅是不同指令的行為。</p>
+</blockquote>
+<p><strong>另外，如果您希望直接從 Let’s Encrypt 的新 ACMEv2 伺服器取得多子網域通用憑證，您還是需要使用 <a href="https://certbot.eff.org/docs/using.html#dns-plugins" target="_blank" rel="noopener">Certbot 的 DNS 套件</a></strong>。請確認您已經針對您 DNS 供應商安裝對應套件然後執行下面的指令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo certbot -a dns-plugin -i nginx -d <span class="string">"*.example.com"</span> -d example.com --server https://acme-v02.api.letsencrypt.org/directory</span><br></pre></td></tr></table></figure>
+<p><code>dns-plugin</code> 的部分請替換成您想要使用的套件。例如：Cloudflare 要使用 <code>dns-cloudflare</code>。您可能需要提供額外的資訊例如 API 憑證的路徑，更多關於套件的使用請參考<a href="https://certbot.eff.org/docs/" target="_blank" rel="noopener">相關文件</a></p>
+<h5 id="webroot"><a href="#webroot" class="headerlink" title="webroot"></a>webroot</h5><p>需要在伺服器不中斷下取得憑證。須自行設定 acme-challenge ，等於是不讓 Certbot 碰到 HTTP 伺服器設定的作法。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 0. 安裝 Nginx 與 Certbot</span></span><br><span class="line"><span class="comment"># 1. 設定 acme-challenge，編輯 /etc/nginx/sites-available/default</span></span><br><span class="line">$ sudo vi /etc/nginx/sites-available/default</span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 加入設定</span></span><br><span class="line">location ^~ /.well-known/acme-challenge/ &#123;</span><br><span class="line">  default_type    <span class="string">"text/plain"</span>;</span><br><span class="line">  root /var/www/html/;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 完整設定參考</span></span><br><span class="line">server &#123;</span><br><span class="line">  listen 80 default_server;</span><br><span class="line">  listen [::]:80 default_server;</span><br><span class="line"></span><br><span class="line">  <span class="comment"># ... 省略 ...</span></span><br><span class="line"></span><br><span class="line">  <span class="comment"># ↓↓↓↓↓↓↓↓↓↓↓ 重點</span></span><br><span class="line">  location ^~ /.well-known/acme-challenge/ &#123;</span><br><span class="line">    default_type    <span class="string">"text/plain"</span>;</span><br><span class="line">    root /var/www/html/;</span><br><span class="line">  &#125;</span><br><span class="line">	<span class="comment"># ↑↑↑↑↑↑↑↑↑↑↑</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 3. 執行 Certbot 取得憑證，這裡的 /var/www/html/ 是因為我們直接使用 Nginx 預設站點</span></span><br><span class="line">$ sudo certbot certonly --webroot -w /var/www/html/ -d &lt;您的網址&gt;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 4. 成功之後會取得下面提升訊息</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Saving debug log to /var/log/letsencrypt/letsencrypt.log</span></span><br><span class="line"><span class="comment"># Plugins selected: Authenticator webroot, Installer None</span></span><br><span class="line"><span class="comment"># Obtaining a new certificate</span></span><br><span class="line"><span class="comment"># Performing the following challenges:</span></span><br><span class="line"><span class="comment"># http-01 challenge for &lt;您的網址&gt;</span></span><br><span class="line"><span class="comment"># Using the webroot path /var/www/html for all unmatched domains.</span></span><br><span class="line"><span class="comment"># Waiting for verification...</span></span><br><span class="line"><span class="comment"># Cleaning up challenges</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># IMPORTANT NOTES:</span></span><br><span class="line"><span class="comment">#  - Congratulations! Your certificate and chain have been saved at:</span></span><br><span class="line"><span class="comment">#   /etc/letsencrypt/live/&lt;您的網址&gt;/fullchain.pem</span></span><br><span class="line"><span class="comment">#   Your key file has been saved at:</span></span><br><span class="line"><span class="comment">#   /etc/letsencrypt/live/&lt;您的網址&gt;/privkey.pem</span></span><br><span class="line"><span class="comment">#   Your cert will expire on 2019-12-25. To obtain a new or tweaked</span></span><br><span class="line"><span class="comment">#   version of this certificate in the future, simply run certbot</span></span><br><span class="line"><span class="comment">#   again. To non-interactively renew *all* of your certificates, run</span></span><br><span class="line"><span class="comment">#   "certbot renew"</span></span><br><span class="line"><span class="comment"># - If you like Certbot, please consider supporting our work by:</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#   Donating to ISRG / Let's Encrypt:   https://letsencrypt.org/donate</span></span><br><span class="line"><span class="comment">#   Donating to EFF:                    https://eff.org/donate-le</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 5. 安裝憑證</span></span><br><span class="line">$ sudo vi /etc/nginx/sites-available/&lt;您的網址&gt;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 6. Nginx 設定</span></span><br><span class="line">server &#123;</span><br><span class="line">  listen 443 ssl;</span><br><span class="line">  listen [::]:443 ssl;</span><br><span class="line"></span><br><span class="line">  root /var/www/html;</span><br><span class="line"></span><br><span class="line">  index index.html index.nginx-debian.html;</span><br><span class="line"></span><br><span class="line">  server_name &lt;您的網址&gt;;</span><br><span class="line"></span><br><span class="line">  location / &#123;</span><br><span class="line">          try_files <span class="variable">$uri</span> <span class="variable">$uri</span>/ =404;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  ssl_certificate /etc/letsencrypt/live/&lt;您的網址&gt;/fullchain.pem;</span><br><span class="line">  ssl_certificate_key /etc/letsencrypt/live/&lt;您的網址&gt;/privkey.pem;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 7. 加入設定與重載</span></span><br><span class="line">$ sudo ln -s /etc/nginx/sites-available/&lt;您的網址&gt; /etc/nginx/sites-enabled/&lt;您的網址&gt;</span><br><span class="line">$ sudo nginx -t</span><br><span class="line">$ sudo nginx -s reload</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>注意：沒有通過 ACME-Challenge（Automatic Certificate Management Environment） 還是可以產生憑證，只是後續無法自動產生/更新憑證。</p>
+</blockquote>
+<h5 id="手動"><a href="#手動" class="headerlink" title="手動"></a>手動</h5><p>手動的部分支援各種不同的參數，我們只會點出一些指令並紀錄提升訊息，希望能協助您有些基本的理解，查閱官方資料時能夠更容易掌握。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 手動驗證可用 --preferred-challenges 參數指定 http 驗證或 dns 驗證，預設為 http。</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 1. 單純取得憑證</span></span><br><span class="line">$ certbot certonly --manual</span><br><span class="line"></span><br><span class="line"><span class="comment"># - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 2. 在其他機器上取得憑證 - macOS</span></span><br><span class="line">$ brew install certbot</span><br><span class="line">$ certbot certonly --manual --config-dir ~/your/path/letsencrypt --work-dir ~/your/path/letsencrypt --logs-dir ~/your/path/letsencrypt --preferred-challenges dns</span><br></pre></td></tr></table></figure>
+<p>執行指令後您可能會遭遇的執行流程紀錄如下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># http</span></span><br><span class="line">Saving debug <span class="built_in">log</span> to /your/path/letsencrypt/letsencrypt.log</span><br><span class="line">Plugins selected: Authenticator manual, Installer None</span><br><span class="line">Please enter <span class="keyword">in</span> your domain name(s) (comma and/or space separated)  (Enter <span class="string">'c'</span></span><br><span class="line">to cancel):</span><br><span class="line">- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</span><br><span class="line">NOTE: The IP of this machine will be publicly logged as having requested this</span><br><span class="line">certificate. If you<span class="string">'re running certbot in manual mode on a machine that is not</span></span><br><span class="line"><span class="string">your server, please ensure you'</span>re okay with that.</span><br><span class="line"></span><br><span class="line">Are you OK with your IP being logged?</span><br><span class="line">- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</span><br><span class="line">(Y)es/(N)o:</span><br><span class="line">- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</span><br><span class="line">Create a file containing just this data:</span><br><span class="line"></span><br><span class="line">Ad8wBqsP8mZoiUeN-XL_0v60vHFFjoaZTsGZ9gxGDpw.MUtTMf4SSLHIm0CLmqTzjYVPlBO7pDtO1tvDq90CHW8</span><br><span class="line"></span><br><span class="line">And make it available on your web server at this URL:</span><br><span class="line"></span><br><span class="line">http://&lt;您的網址&gt;/.well-known/acme-challenge/Ad8wBqsP8mZoiUeN-XL_0v60vHFFjoaZTsGZ9gxGDpw</span><br><span class="line"></span><br><span class="line">- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</span><br><span class="line">Press Enter to Continue</span><br><span class="line"></span><br><span class="line"><span class="comment"># dns</span></span><br><span class="line">- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</span><br><span class="line">NOTE: The IP of this machine will be publicly logged as having requested this</span><br><span class="line">certificate. If you<span class="string">'re running certbot in manual mode on a machine that is not</span></span><br><span class="line"><span class="string">your server, please ensure you'</span>re okay with that.</span><br><span class="line"></span><br><span class="line">Are you OK with your IP being logged?</span><br><span class="line">- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</span><br><span class="line">(Y)es/(N)o:</span><br><span class="line">- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</span><br><span class="line">Please deploy a DNS TXT record under the name</span><br><span class="line">_acme-challenge.&lt;您的網址&gt; with the following value:</span><br><span class="line"></span><br><span class="line">KzQ9pmKDC_iP9q4AWhGdGx9TezqoKy-eYo8PFAIYTG9</span><br><span class="line"></span><br><span class="line">Before continuing, verify the record is deployed.</span><br><span class="line">- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -</span><br><span class="line">Press Enter to Continue</span><br></pre></td></tr></table></figure>
+<h3 id="自動更新"><a href="#自動更新" class="headerlink" title="自動更新"></a>自動更新</h3><p>Certbot 套件內建自動排程可以在到期之前自動更新憑證。因為 Let’s Encrypt 憑證只有 90 天，所以推薦使用這個功能。您可以利用下面的指令<strong>測試</strong>自動更新：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ sudo certbot renew --dry-run</span><br><span class="line"></span><br><span class="line"><span class="comment"># 檢查自動更新</span></span><br><span class="line">$ sudo systemctl status certbot.timer</span><br></pre></td></tr></table></figure>
+<h3 id="手動更新"><a href="#手動更新" class="headerlink" title="手動更新"></a>手動更新</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo certbot renew -v</span><br></pre></td></tr></table></figure>
+<h3 id="移除"><a href="#移除" class="headerlink" title="移除"></a>移除</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 移除憑證</span></span><br><span class="line">$ sudo certbot delete</span><br><span class="line"><span class="comment"># 刪除 /etc/nginx/&lt;your site&gt; SSL 設定</span></span><br><span class="line"><span class="comment"># 檢查 /etc/letsencrypt/archive, /etc/letsencrypt/live, /etc/letsencrypt/renewal</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 直接根據域名刪除</span></span><br><span class="line">$ sudo certbot delete --cert-name &lt;domain_name.com&gt;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 移除 certbot</span></span><br><span class="line">$ sudo apt-get remove certbot python-certbot-nginx</span><br></pre></td></tr></table></figure>
+<h3 id="查詢憑證日誌"><a href="#查詢憑證日誌" class="headerlink" title="查詢憑證日誌"></a>查詢憑證日誌</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">https://crt.sh/?q=&lt;您的網址&gt;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"># 查詢憑證資訊</span><br><span class="line">$ sudo certbot certificates</span><br></pre></td></tr></table></figure>
+<h3 id="檢查自動化-Job"><a href="#檢查自動化-Job" class="headerlink" title="檢查自動化 Job"></a>檢查自動化 Job</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">/etc/crontab/</span><br><span class="line">/etc/cron.*/*</span><br><span class="line">systemctl list-timers</span><br></pre></td></tr></table></figure>
+<h2 id="總結"><a href="#總結" class="headerlink" title="總結"></a>總結</h2><p>現在您可以自行判斷該使用哪種方式，而不是單純照文章執行指令而不知為何。一般來說如果只是測試主機您大可放心的使用全自動的方式，如果是正式主機最好還是使用 <em>webroot</em> 的方式自己設定 HTTP 伺服器。</p>
+<h3 id="補充"><a href="#補充" class="headerlink" title="補充"></a>補充</h3><p>SSL 憑證有三個屬性：<strong>驗證方式</strong>、<strong>加密強度</strong>、<strong>對應主旨名稱數量</strong>。</p>
+<h5 id="驗證方式"><a href="#驗證方式" class="headerlink" title="驗證方式"></a>驗證方式</h5><ul>
+<li><p>Extended Validation 最高等級認證</p>
+</li>
+<li><p>Organization validated 公司組織認證，例如：TWCA 在憑證的Organization(O)，含有組織資訊</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">CN = github.com</span><br><span class="line">O = GitHub, Inc.</span><br><span class="line">L = San Francisco</span><br><span class="line">S = California</span><br><span class="line">C = US</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>Domain Validation 最低等級認證，僅做網域認證。例如：<strong>Let’s encrypt</strong></p>
+</li>
+</ul>
+<h5 id="對應主旨名稱數量"><a href="#對應主旨名稱數量" class="headerlink" title="對應主旨名稱數量"></a>對應主旨名稱數量</h5><blockquote>
+<p>完全限定域名（Fully qualified domain name），縮寫為<strong>FQDN</strong>，又譯為完全資格域名、完整領域名稱，絕對領域名稱（Absolute domain name）、 絕對域名，網域名稱的一種，能指定其在域名系統 (DNS) 樹狀圖下的一個確實位置。</p>
+</blockquote>
+<p>一張憑證的主旨名稱（Subject Name）即對應的 FQDN：</p>
+<ul>
+<li>一對一</li>
+<li>不同網域一對多(SAN/UC)</li>
+<li>同網域多對多（Wildcard/萬用憑證/多子網域通用憑證）</li>
+</ul>
+<h2 id="參考資源"><a href="#參考資源" class="headerlink" title="參考資源"></a>參考資源</h2><ul>
+<li><a href="https://certbot.eff.org/lets-encrypt/ubuntubionic-nginx" target="_blank" rel="noopener">官方安裝流程</a></li>
+<li><a href="https://certbot.eff.org/docs/using.html#getting-certificates-and-choosing-plugins" target="_blank" rel="noopener">官方取得憑證文件</a></li>
+<li><a href="https://linuxstory.org/deploy-lets-encrypt-ssl-certificate-with-certbot/" target="_blank" rel="noopener">HTTPS 简介及使用官方工具 Certbot 配置 Let’s Encrypt SSL 安全证书详细教程</a></li>
+<li><a href="https://www.digitalocean.com/community/tutorials/how-to-install-nginx-on-ubuntu-18-04" target="_blank" rel="noopener">安裝 Nginx</a></li>
+<li><a href="https://tmn.io/lets-encrypt-with-nginx-auto-renewal/" target="_blank" rel="noopener">自動排程 renew</a></li>
+</ul>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+
+</div>
+
+    <a data-url="//andyyou.github.io/2019/04/13/how-to-use-certbot/" data-id="cklyrfc6t00ho5g72ninyi2dd" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        // Prevent duplicate binding
+        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
+            __SHARE_BUTTON_BINDED__ = true;
+        } else {
+            return;
+        }
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+            
+    
+
+        </footer>
+    </div>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2019/04/13/google-cloud-platform-getting-start/" id="article-nav-newer" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">上一篇</strong>
+            <div class="article-nav-title">
+                
+                    Google Cloud Platform - Compute Engine 入門
+                
+            </div>
+        </a>
+    
+    
+        <a href="/2018/11/04/recap-review-flux-n-redux/" id="article-nav-older" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">下一篇</strong>
+            <div class="article-nav-title">快速複習 Flux 和 Redux</div>
+        </a>
+    
+</nav>
+
+
+    
+</article>
+
+
+    
+    <section id="comments">
+    
+    </section>
+
+</section>
+            
+                <aside id="sidebar">
+   
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">分類</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Cloud/">Cloud</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Database/">Database</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Fun/">Fun</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Mobile/">Mobile</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Program/">Program</a><span class="category-list-count">131</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/System/">System</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Tools/">Tools</a><span class="category-list-count">17</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">歸檔</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/03/">三月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/10/">十月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">五月 2019</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">六月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">十二月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">十一月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">九月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">十月 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">九月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">六月 2016</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">十二月 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">十一月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">十月 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">九月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">八月 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">七月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">五月 2015</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">四月 2015</a><span class="archive-list-count">19</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">十二月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/11/">十一月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/10/">十月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">九月 2014</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/08/">八月 2014</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/02/">二月 2014</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/01/">一月 2014</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">十一月 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">十月 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">九月 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">八月 2013</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/03/">三月 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">三月 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">一月 2012</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2011/11/">十一月 2011</a><span class="archive-list-count">3</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">標籤</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/net-mvc/">.net mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RoR/">RoR</a><span class="tag-list-count">15</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/api/">api</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aws/">aws</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/azure/">azure</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bot/">bot</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bundler/">bundler</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cache/">cache</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/carrier-wave/">carrier wave</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/centos/">centos</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/chrome/">chrome</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cloudflare/">cloudflare</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/compass/">compass</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/devise/">devise</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dnd/">dnd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/e-invoice/">e-invoice</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/entity-framework/">entity framework</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/es6/">es6</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/facebook/">facebook</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flux/">flux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/framework/">framework</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gcp/">gcp</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/grunt/">grunt</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gulp/">gulp</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/heroku/">heroku</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/html/">html</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/iisexpress/">iisexpress</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ios/">ios</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">69</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript-express-passport/">javascript express passport</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript-nodejs/">javascript nodejs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jekyll/">jekyll</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jetstream/">jetstream</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jspm/">jspm</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jwt/">jwt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/laravel/">laravel</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/letsencrypt/">letsencrypt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mechanism/">mechanism</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongodb/">mongodb</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/node/">node</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nodejs/">nodejs</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/oocss/">oocss</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/osx/">osx</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package-manager/">package manager</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/php/">php</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/postgres/">postgres</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/postgresql/">postgresql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/queue/">queue</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rabbitmq/">rabbitmq</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rack-server/">rack server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails/">rails</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails-webpack-stimulus-javascript-bootstrap/">rails webpack stimulus javascript bootstrap</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/raspberry-pi/">raspberry-pi</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react/">react</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react-native/">react native</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/reactjs/">reactjs</a><span class="tag-list-count">32</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redux/">redux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sass/">sass</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/selenium/">selenium</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/slim/">slim</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssh/">ssh</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssl/">ssl</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/stimulus/">stimulus</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/svg-javascript/">svg javascript</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/task-runner/">task runner</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tmux/">tmux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tools/">tools</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vm/">vm</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/">vue</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vuejs/">vuejs</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/webpack/">webpack</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/windows/">windows</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/xml/">xml</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">標籤雲</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/net-mvc/" style="font-size: 10px;">.net mvc</a> <a href="/tags/RoR/" style="font-size: 16.67px;">RoR</a> <a href="/tags/api/" style="font-size: 10px;">api</a> <a href="/tags/aws/" style="font-size: 12.5px;">aws</a> <a href="/tags/azure/" style="font-size: 10.83px;">azure</a> <a href="/tags/bot/" style="font-size: 10px;">bot</a> <a href="/tags/bundler/" style="font-size: 10.83px;">bundler</a> <a href="/tags/cache/" style="font-size: 10px;">cache</a> <a href="/tags/carrier-wave/" style="font-size: 10.83px;">carrier wave</a> <a href="/tags/centos/" style="font-size: 10px;">centos</a> <a href="/tags/chrome/" style="font-size: 10px;">chrome</a> <a href="/tags/cloudflare/" style="font-size: 10px;">cloudflare</a> <a href="/tags/compass/" style="font-size: 10px;">compass</a> <a href="/tags/css/" style="font-size: 17.5px;">css</a> <a href="/tags/devise/" style="font-size: 10px;">devise</a> <a href="/tags/dnd/" style="font-size: 10px;">dnd</a> <a href="/tags/docker/" style="font-size: 10.83px;">docker</a> <a href="/tags/e-invoice/" style="font-size: 10px;">e-invoice</a> <a href="/tags/entity-framework/" style="font-size: 10px;">entity framework</a> <a href="/tags/es6/" style="font-size: 11.67px;">es6</a> <a href="/tags/facebook/" style="font-size: 10px;">facebook</a> <a href="/tags/flux/" style="font-size: 10px;">flux</a> <a href="/tags/framework/" style="font-size: 10.83px;">framework</a> <a href="/tags/gcp/" style="font-size: 10.83px;">gcp</a> <a href="/tags/go/" style="font-size: 10px;">go</a> <a href="/tags/grunt/" style="font-size: 12.5px;">grunt</a> <a href="/tags/gulp/" style="font-size: 11.67px;">gulp</a> <a href="/tags/heroku/" style="font-size: 14.17px;">heroku</a> <a href="/tags/html/" style="font-size: 10.83px;">html</a> <a href="/tags/iisexpress/" style="font-size: 10px;">iisexpress</a> <a href="/tags/ios/" style="font-size: 11.67px;">ios</a> <a href="/tags/javascript/" style="font-size: 20px;">javascript</a> <a href="/tags/javascript-express-passport/" style="font-size: 10px;">javascript express passport</a> <a href="/tags/javascript-nodejs/" style="font-size: 10px;">javascript nodejs</a> <a href="/tags/jekyll/" style="font-size: 10.83px;">jekyll</a> <a href="/tags/jetstream/" style="font-size: 10px;">jetstream</a> <a href="/tags/jspm/" style="font-size: 10px;">jspm</a> <a href="/tags/jwt/" style="font-size: 10px;">jwt</a> <a href="/tags/laravel/" style="font-size: 11.67px;">laravel</a> <a href="/tags/letsencrypt/" style="font-size: 10px;">letsencrypt</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/mechanism/" style="font-size: 10px;">mechanism</a> <a href="/tags/mongodb/" style="font-size: 10.83px;">mongodb</a> <a href="/tags/node/" style="font-size: 10px;">node</a> <a href="/tags/nodejs/" style="font-size: 15px;">nodejs</a> <a href="/tags/oocss/" style="font-size: 10px;">oocss</a> <a href="/tags/osx/" style="font-size: 14.17px;">osx</a> <a href="/tags/package-manager/" style="font-size: 14.17px;">package manager</a> <a href="/tags/php/" style="font-size: 10.83px;">php</a> <a href="/tags/postgres/" style="font-size: 10px;">postgres</a> <a href="/tags/postgresql/" style="font-size: 10.83px;">postgresql</a> <a href="/tags/queue/" style="font-size: 10.83px;">queue</a> <a href="/tags/rabbitmq/" style="font-size: 10.83px;">rabbitmq</a> <a href="/tags/rack-server/" style="font-size: 10px;">rack server</a> <a href="/tags/rails/" style="font-size: 14.17px;">rails</a> <a href="/tags/rails-webpack-stimulus-javascript-bootstrap/" style="font-size: 10px;">rails webpack stimulus javascript bootstrap</a> <a href="/tags/raspberry-pi/" style="font-size: 10px;">raspberry-pi</a> <a href="/tags/react/" style="font-size: 15.83px;">react</a> <a href="/tags/react-native/" style="font-size: 10px;">react native</a> <a href="/tags/reactjs/" style="font-size: 19.17px;">reactjs</a> <a href="/tags/redux/" style="font-size: 10px;">redux</a> <a href="/tags/ruby/" style="font-size: 18.33px;">ruby</a> <a href="/tags/sass/" style="font-size: 10.83px;">sass</a> <a href="/tags/selenium/" style="font-size: 10px;">selenium</a> <a href="/tags/slim/" style="font-size: 10px;">slim</a> <a href="/tags/ssh/" style="font-size: 10px;">ssh</a> <a href="/tags/ssl/" style="font-size: 10.83px;">ssl</a> <a href="/tags/stimulus/" style="font-size: 10px;">stimulus</a> <a href="/tags/svg-javascript/" style="font-size: 11.67px;">svg javascript</a> <a href="/tags/task-runner/" style="font-size: 11.67px;">task runner</a> <a href="/tags/tmux/" style="font-size: 10px;">tmux</a> <a href="/tags/tools/" style="font-size: 10px;">tools</a> <a href="/tags/ubuntu/" style="font-size: 10.83px;">ubuntu</a> <a href="/tags/vm/" style="font-size: 10px;">vm</a> <a href="/tags/vue/" style="font-size: 10px;">vue</a> <a href="/tags/vuejs/" style="font-size: 13.33px;">vuejs</a> <a href="/tags/webpack/" style="font-size: 12.5px;">webpack</a> <a href="/tags/windows/" style="font-size: 10px;">windows</a> <a href="/tags/xml/" style="font-size: 10px;">xml</a>
+        </div>
+    </div>
+
+    
+    <div id="toTop" class="fa fa-angle-up"></div>
+</aside>
+            
+        </div>
+        <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2021 andyyou(You,ZongYan)
+        </div>
+    </div>
+</footer>
+
+        
+
+    
+        <script src="/lib/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-share.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-video.min.js"></script>
+    
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+</body>
+</html>

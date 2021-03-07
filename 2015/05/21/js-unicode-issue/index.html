@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    
+    <title>Javascript Unicode | DEVLOG of andyyou</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <!-- Google Tag Manager -->
+    <script>(function (w, d, s, l, i) {
+        w[l] = w[l] || []; w[l].push({
+          'gtm.start':
+            new Date().getTime(), event: 'gtm.js'
+        }); var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+            'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+      })(window, document, 'script', 'dataLayer', 'GTM-57LT2GG');</script>
+    <!-- End Google Tag Manager -->
+    <meta name="description" content="為了理解 ES6 到底對於 Unicode 萬國碼有哪些新的支援。我們得從原因理解起。">
+<meta name="keywords" content="javascript,es6">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Javascript Unicode">
+<meta property="og:url" content="//andyyou.github.io/2015/05/21/js-unicode-issue/index.html">
+<meta property="og:site_name" content="DEVLOG of andyyou">
+<meta property="og:description" content="為了理解 ES6 到底對於 Unicode 萬國碼有哪些新的支援。我們得從原因理解起。">
+<meta property="og:locale" content="zh-TW">
+<meta property="og:updated_time" content="2016-12-19T02:31:59.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Javascript Unicode">
+<meta name="twitter:description" content="為了理解 ES6 到底對於 Unicode 萬國碼有哪些新的支援。我們得從原因理解起。">
+    
+
+    
+
+    
+        <link rel="icon" href="/images/favicon.png">
+    
+
+    <link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/lib/open-sans/styles.css">
+    <link rel="stylesheet" href="/lib/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/lib/jquery/2.1.3/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/lib/lightgallery/css/lightgallery.min.css">
+    
+    
+    
+        <script type="text/javascript">
+(function(i,s,o,g,r,a,m) {i['GoogleAnalyticsObject']=r;i[r]=i[r]||function() {
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-39208536-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+    
+    
+    
+
+
+</head>
+</html>
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-57LT2GG" height="0" width="0"
+        style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    <div id="container">
+        <header id="header">
+    <div id="header-main" class="header-inner">
+        <div class="outer">
+            <a href="/" id="logo">
+                <i class="logo"></i>
+                <span class="site-title">DEVLOG of andyyou</span>
+            </a>
+            <nav id="main-nav">
+                
+                    <a class="main-nav-link" href="/.">Home</a>
+                
+                    <a class="main-nav-link" href="/archives">Archives</a>
+                
+                    <a class="main-nav-link" href="/categories">Categories</a>
+                
+                    <a class="main-nav-link" href="/tags">Tags</a>
+                
+            </nav>
+            
+                
+                <nav id="sub-nav">
+                    <div class="profile" id="profile-nav">
+                        <a id="profile-anchor" href="javascript:;">
+                            <img class="avatar" src="https://avatars2.githubusercontent.com/u/665690?v=3&amp;s=466">
+                            <i class="fa fa-caret-down"></i>
+                        </a>
+                    </div>
+                </nav>
+            
+            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜尋">
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="Type something...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: 'Pages',
+            CATEGORIES: '分類',
+            TAGS: '標籤',
+            UNTITLED: '(Untitled)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+        </div>
+    </div>
+    <div id="main-nav-mobile" class="header-sub header-inner">
+        <table class="menu outer">
+            <tr>
+                
+                    <td><a class="main-nav-link" href="/.">Home</a></td>
+                
+                    <td><a class="main-nav-link" href="/archives">Archives</a></td>
+                
+                    <td><a class="main-nav-link" href="/categories">Categories</a></td>
+                
+                    <td><a class="main-nav-link" href="/tags">Tags</a></td>
+                
+                <td>
+                    
+    <div class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜尋">
+    </div>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+</header>
+
+        <div class="outer">
+            
+                
+
+<aside id="profile">
+    <div class="inner profile-inner">
+        <div class="base-info profile-block">
+            <img id="avatar" src="https://avatars2.githubusercontent.com/u/665690?v=3&amp;s=466">
+            <h2 id="name">andyyou</h2>
+            <h3 id="title">Web Developer</h3>
+            <span id="location"><i class="fa fa-map-marker"></i>Taipei, Taiwan</span>
+            <a id="follow" target="_blank" href="https://github.com/andyyou">關注我</a>
+        </div>
+        <div class="article-info profile-block">
+            <div class="article-info-block">
+                184
+                <span>文章</span>
+            </div>
+            <div class="article-info-block">
+                79
+                <span>標籤</span>
+            </div>
+        </div>
+        
+        <div class="profile-block social-links">
+            <table>
+                <tr>
+                    
+                    
+                    <td>
+                        <a href="https://github.com/andyyou" target="_blank" title="github" class="tooltip">
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="https://www.linkedin.com/pub/zongyan-you/2a/493/16" target="_blank" title="linkedin" class="tooltip">
+                            <i class="fa fa-linkedin"></i>
+                        </a>
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
+        
+    </div>
+</aside>
+
+            
+            <section id="main"><article id="post-js-unicode-issue" class="article article-type-post" itemscope="" itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+            Javascript Unicode
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2015/05/21/js-unicode-issue/">
+            <time datetime="2015-05-21T04:50:00.000Z" itemprop="datePublished">2015-05-21</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/Program/">Program</a>
+    </div>
+
+                        
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/es6/">es6</a>, <a class="tag-link" href="/tags/javascript/">javascript</a>
+    </div>
+
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <p>為了理解 ES6 到底對於 Unicode 萬國碼有哪些新的支援。我們得從原因理解起。<br><a id="more"></a></p>
+<h1 id="Javascript-在處理-Unicode-時很有多問題"><a href="#Javascript-在處理-Unicode-時很有多問題" class="headerlink" title="Javascript 在處理 Unicode 時很有多問題"></a>Javascript 在處理 Unicode 時很有多問題</h1><p>關於 Javascript 處理 Unicode 的方式…至少可以說是很奇怪。這篇文章闡述在 Javascript 中存取 Unicode 的痛點以及 ES6 如何改善這個問題。</p>
+<h1 id="Unicode-基礎"><a href="#Unicode-基礎" class="headerlink" title="Unicode 基礎"></a>Unicode 基礎</h1><p>在我們深入探討 Javascript 之前，讓我們先確認當我們談到 Unicode 的時候說的是相同的事情。</p>
+<p>有關 Unicode 的觀念其實非常簡單，把它想成一個資料庫，存取著您能想到的所有文字符號，且每一個文字符號都對應著一組數字。這個數字就叫<code>編碼位置</code>(Code point)，也有人稱<code>碼點</code> <code>代碼點</code>。這個編碼位置是唯一的。透過這種方式可以簡單的存取特定文字符號而不用直接輸入符號本身。</p>
+<p>例如:</p>
+<ul>
+<li><code>A</code> = <code>U+0041</code></li>
+<li><code>a</code> = <code>U+0061</code></li>
+<li><code>©</code> = <code>U+00A9</code></li>
+<li><code>☃</code> = <code>U+2603</code></li>
+<li><code>💩</code> = <code>U+1F4A9</code></li>
+</ul>
+<p>編碼位置通常使用 16 進制的格式，位元左邊捕 0 到至少 4 位，使用 <code>U+</code> 當作前綴字。<br>編碼可能的範圍從 <code>U+0000</code> 到 <code>U+10FFFF</code> 超過 110 萬個符號。為了確保其組織性，Unicode 把這個範圍的編碼區分成 17 個區段，各自由 65536 個編碼組成。<br>如果你曾經看過 Wiki 百科上的翻譯，他翻成<code>平面</code>，由 17 個平面組成。</p>
+<p>第一個<code>平面</code>稱作<code>基本多文種平面</code> Basic Multilingual Plane, 簡稱BMP。這大概是最重要的一個。它包含了大部份常用的字符。一般使用英文的情況下您不會需要 BMP 以外的編碼來編輯文件。</p>
+<p>BMP 以外剩下大概 1 百萬個符號屬於<code>補充平面</code>(Supplementary planes or Astral planes)<br>補充平面的字非常好辨別: 如果某個字符需要超過 4 位元的 16 進制來表示那它就屬於補充平面。</p>
+<p>現在我們有了對 Unicode 的基本認識了。來看看如何應用到 Javascript 的字串。</p>
+<h1 id="跳脫序列-Escape-sequence"><a href="#跳脫序列-Escape-sequence" class="headerlink" title="跳脫序列(Escape sequence)"></a>跳脫序列(Escape sequence)</h1><figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">console</span>.log(<span class="string">'\x41\x42\x43'</span>);</span><br><span class="line"><span class="comment">// 'ABC'</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">'\x61\x62\x63'</span>);</span><br><span class="line"><span class="comment">// 'abc'</span></span><br></pre></td></tr></table></figure>
+<p>這個東西術語叫做 16 進制的跳脫序列(字元)。由 16 進制格式的 2 個位元組成代表一個編碼位置。舉例來說 <code>\x41</code> 代表 <code>U+0041</code>。<br>跳脫序列可以被用來表示編碼位置從 <code>U+0000</code> 到 <code>U+00FF</code>。</p>
+<p>另外一種常見的跳脫序列的表示類型如下</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">console</span>.log(<span class="string">'\u0041\u0042\u0043'</span>);</span><br><span class="line"><span class="comment">// 'ABC'</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">'I \u2661 JavaScript'</span>);</span><br><span class="line"><span class="comment">// 'I ♡ JavaScript'</span></span><br></pre></td></tr></table></figure>
+<p>這種格式被稱作<code>萬國碼跳脫序列</code>，算了！還是記英文吧！Unicode escape squences 由16 進制格式 4 個位元組成精準的表達編碼位置，舉例來說: <code>\u2661</code> 表示 <code>U+2661</code> 這種跳脫序列可以用來表示 <code>U+0000</code> 到 <code>U+FFFF</code> 範圍的萬國碼 Unicode 等於是整個基本多文種平面(BMP)</p>
+<p>那麼..其他平面呢? 我們需要大於 4 位元來表示其他編碼位置啊! 我們要如何使用跳脫序列呈現它們?</p>
+<p>ES6 引進了新類型的跳脫序列: <code>Unicode code point escapes</code> 讓事情變得比較簡單</p>
+<p>舉例來說:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">console</span>.log(<span class="string">'\u&#123;41&#125;\u&#123;42&#125;\u&#123;43&#125;'</span>);</span><br><span class="line"><span class="comment">// 'ABC'</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">'\u&#123;1F4A9&#125;'</span>);</span><br><span class="line"><span class="comment">// '💩' U+1F4A9</span></span><br></pre></td></tr></table></figure>
+<p>在大括號之間您可以使用 6 位元的 16 進制，這麼一來就足夠表示所有的 Unicode 編碼。<br>所以透過這種類型的跳脫序列您可以輕易的輸出任何您想用的符號</p>
+<p>為了兼容 ES5 和舊有的環境，一個不是很好的解決方案出現了，就是使用成對編碼來代理</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">console</span>.log(<span class="string">'\uD83D\uDCA9'</span>);</span><br><span class="line"><span class="comment">// '💩' U+1F4A9</span></span><br></pre></td></tr></table></figure>
+<p>在這種情況下每一個跳脫字元(跳脫序列)代表一半的編碼位置，2 個<code>代理編碼</code>組成一個字符的 Code point。</p>
+<p>注意到這個編碼沒辦法很直覺的看出其規則，這是有一套公式的</p>
+<p>例如一個 <code>C</code> 字符大於 <code>0xFFFF</code> 就得對應到 <code>&lt;H, L&gt;</code> 成對的代理編碼</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">H = Math.floor((C - 0x10000) / 0x400) + 0xD800</span><br><span class="line">L = (C - 0x10000) % 0x400 + 0xDC00</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>之後我們提到代理編碼指的就是兩個編碼其中之一 &lt;H,L&gt; 第一個的是 H, 第二個是 L</p>
+</blockquote>
+<p>要反轉回來則是</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">C = (H - 0xD800) * 0x400 + L - 0xDC00 + 0x10000</span><br></pre></td></tr></table></figure>
+<p>透過這種代理編碼的機制所有補充平面的編碼位置(U+010000 - U+10FFFF) 都可以使用。不過使用單一跳脫字元來表示 BMP 裡面的字，兩個跳脫字元(代理編碼)來處理剩下補充平面的字很容易讓人搞混，造成很多惱人的後果。</p>
+<h1 id="計算-JavaScript-字串的文字-符號"><a href="#計算-JavaScript-字串的文字-符號" class="headerlink" title="計算 JavaScript 字串的文字(符號)"></a>計算 JavaScript 字串的文字(符號)</h1><p>假設您想計算一個字串的文字有幾個，您會怎麼處理呢?</p>
+<p>直覺的想法大概是使用 <code>length</code></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">console</span>.log(<span class="string">'A'</span>.length);</span><br><span class="line"><span class="comment">// 1</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">'A'</span> == <span class="string">'\u0041'</span>);</span><br><span class="line"><span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+<p>上面這個例子 <code>length</code> 剛好是字元的數量，說有 1 個文字這很合理。<br>很顯然的我們每一個文字只需要一個跳脫字元，但實際上卻不是這樣。例如:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">console</span>.log(<span class="string">'𝐀'</span>.length); <span class="comment">// U+1D400 注意這不只是全形Ａ</span></span><br><span class="line"><span class="comment">// 2</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">'𝐀'</span> == <span class="string">'\uD835\uDC00'</span>);</span><br><span class="line"><span class="comment">// true</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">'𝐁'</span>.length) <span class="comment">// U+1D401</span></span><br><span class="line"><span class="comment">// 2</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">'𝐁'</span> == <span class="string">'\uD835\uDC01'</span>);</span><br><span class="line"><span class="comment">// true</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">'💩'</span>.length);</span><br><span class="line"><span class="comment">// 2</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">'💩'</span> == <span class="string">'\uD83D\uDCA9'</span>);</span><br><span class="line"><span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+<p>在內部 JavaScript 把補充平面的字符視為兩個跳脫字元(代理編碼)表示一個字。如果您在 ES5 兼容的瀏覽器輸出您會看到他把他視為兩個跳脫字元 length 為 2 ，人們對於字面上只顯示一個字但是 <code>length</code> 卻為 <code>2</code> 會產生困惑。</p>
+<h1 id="計算補充平面裡的文字"><a href="#計算補充平面裡的文字" class="headerlink" title="計算補充平面裡的文字"></a>計算補充平面裡的文字</h1><p>回到剛剛的問題，那我們如何計算 JS 字串中有幾個字?<br>這個小技巧針對<code>代理編碼</code>做處理，當我們認出這兩個跳脫字元會組成一個字的時候只計算一次</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> regexAstralSymbols = <span class="regexp">/[\uD800-\uD8FF][\uDC00-\uDCFF]/g</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">countSymbols</span>(<span class="params">string</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> string.replace(regexAstralSymbols, <span class="string">'_'</span>).length;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>或者您也可以使用 <code>Punycode.js</code>，<code>punycode.ucs2.decode</code> 方法可以取得一個字串並回傳一個包含 Unicode 編碼位置的陣列。如此一來您就可以計算幾個字了。</p>
+<p>在 ES6 您可以透過 <code>Array.from</code> 做類似的事情，透過使用字串的 iterator 來切割字串成為一個陣列</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> astral = <span class="built_in">Array</span>.from(<span class="string">"𝐀𝐁💩"</span>);</span><br><span class="line"><span class="built_in">console</span>.log(astral);</span><br><span class="line"><span class="built_in">console</span>.log(astral.length);</span><br><span class="line"><span class="comment">// 3</span></span><br></pre></td></tr></table></figure>
+<p>或者使用 <code>...</code></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">console</span>.log([...<span class="string">"𝐀𝐁💩"</span>].length)</span><br><span class="line"><span class="comment">// 3</span></span><br></pre></td></tr></table></figure>
+<p>使用上面提到的這些方法，我們可以解決計算幾個字的問題。</p>
+<h1 id="看起來一樣，但卻不一樣"><a href="#看起來一樣，但卻不一樣" class="headerlink" title="看起來一樣，但卻不一樣"></a>看起來一樣，但卻不一樣</h1><p>但是如果我們開始去賣弄我們從文章中學到的知識，計算文字的數量甚至更多複雜的操作例如下面這段程式碼</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">console</span>.log(<span class="string">'mañana'</span> == <span class="string">'mañana'</span>);</span><br><span class="line"><span class="comment">// false</span></span><br></pre></td></tr></table></figure>
+<p>JavaScript 會告訴我們這兩個字串不一樣，但看起來明明就一樣。<br>試著到<a href="https://mothereff.in/js-escapes#1ma%C3%B1ana%20man%CC%83ana" target="_blank" rel="noopener">這個網址</a>看看</p>
+<p>Javascript escapes 工具告訴我們其中的不同</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">console</span>.log(<span class="string">'ma\xF1ana'</span> == <span class="string">'man\u0303ana'</span>);</span><br><span class="line"><span class="comment">// false</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">'ma\xF1ana'</span>.length);</span><br><span class="line"><span class="comment">// 6</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(<span class="string">'man\u0303ana'</span>.length);</span><br><span class="line"><span class="comment">// 7</span></span><br></pre></td></tr></table></figure>
+<p>第一個字串包含的是 <code>U+00F1</code> 是一個拉丁字小寫 N 加上波浪號。而第二個字串裡面的是 <code>U+006E</code> 拉丁字小寫 N 加上 <code>U+0303</code> 波浪號，兩個編碼合體成一個字。這樣你明白了為什麼他們不一樣了吧。</p>
+<p>然而如果我們希望兩個字串計算結果都會是 6 個字呢?<br>在 ES6 也相當直覺</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> normalized = <span class="string">"mañana"</span>.normalize(<span class="string">'NFC'</span>); <span class="comment">// 把字串標準化</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(<span class="built_in">Array</span>.from(normalized).length);</span><br><span class="line"><span class="comment">// 6</span></span><br><span class="line"><span class="built_in">console</span>.log([...normalized].length);</span><br><span class="line"><span class="comment">// 6</span></span><br></pre></td></tr></table></figure>
+<p>這個標準化 <code>normalize</code> 方法是內建 String.prototype 的方法，他會根據<a href="http://unicode.org/reports/tr15/" target="_blank" rel="noopener">Unicode normalization</a>的規則執行，找出那些字的差異，如果找到那種由兩個<code>代理編碼組成的字</code>卻長得跟<code>另一單一編碼位置</code>一樣的字，它會把它轉成單一的那種編碼。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[...<span class="string">'mañana'</span>].lenght <span class="comment">// U+00F1</span></span><br><span class="line"><span class="comment">// 6</span></span><br><span class="line">[...<span class="string">'mañana'</span>].length <span class="comment">// U+006E + U+0303</span></span><br><span class="line"><span class="comment">// 6</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 透過程式碼驗證</span></span><br><span class="line"><span class="keyword">var</span> normalized = <span class="string">"mañana"</span>.normalize(<span class="string">'NFC'</span>);</span><br><span class="line"><span class="built_in">console</span>.log(normalized[<span class="number">2</span>] + <span class="string">" = "</span> + normalized.charCodeAt(<span class="number">2</span>))</span><br><span class="line"><span class="comment">// ñ = 241, 241 轉成 16 進制 F1</span></span><br></pre></td></tr></table></figure>
+<p>為了向下相容 ES5 和舊環境可以使用這個<a href="https://github.com/walling/unorm" target="_blank" rel="noopener">Polyfill</a></p>
+<h1 id="事情還很複雜-計算其他組合式的代理編碼"><a href="#事情還很複雜-計算其他組合式的代理編碼" class="headerlink" title="事情還很複雜 - 計算其他組合式的代理編碼"></a>事情還很複雜 - 計算其他組合式的代理編碼</h1><p>光上面這些還不夠完美，編碼位置可以有多種組合方式其結果看起來是一個字，但是卻沒有標準化的格式(或者說沒有相同樣子的字取代)。<br>這種時後 normalization 就幫不上忙了。</p>
+<blockquote>
+<p>大部份開發者應該很少遇到這類問題吧???</p>
+</blockquote>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> q = <span class="string">'q\u0307\u0323'</span>.normalize(<span class="string">'NFC'</span>) <span class="comment">// q̣̇</span></span><br><span class="line"><span class="comment">// 經過 normalize 還是 q\u0307\u0323</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log([...q].length);</span><br><span class="line"><span class="comment">// 是 3 不是 1</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log([...<span class="string">'Z͑ͫ̓ͪ̂ͫ̽͏̴̙̤̞͉͚̯̞̠͍A̴̵̜̰͔ͫ͗͢L̠ͨͧͩ͘G̴̻͈͍͔̹̑͗̎̅͛́Ǫ̵̹̻̝̳͂̌̌͘!͖̬̰̙̗̿̋ͥͥ̂ͣ̐́́͜͞'</span>].length);</span><br><span class="line"><span class="comment">// 是 74 不是 6</span></span><br></pre></td></tr></table></figure>
+<p>此時您可以使用正規式來移除那些組合的符號</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> sample = <span class="string">"Z͑ͫ̓ͪ̂ͫ̽͏̴̙̤̞͉͚̯̞̠͍A̴̵̜̰͔ͫ͗͢L̠ͨͧͩ͘G̴̻͈͍͔̹̑͗̎̅͛́Ǫ̵̹̻̝̳͂̌̌͘!͖̬̰̙̗̿̋ͥͥ̂ͣ̐́́͜͞"</span>;</span><br><span class="line"><span class="keyword">var</span> pattern = <span class="regexp">/([\0-\u02FF\u0370-\u1DBF\u1E00-\u20CF\u2100-\uD7FF\uDC00-\uFE1F\uFE30-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF])([\u0300-\u036F\u1DC0-\u1DFF\u20D0-\u20FF\uFE20-\uFE2F]+)/g</span>;</span><br><span class="line"><span class="keyword">var</span> stripped = sample.replace(pattern, <span class="function"><span class="keyword">function</span>(<span class="params">ele, symbol, marks</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> symbol;</span><br><span class="line">&#125;);</span><br><span class="line"><span class="built_in">console</span>.log(stripped.length);</span><br><span class="line"><span class="comment">// 6</span></span><br></pre></td></tr></table></figure>
+<p>這種做法可以移除其他用來組合的符號，只留下那些我們要的字。這種解決方案甚至連 ES3 都能使用。</p>
+<h1 id="計算其他類型的字形集合-語素簇-Grapheme-Cluster"><a href="#計算其他類型的字形集合-語素簇-Grapheme-Cluster" class="headerlink" title="計算其他類型的字形集合(語素簇) Grapheme Cluster"></a>計算其他類型的字形集合(<code>語素簇</code>) Grapheme Cluster</h1><p>對於像 <code>நி</code>(<code>U+0BA8</code> + <code>U+0BBF</code> = <code>\u0ba8\u0bbf</code>) 這種字集或者像韓文是由一堆母音和子音組成的例如 <code>깍</code>(<code>ᄁ</code> + <code>ᅡ</code> + <code>ᆨ</code>) 上面的邏輯仍然是相對粗糙。</p>
+<p>Unicode 標準附件 #29 提供一個<a href="http://www.unicode.org/reports/tr29/#Grapheme_Cluster_Boundaries" target="_blank" rel="noopener">演算法</a>用來判斷字形的邊界，就是怎麼樣算是人看的一個字。<br>如果是為了給所有 Unicode 絕對精準的解決方案那麼時做這個邏輯可能是比較正解的方法。</p>
+<h1 id="反轉字串"><a href="#反轉字串" class="headerlink" title="反轉字串"></a>反轉字串</h1><p>你可能覺得在 JavaScript 中反轉一個字串很簡單。對嗎?<br>通常你會這麼做</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">reverse</span>(<span class="params">string</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> string.split(<span class="string">''</span>).reverse().join(<span class="string">''</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>看起似乎可行</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">reverse(<span class="string">'abc'</span>);</span><br><span class="line"><span class="comment">// 'cba'</span></span><br><span class="line"></span><br><span class="line">reverse(<span class="string">'mañana'</span>); <span class="comment">// U+00F1</span></span><br><span class="line"><span class="comment">// 'anañam'</span></span><br></pre></td></tr></table></figure>
+<p>然而當字串混雜著一些<code>代理編碼</code>即兩個編碼位置組合成的一個字或者<code>補充字面</code>裡的字時全部就都亂了套。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">reverse(<span class="string">'mañana'</span>); <span class="comment">// U+006E + U+0303</span></span><br><span class="line"><span class="comment">// 'anãnam'</span></span><br><span class="line"><span class="comment">// 看吧！ `~` 跑到 `a` 上面了</span></span><br><span class="line"></span><br><span class="line">reverse(<span class="string">'💩'</span>) <span class="comment">// U+1F4A9</span></span><br><span class="line"><span class="comment">// '��' =&gt; `'\uDCA9\uD83D'`</span></span><br><span class="line"><span class="comment">// `💩` 大便符號完全錯誤因為兩個編碼位置反了</span></span><br></pre></td></tr></table></figure>
+<p>在 ES6 裡面修正了這個問題</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">console</span>.log(<span class="built_in">Array</span>.from(<span class="string">"𝐀𝐁💩"</span>).reverse().join(<span class="string">''</span>));</span><br><span class="line"><span class="comment">// "💩𝐁𝐀"</span></span><br><span class="line"><span class="built_in">console</span>.log([...<span class="string">"𝐀𝐁💩"</span>].reverse().join(<span class="string">''</span>));</span><br><span class="line"><span class="comment">// "💩𝐁𝐀"</span></span><br></pre></td></tr></table></figure>
+<p>但仍然沒有解決涉及多個編碼組合成看起來像一個字的問題。</p>
+<p>幸運的是有人解決了<code>反轉字串遇到怪字</code>這個問題，只要透過<a href="https://mths.be/esrever" target="_blank" rel="noopener">Esrever</a></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 使用 Esrever (https://mths.be/esrever)</span></span><br><span class="line"></span><br><span class="line">esrever.reverse(<span class="string">'mañana'</span>) <span class="comment">// U+006E + U+0303</span></span><br><span class="line"><span class="comment">// 'anañam'</span></span><br><span class="line"></span><br><span class="line">esrever.reverse(<span class="string">'💩'</span>) <span class="comment">// U+1F4A9</span></span><br><span class="line"><span class="comment">// '💩' U+1F4A9</span></span><br></pre></td></tr></table></figure>
+<h1 id="在字串方法中使用-Unicode-的問題"><a href="#在字串方法中使用-Unicode-的問題" class="headerlink" title="在字串方法中使用 Unicode 的問題"></a>在字串方法中使用 Unicode 的問題</h1><p>除了陣列 <code>reverse()</code> 的行為外，這種問題也影響到字串的方法。</p>
+<h3 id="轉換編碼位置成文字-符號"><a href="#轉換編碼位置成文字-符號" class="headerlink" title="轉換編碼位置成文字(符號)"></a>轉換編碼位置成文字(符號)</h3><p><code>String.fromCharCode</code> 讓我們可以用 Unicode 編碼位置來建立一個字串，不過呢只有在<code>基本多文種平面</code>(BMP)範圍內是正常的(U+0000 到 U+FFFF)，如果我們用了在補充平面的字將會得到非預期的結果:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">String</span>.fromCharCode(<span class="number">0x0041</span>); <span class="comment">// U+0041</span></span><br><span class="line"><span class="comment">// 'A' U+0041</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">String</span>.fromCharCode(<span class="number">0x1F4A9</span>) <span class="comment">// U+1F4A9</span></span><br><span class="line"><span class="comment">// '' 是 U+F4A9, 而不是 U+1F4A9</span></span><br></pre></td></tr></table></figure>
+<p>而解決方法就是用上面提到的公式自己計算，並且把拆開的兩個編碼當作參數帶入</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">String</span>.fromCharCode(<span class="number">0xD83D</span>, <span class="number">0xDCA9</span>);</span><br><span class="line"><span class="comment">// '💩'  U+1F4A9</span></span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>16 進制在 C語言、Shell、Python、Java語言及其他相近的語言使用字首「0x」，例如「0x5A3」。</p>
+</blockquote>
+<blockquote>
+<p>而在HTML，十六進制可以用「x」，例如 <code>&amp;#x0041;</code> 會等於 「A」。</p>
+</blockquote>
+<p>如果你不想要自己處理這些麻煩的計算您可以使用 <a href="https://mths.be/punycode" target="_blank" rel="noopener">Punycode.js</a> 提供的工具</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">punycode.ucs2.encode([<span class="number">0x1F4A9</span>]);</span><br><span class="line"><span class="comment">// '💩' U+1F4A9</span></span><br></pre></td></tr></table></figure>
+<p>除了上面這些方法，幸運的是 ES6 也引入了新的方法 <code>String.fromCodePoint()</code> 就可以直接用來轉換補充平面裡面的字了</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">String</span>.fromCodePoint(<span class="number">0x1F4A9</span>);</span><br><span class="line"><span class="comment">// '💩' U+1F4A9</span></span><br></pre></td></tr></table></figure>
+<p>同時呢為了向下相容舊環境您可以使用 Polyfill。</p>
+<h3 id="從字串中取出一個字"><a href="#從字串中取出一個字" class="headerlink" title="從字串中取出一個字"></a>從字串中取出一個字</h3><p>如果您想用 <code>String.prototype.charAt(index)</code> 來擷取第一個字符，遇上<code>大便符號💩</code>這種代理編碼類型的字，這個方法只能夠抓出第一個編碼。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">'💩'</span>.charAt(<span class="number">0</span>) <span class="comment">// U+1F4A9</span></span><br><span class="line"><span class="comment">// '\uD83D'</span></span><br><span class="line"><span class="comment">// U+1F4A9 代理編碼的兩個編碼中第一個是 U+D83D</span></span><br></pre></td></tr></table></figure>
+<p>在 ES7 的建議中已經有提出 <code>String.prototype.at(index)</code> 來處理這個問題了。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">'💩'</span>.at(<span class="number">0</span>) <span class="comment">// U+1F4A9</span></span><br><span class="line"><span class="comment">// '💩' U+1F4A9</span></span><br></pre></td></tr></table></figure>
+<p>同樣的在 ES5 和舊環境中還是可以找到 Polyfill 來處理。</p>
+<h3 id="從字串取得字的編碼位置"><a href="#從字串取得字的編碼位置" class="headerlink" title="從字串取得字的編碼位置"></a>從字串取得字的編碼位置</h3><p>類似於上面的狀況，如果您使用 <code>Strint.prototype.charCodeAt(index)</code> 來檢索字串中第一個字的編碼位置，您一樣會取得代理編碼 2 個編碼中的第一個編碼(就是上面提到的 <code>H</code>)</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">'💩'</span>.charCodeAt(<span class="number">0</span>);</span><br><span class="line"><span class="comment">// 0xD83D</span></span><br><span class="line"><span class="comment">// 瀏覽器會給 10 進制 55357 換算之後的確是 D83D</span></span><br></pre></td></tr></table></figure>
+<p>再一次感謝 ES6，一樣提供了 <code>String.prototype.codePointAt(index)</code> 方法來解決這個問題。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">'💩'</span>.codePointAt(<span class="number">0</span>)</span><br><span class="line"><span class="comment">// 0x1F4A9</span></span><br></pre></td></tr></table></figure>
+<h3 id="遍歷字串中的每個字"><a href="#遍歷字串中的每個字" class="headerlink" title="遍歷字串中的每個字"></a>遍歷字串中的每個字</h3><p>假設您想要用迴圈遍歷(就是一個字一個字取出)一個字串，分別對每個字做點處理。</p>
+<p>在 ES5 裡我們可能要先處理成陣列</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">getSymbols</span>(<span class="params">string</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> length = string.length;</span><br><span class="line">  <span class="keyword">var</span> index = <span class="number">-1</span>;</span><br><span class="line">  <span class="keyword">var</span> output = [];</span><br><span class="line">  <span class="keyword">var</span> character;</span><br><span class="line">  <span class="keyword">var</span> charCode;</span><br><span class="line">  <span class="keyword">while</span> (++index &lt; length) &#123;</span><br><span class="line">    character = string.charAt(index);</span><br><span class="line">    charCode = character.charCodeAt(<span class="number">0</span>);</span><br><span class="line">    <span class="keyword">if</span> (charCode &gt;= <span class="number">0xD800</span> &amp;&amp; charCode &lt;= <span class="number">0xD8FF</span>) &#123;</span><br><span class="line">      <span class="comment">// 這邊我們假設不會出現那種只有一半的代理編碼</span></span><br><span class="line">      output.push(character + string.charAt(++index));</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">      output.push(character);</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">return</span> output;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> symbols = getSymbols(<span class="string">'💩'</span>);</span><br><span class="line"><span class="built_in">console</span>.log(symbols);</span><br></pre></td></tr></table></figure>
+<p>不意外的 ES6 又出來拯救我們了，在 ES6 裡只要用 <code>for...of</code> 就可以準確的取出每一個<code>字</code>。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> (<span class="keyword">let</span> symbol <span class="keyword">of</span> <span class="string">'💩'</span>) &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(symbol == <span class="string">'💩'</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+<h3 id="其他問題"><a href="#其他問題" class="headerlink" title="其他問題"></a>其他問題</h3><p>Unicode 的確影響了很多 String Method 的行為，包含我們在這裡沒提到的 <code>substring</code>, <code>slice</code> 所以實作時請小心。</p>
+<h1 id="Unicode-在正規式中的問題"><a href="#Unicode-在正規式中的問題" class="headerlink" title="Unicode 在正規式中的問題"></a>Unicode 在正規式中的問題</h1><h3 id="匹配代碼位置-Code-Point-與-Unicode-標量值-Unicode-Scalar-Values"><a href="#匹配代碼位置-Code-Point-與-Unicode-標量值-Unicode-Scalar-Values" class="headerlink" title="匹配代碼位置(Code Point)與 Unicode 標量值(Unicode Scalar Values)"></a>匹配<code>代碼位置</code>(Code Point)與 <code>Unicode 標量值</code>(Unicode Scalar Values)</h3><p><code>.</code> 句點在正規式中只會匹配<code>一個字元</code>即我們上面說的一個編碼(U+0041)，本來這都很合理，但因為 JavaScript 採用了<code>代理編碼</code>的機制，用了兩個實際的編碼組合成一個字。一旦我們要匹配補充平面的字時，永遠不會匹配成功。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">/foo.bar/.test(<span class="string">'foo💩bar'</span>)</span><br><span class="line"><span class="comment">// false</span></span><br></pre></td></tr></table></figure>
+<p>讓我們再想想…還有什麼正規式的寫法可以匹配 Unicode 字符</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">console</span>.log(<span class="regexp">/^[\s\S]$/</span>.test(<span class="string">'💩'</span>));</span><br><span class="line"><span class="comment">// false</span></span><br></pre></td></tr></table></figure>
+<p>還是 GG ，事實證明正規式要匹配一個 Unicode 編碼位置並不是那麼直覺。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">console</span>.log(<span class="regexp">/[\0-\uD7FF\uE000-\uFFFF]|[\uD800-\uDBFF][\uDC00-\uDFFF]|[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?:[^\uD800-\uDBFF]|^)[\uDC00-\uDFFF]/</span>.test(<span class="string">'💩'</span>));</span><br><span class="line"><span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+<p>當然啦！在實際開發時我是絕對不想寫這些正規式，光寫就暈了更何況還要 debug。為了取得上面那堆正規式我們可以偷吃步使用 <a href="https://github.com/mathiasbynens/regenerate" target="_blank" rel="noopener">regenerate</a> 函式庫。它可以很輕鬆地幫我們產出這些正規式</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">regenerate().addRange(<span class="number">0x0</span>, <span class="number">0x10FFFF</span>).toString()</span><br></pre></td></tr></table></figure>
+<p>這個正規式可以匹配基本多文種平面，補充平面的字，甚至只有一個代理編碼。</p>
+<p>只寫一個代理編碼在技術上是可行的，但因為他們不會對應到任何實際的字，所以應該避免。<br>Unicode 標量值(Unicode Scalar Values)指的是所有的編碼位置但扣掉那些代理編碼的<code>編碼位置</code><br>下面是如何產出符合 Unicode Scalar Values 規則的正規式</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">regenerate()</span><br><span class="line"> .addRange(<span class="number">0x0</span>, <span class="number">0x10FFFF</span>) <span class="comment">// 所有 Unicode 編碼位置</span></span><br><span class="line"> .removeRange(<span class="number">0xD800</span>, <span class="number">0xDBFF</span>) <span class="comment">// 減去第一位的代理編碼</span></span><br><span class="line"> .removeRange(<span class="number">0xDC00</span>, <span class="number">0xDFFF</span>) <span class="comment">// 減去第二位的代理編碼</span></span><br><span class="line"> .toRegExp()</span><br></pre></td></tr></table></figure>
+<p><code>regenerate</code> 可以協助我們建立那些複雜的正規式，用相對語意化的方式讓我們比較好維護。</p>
+<p>ES6 替正規式加入了 <code>u</code> 修飾符(flag) 就是在正規式尾巴那些用來設定比對方式的參數<br>例如 <code>/[\w]/g</code></p>
+<ul>
+<li>g 全域比對</li>
+<li>i 忽略大小寫</li>
+<li>gi 全域比對 + 忽略大小寫</li>
+</ul>
+<p>現在多了 <code>u</code> 讓正規式用 <code>.</code> 在匹配時可以正確的匹配到補充平面裡的字</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">/foo.bar/.test(<span class="string">'foo💩bar'</span>);</span><br><span class="line"><span class="comment">// false</span></span><br><span class="line"></span><br><span class="line">/foo.bar/u.test(<span class="string">'foo💩bar'</span>);</span><br><span class="line"><span class="comment">// true</span></span><br></pre></td></tr></table></figure>
+<p>注意: <code>.</code> 仍然不會匹配到換行字元，當設定了 <code>u</code> flag 之後在兼容環境中等於是使用下面的程式碼</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">regenerate()</span><br><span class="line">  .addRange(<span class="number">0x0</span>, <span class="number">0x10FFFF</span>)</span><br><span class="line">  .remove(</span><br><span class="line">    <span class="number">0x000A</span>, <span class="comment">// &lt;LF&gt;</span></span><br><span class="line">    <span class="number">0x000D</span>, <span class="comment">// &lt;CR&gt;</span></span><br><span class="line">    <span class="number">0x2028</span>, <span class="comment">// &lt;LS&gt;</span></span><br><span class="line">    <span class="number">0x2029</span>, <span class="comment">// &lt;PS&gt;</span></span><br><span class="line">  ).toString();</span><br></pre></td></tr></table></figure>
+<h3 id="補充平面的範圍設定"><a href="#補充平面的範圍設定" class="headerlink" title="補充平面的範圍設定"></a>補充平面的範圍設定</h3><p>先想想這種狀況 <code>/[a-c]/</code> 這樣寫可以比對 <code>U+0061</code> 到 <code>U+0063</code> 即 a 到 c 。那如果換成 <code>/[💩-💫]/</code> 勒?<br>理論上應該是要匹配 <code>U+1F4A9</code> 到 <code>U+1F4AB</code>。</p>
+<p>但實際上卻是…</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">console</span>.log(<span class="regexp">/[💩-💫]/</span>);</span><br><span class="line"><span class="comment">// SyntaxError: invalid range in character class</span></span><br></pre></td></tr></table></figure>
+<p>原因是實際上這個正規式長成這樣</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> pattern = <span class="regexp">/[\uD83D\uDCA9-\uD83D\uDCAB]/</span>;</span><br><span class="line"><span class="comment">// SyntaxError: invalid range in character class</span></span><br></pre></td></tr></table></figure>
+<p>我們原本想要的是從 <code>U+1F4A9</code> 到 <code>U+1F4AB</code> 但現在正規式卻變成先來一個 <code>\uD830</code> 然後從 <code>\uDCA9-\uD83D</code> 範圍就錯了。</p>
+<p>ES6 的 <code>u</code> flag 和新版 Unicode 表示法又一次解決了我們的困難</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">console</span>.log(<span class="regexp">/[\uD83D\uDCA9-\uD83D\uDCAB]/u</span>.test(<span class="string">'\uD83D\uDCA9'</span>));</span><br><span class="line"><span class="comment">// true</span></span><br><span class="line"><span class="comment">// 匹配 U+1F4A9</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(<span class="regexp">/[\u&#123;1F4A9&#125;-\u&#123;1F4AB&#125;]/u</span>.test(<span class="string">'\u&#123;1F4A9&#125;'</span>));</span><br><span class="line"><span class="comment">// true</span></span><br><span class="line"><span class="comment">// 匹配 U+1F4A9</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(<span class="regexp">/[💩-💫]/u</span>.test(<span class="string">'💩'</span>));</span><br><span class="line"><span class="comment">// true</span></span><br><span class="line"><span class="comment">// 匹配 U+1F4A9</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(<span class="regexp">/[\uD83D\uDCA9-\uD83D\uDCAB]/u</span>.test(<span class="string">'\uD83D\uDCAA'</span>));</span><br><span class="line"><span class="comment">// true</span></span><br><span class="line"><span class="comment">// 匹配 U+1F4AA</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(<span class="regexp">/[\u&#123;1F4A9&#125;-\u&#123;1F4AB&#125;]/u</span>.test(<span class="string">'\u&#123;1F4AA&#125;'</span>));</span><br><span class="line"><span class="comment">// true</span></span><br><span class="line"><span class="comment">// 匹配 U+1F4AA</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(<span class="regexp">/[💩-💫]/u</span>.test(<span class="string">'💪'</span>));</span><br><span class="line"><span class="comment">// true</span></span><br><span class="line"><span class="comment">// 匹配 U+1F4AA</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(<span class="regexp">/[\uD83D\uDCA9-\uD83D\uDCAB]/u</span>.test(<span class="string">'\uD83D\uDCAB'</span>));</span><br><span class="line"><span class="comment">// true</span></span><br><span class="line"><span class="comment">// 匹配 U+1F4AB</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(<span class="regexp">/[\u&#123;1F4A9&#125;-\u&#123;1F4AB&#125;]/u</span>.test(<span class="string">'\u&#123;1F4AB&#125;'</span>));</span><br><span class="line"><span class="comment">// true</span></span><br><span class="line"><span class="comment">// 匹配 U+1F4AB</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(<span class="regexp">/[💩-💫]/u</span>.test(<span class="string">'💫'</span>));</span><br><span class="line"><span class="comment">// true</span></span><br><span class="line"><span class="comment">// 匹配 U+1F4AB</span></span><br></pre></td></tr></table></figure>
+<p>可惜的是這個方法不能兼容 ES5 和舊環境，如果您真的必須要兼容舊環境那麼您可能只能使用 <code>regenerate</code>, 或其他類似的<a href="https://github.com/mathiasbynens/regexpu" target="_blank" rel="noopener">函式庫</a> 來產出那些正規式進行匹配了。</p>
+<h1 id="真實世界中的其他-Bug-及該如何避免"><a href="#真實世界中的其他-Bug-及該如何避免" class="headerlink" title="真實世界中的其他 Bug 及該如何避免"></a>真實世界中的其他 Bug 及該如何避免</h1><p>看到了吧！Unicode 在 JavaScript 中奇怪的行為造成許多問題。許多開發者在處理字串時並沒有考慮到補充字面的問題(舉手; 我就是其一)，甚至包含知名的函式庫 <code>Underscore.string</code> 的 <code>reverse</code> 也沒有處理關於補充字面產生的問題。</p>
+<p>畢竟處理這些問題的確很麻煩，而且好像沒必要???</p>
+<h3 id="在測試中參一坨屎吧-XD"><a href="#在測試中參一坨屎吧-XD" class="headerlink" title="在測試中參一坨屎吧 XD"></a>在測試中參一坨屎吧 XD</h3><p>無論您正在寫什麼樣功能的 JavaScript 試著在測試行為的字串中加入 <code>💩</code> 然後看看會不會炸掉。<br>這有助於您發現 Unicode 的問題。</p>
+<h1 id="結論"><a href="#結論" class="headerlink" title="結論"></a>結論</h1><p>一般處理單一語系的開發者其實不太容易注意到這些問題。這也是在學習 Babel 的過程中為了理解為什麼要特別強調 Unicode 而做些研究寫的學習筆記。</p>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+
+</div>
+
+    <a data-url="//andyyou.github.io/2015/05/21/js-unicode-issue/" data-id="cklyrfc38009x5g72wey3m0b0" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        // Prevent duplicate binding
+        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
+            __SHARE_BUTTON_BINDED__ = true;
+        } else {
+            return;
+        }
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+            
+    
+
+        </footer>
+    </div>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2015/07/23/webpack/" id="article-nav-newer" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">上一篇</strong>
+            <div class="article-nav-title">
+                
+                    Webpack 筆記
+                
+            </div>
+        </a>
+    
+    
+        <a href="/2015/05/20/es6-generators/" id="article-nav-older" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">下一篇</strong>
+            <div class="article-nav-title">ES6 Generators 基礎</div>
+        </a>
+    
+</nav>
+
+
+    
+</article>
+
+
+    
+    <section id="comments">
+    
+    </section>
+
+</section>
+            
+                <aside id="sidebar">
+   
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">分類</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Cloud/">Cloud</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Database/">Database</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Fun/">Fun</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Mobile/">Mobile</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Program/">Program</a><span class="category-list-count">131</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/System/">System</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Tools/">Tools</a><span class="category-list-count">17</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">歸檔</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/03/">三月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/10/">十月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">五月 2019</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">六月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">十二月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">十一月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">九月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">十月 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">九月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">六月 2016</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">十二月 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">十一月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">十月 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">九月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">八月 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">七月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">五月 2015</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">四月 2015</a><span class="archive-list-count">19</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">十二月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/11/">十一月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/10/">十月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">九月 2014</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/08/">八月 2014</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/02/">二月 2014</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/01/">一月 2014</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">十一月 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">十月 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">九月 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">八月 2013</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/03/">三月 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">三月 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">一月 2012</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2011/11/">十一月 2011</a><span class="archive-list-count">3</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">標籤</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/net-mvc/">.net mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RoR/">RoR</a><span class="tag-list-count">15</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/api/">api</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aws/">aws</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/azure/">azure</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bot/">bot</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bundler/">bundler</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cache/">cache</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/carrier-wave/">carrier wave</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/centos/">centos</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/chrome/">chrome</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cloudflare/">cloudflare</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/compass/">compass</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/devise/">devise</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dnd/">dnd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/e-invoice/">e-invoice</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/entity-framework/">entity framework</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/es6/">es6</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/facebook/">facebook</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flux/">flux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/framework/">framework</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gcp/">gcp</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/grunt/">grunt</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gulp/">gulp</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/heroku/">heroku</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/html/">html</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/iisexpress/">iisexpress</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ios/">ios</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">69</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript-express-passport/">javascript express passport</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript-nodejs/">javascript nodejs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jekyll/">jekyll</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jetstream/">jetstream</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jspm/">jspm</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jwt/">jwt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/laravel/">laravel</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/letsencrypt/">letsencrypt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mechanism/">mechanism</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongodb/">mongodb</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/node/">node</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nodejs/">nodejs</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/oocss/">oocss</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/osx/">osx</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package-manager/">package manager</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/php/">php</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/postgres/">postgres</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/postgresql/">postgresql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/queue/">queue</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rabbitmq/">rabbitmq</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rack-server/">rack server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails/">rails</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails-webpack-stimulus-javascript-bootstrap/">rails webpack stimulus javascript bootstrap</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/raspberry-pi/">raspberry-pi</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react/">react</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react-native/">react native</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/reactjs/">reactjs</a><span class="tag-list-count">32</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redux/">redux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sass/">sass</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/selenium/">selenium</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/slim/">slim</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssh/">ssh</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssl/">ssl</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/stimulus/">stimulus</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/svg-javascript/">svg javascript</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/task-runner/">task runner</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tmux/">tmux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tools/">tools</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vm/">vm</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/">vue</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vuejs/">vuejs</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/webpack/">webpack</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/windows/">windows</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/xml/">xml</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">標籤雲</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/net-mvc/" style="font-size: 10px;">.net mvc</a> <a href="/tags/RoR/" style="font-size: 16.67px;">RoR</a> <a href="/tags/api/" style="font-size: 10px;">api</a> <a href="/tags/aws/" style="font-size: 12.5px;">aws</a> <a href="/tags/azure/" style="font-size: 10.83px;">azure</a> <a href="/tags/bot/" style="font-size: 10px;">bot</a> <a href="/tags/bundler/" style="font-size: 10.83px;">bundler</a> <a href="/tags/cache/" style="font-size: 10px;">cache</a> <a href="/tags/carrier-wave/" style="font-size: 10.83px;">carrier wave</a> <a href="/tags/centos/" style="font-size: 10px;">centos</a> <a href="/tags/chrome/" style="font-size: 10px;">chrome</a> <a href="/tags/cloudflare/" style="font-size: 10px;">cloudflare</a> <a href="/tags/compass/" style="font-size: 10px;">compass</a> <a href="/tags/css/" style="font-size: 17.5px;">css</a> <a href="/tags/devise/" style="font-size: 10px;">devise</a> <a href="/tags/dnd/" style="font-size: 10px;">dnd</a> <a href="/tags/docker/" style="font-size: 10.83px;">docker</a> <a href="/tags/e-invoice/" style="font-size: 10px;">e-invoice</a> <a href="/tags/entity-framework/" style="font-size: 10px;">entity framework</a> <a href="/tags/es6/" style="font-size: 11.67px;">es6</a> <a href="/tags/facebook/" style="font-size: 10px;">facebook</a> <a href="/tags/flux/" style="font-size: 10px;">flux</a> <a href="/tags/framework/" style="font-size: 10.83px;">framework</a> <a href="/tags/gcp/" style="font-size: 10.83px;">gcp</a> <a href="/tags/go/" style="font-size: 10px;">go</a> <a href="/tags/grunt/" style="font-size: 12.5px;">grunt</a> <a href="/tags/gulp/" style="font-size: 11.67px;">gulp</a> <a href="/tags/heroku/" style="font-size: 14.17px;">heroku</a> <a href="/tags/html/" style="font-size: 10.83px;">html</a> <a href="/tags/iisexpress/" style="font-size: 10px;">iisexpress</a> <a href="/tags/ios/" style="font-size: 11.67px;">ios</a> <a href="/tags/javascript/" style="font-size: 20px;">javascript</a> <a href="/tags/javascript-express-passport/" style="font-size: 10px;">javascript express passport</a> <a href="/tags/javascript-nodejs/" style="font-size: 10px;">javascript nodejs</a> <a href="/tags/jekyll/" style="font-size: 10.83px;">jekyll</a> <a href="/tags/jetstream/" style="font-size: 10px;">jetstream</a> <a href="/tags/jspm/" style="font-size: 10px;">jspm</a> <a href="/tags/jwt/" style="font-size: 10px;">jwt</a> <a href="/tags/laravel/" style="font-size: 11.67px;">laravel</a> <a href="/tags/letsencrypt/" style="font-size: 10px;">letsencrypt</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/mechanism/" style="font-size: 10px;">mechanism</a> <a href="/tags/mongodb/" style="font-size: 10.83px;">mongodb</a> <a href="/tags/node/" style="font-size: 10px;">node</a> <a href="/tags/nodejs/" style="font-size: 15px;">nodejs</a> <a href="/tags/oocss/" style="font-size: 10px;">oocss</a> <a href="/tags/osx/" style="font-size: 14.17px;">osx</a> <a href="/tags/package-manager/" style="font-size: 14.17px;">package manager</a> <a href="/tags/php/" style="font-size: 10.83px;">php</a> <a href="/tags/postgres/" style="font-size: 10px;">postgres</a> <a href="/tags/postgresql/" style="font-size: 10.83px;">postgresql</a> <a href="/tags/queue/" style="font-size: 10.83px;">queue</a> <a href="/tags/rabbitmq/" style="font-size: 10.83px;">rabbitmq</a> <a href="/tags/rack-server/" style="font-size: 10px;">rack server</a> <a href="/tags/rails/" style="font-size: 14.17px;">rails</a> <a href="/tags/rails-webpack-stimulus-javascript-bootstrap/" style="font-size: 10px;">rails webpack stimulus javascript bootstrap</a> <a href="/tags/raspberry-pi/" style="font-size: 10px;">raspberry-pi</a> <a href="/tags/react/" style="font-size: 15.83px;">react</a> <a href="/tags/react-native/" style="font-size: 10px;">react native</a> <a href="/tags/reactjs/" style="font-size: 19.17px;">reactjs</a> <a href="/tags/redux/" style="font-size: 10px;">redux</a> <a href="/tags/ruby/" style="font-size: 18.33px;">ruby</a> <a href="/tags/sass/" style="font-size: 10.83px;">sass</a> <a href="/tags/selenium/" style="font-size: 10px;">selenium</a> <a href="/tags/slim/" style="font-size: 10px;">slim</a> <a href="/tags/ssh/" style="font-size: 10px;">ssh</a> <a href="/tags/ssl/" style="font-size: 10.83px;">ssl</a> <a href="/tags/stimulus/" style="font-size: 10px;">stimulus</a> <a href="/tags/svg-javascript/" style="font-size: 11.67px;">svg javascript</a> <a href="/tags/task-runner/" style="font-size: 11.67px;">task runner</a> <a href="/tags/tmux/" style="font-size: 10px;">tmux</a> <a href="/tags/tools/" style="font-size: 10px;">tools</a> <a href="/tags/ubuntu/" style="font-size: 10.83px;">ubuntu</a> <a href="/tags/vm/" style="font-size: 10px;">vm</a> <a href="/tags/vue/" style="font-size: 10px;">vue</a> <a href="/tags/vuejs/" style="font-size: 13.33px;">vuejs</a> <a href="/tags/webpack/" style="font-size: 12.5px;">webpack</a> <a href="/tags/windows/" style="font-size: 10px;">windows</a> <a href="/tags/xml/" style="font-size: 10px;">xml</a>
+        </div>
+    </div>
+
+    
+    <div id="toTop" class="fa fa-angle-up"></div>
+</aside>
+            
+        </div>
+        <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2021 andyyou(You,ZongYan)
+        </div>
+    </div>
+</footer>
+
+        
+
+    
+        <script src="/lib/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-share.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-video.min.js"></script>
+    
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+</body>
+</html>

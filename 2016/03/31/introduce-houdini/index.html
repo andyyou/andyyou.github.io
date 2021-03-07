@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    
+    <title>[譯] Houdini: 你還沒聽說！這可能是 CSS 開發中最令人興奮的事！ | DEVLOG of andyyou</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <!-- Google Tag Manager -->
+    <script>(function (w, d, s, l, i) {
+        w[l] = w[l] || []; w[l].push({
+          'gtm.start':
+            new Date().getTime(), event: 'gtm.js'
+        }); var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+            'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+      })(window, document, 'script', 'dataLayer', 'GTM-57LT2GG');</script>
+    <!-- End Google Tag Manager -->
+    <meta name="description" content="其實…我想說這可能是最令我感到興奮..但又害怕頭痛的功能… - 原文連結  你曾經想要使用某個 CSS 的新功能，但是最後卻因為這個功能瀏覽器還未全面支援而放棄了嗎？甚至更糟糕的狀況，瀏覽器已經支援了但卻充滿問題。我敢打賭這些情況你肯定遇過了。如果上面這種情形你曾經遇過，那麼你是應該關心一下 Houdini。">
+<meta name="keywords" content="css">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[譯] Houdini: 你還沒聽說！這可能是 CSS 開發中最令人興奮的事！">
+<meta property="og:url" content="//andyyou.github.io/2016/03/31/introduce-houdini/index.html">
+<meta property="og:site_name" content="DEVLOG of andyyou">
+<meta property="og:description" content="其實…我想說這可能是最令我感到興奮..但又害怕頭痛的功能… - 原文連結  你曾經想要使用某個 CSS 的新功能，但是最後卻因為這個功能瀏覽器還未全面支援而放棄了嗎？甚至更糟糕的狀況，瀏覽器已經支援了但卻充滿問題。我敢打賭這些情況你肯定遇過了。如果上面這種情形你曾經遇過，那麼你是應該關心一下 Houdini。">
+<meta property="og:locale" content="zh-TW">
+<meta property="og:image" content="https://media-mediatemple.netdna-ssl.com/wp-content/uploads/2016/03/01-standards-process-preview-opt.png">
+<meta property="og:image" content="https://media-mediatemple.netdna-ssl.com/wp-content/uploads/2016/03/02-polyfill-process-preview-opt.png">
+<meta property="og:image" content="https://media-mediatemple.netdna-ssl.com/wp-content/uploads/2016/03/03-rendering-process-preview-opt.png">
+<meta property="og:image" content="https://media-mediatemple.netdna-ssl.com/wp-content/uploads/2016/03/04-rendering-process-polyfilled-preview-opt.png">
+<meta property="og:image" content="https://media-mediatemple.netdna-ssl.com/wp-content/uploads/2016/03/05-spec-coverage-preview-opt.png">
+<meta property="og:updated_time" content="2016-12-19T02:32:00.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="[譯] Houdini: 你還沒聽說！這可能是 CSS 開發中最令人興奮的事！">
+<meta name="twitter:description" content="其實…我想說這可能是最令我感到興奮..但又害怕頭痛的功能… - 原文連結  你曾經想要使用某個 CSS 的新功能，但是最後卻因為這個功能瀏覽器還未全面支援而放棄了嗎？甚至更糟糕的狀況，瀏覽器已經支援了但卻充滿問題。我敢打賭這些情況你肯定遇過了。如果上面這種情形你曾經遇過，那麼你是應該關心一下 Houdini。">
+<meta name="twitter:image" content="https://media-mediatemple.netdna-ssl.com/wp-content/uploads/2016/03/01-standards-process-preview-opt.png">
+    
+
+    
+
+    
+        <link rel="icon" href="/images/favicon.png">
+    
+
+    <link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/lib/open-sans/styles.css">
+    <link rel="stylesheet" href="/lib/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/lib/jquery/2.1.3/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/lib/lightgallery/css/lightgallery.min.css">
+    
+    
+    
+        <script type="text/javascript">
+(function(i,s,o,g,r,a,m) {i['GoogleAnalyticsObject']=r;i[r]=i[r]||function() {
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-39208536-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+    
+    
+    
+
+
+</head>
+</html>
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-57LT2GG" height="0" width="0"
+        style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    <div id="container">
+        <header id="header">
+    <div id="header-main" class="header-inner">
+        <div class="outer">
+            <a href="/" id="logo">
+                <i class="logo"></i>
+                <span class="site-title">DEVLOG of andyyou</span>
+            </a>
+            <nav id="main-nav">
+                
+                    <a class="main-nav-link" href="/.">Home</a>
+                
+                    <a class="main-nav-link" href="/archives">Archives</a>
+                
+                    <a class="main-nav-link" href="/categories">Categories</a>
+                
+                    <a class="main-nav-link" href="/tags">Tags</a>
+                
+            </nav>
+            
+                
+                <nav id="sub-nav">
+                    <div class="profile" id="profile-nav">
+                        <a id="profile-anchor" href="javascript:;">
+                            <img class="avatar" src="https://avatars2.githubusercontent.com/u/665690?v=3&amp;s=466">
+                            <i class="fa fa-caret-down"></i>
+                        </a>
+                    </div>
+                </nav>
+            
+            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜尋">
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="Type something...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: 'Pages',
+            CATEGORIES: '分類',
+            TAGS: '標籤',
+            UNTITLED: '(Untitled)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+        </div>
+    </div>
+    <div id="main-nav-mobile" class="header-sub header-inner">
+        <table class="menu outer">
+            <tr>
+                
+                    <td><a class="main-nav-link" href="/.">Home</a></td>
+                
+                    <td><a class="main-nav-link" href="/archives">Archives</a></td>
+                
+                    <td><a class="main-nav-link" href="/categories">Categories</a></td>
+                
+                    <td><a class="main-nav-link" href="/tags">Tags</a></td>
+                
+                <td>
+                    
+    <div class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜尋">
+    </div>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+</header>
+
+        <div class="outer">
+            
+                
+
+<aside id="profile">
+    <div class="inner profile-inner">
+        <div class="base-info profile-block">
+            <img id="avatar" src="https://avatars2.githubusercontent.com/u/665690?v=3&amp;s=466">
+            <h2 id="name">andyyou</h2>
+            <h3 id="title">Web Developer</h3>
+            <span id="location"><i class="fa fa-map-marker"></i>Taipei, Taiwan</span>
+            <a id="follow" target="_blank" href="https://github.com/andyyou">關注我</a>
+        </div>
+        <div class="article-info profile-block">
+            <div class="article-info-block">
+                184
+                <span>文章</span>
+            </div>
+            <div class="article-info-block">
+                79
+                <span>標籤</span>
+            </div>
+        </div>
+        
+        <div class="profile-block social-links">
+            <table>
+                <tr>
+                    
+                    
+                    <td>
+                        <a href="https://github.com/andyyou" target="_blank" title="github" class="tooltip">
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="https://www.linkedin.com/pub/zongyan-you/2a/493/16" target="_blank" title="linkedin" class="tooltip">
+                            <i class="fa fa-linkedin"></i>
+                        </a>
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
+        
+    </div>
+</aside>
+
+            
+            <section id="main"><article id="post-introduce-houdini" class="article article-type-post" itemscope="" itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+            [譯] Houdini: 你還沒聽說！這可能是 CSS 開發中最令人興奮的事！
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2016/03/31/introduce-houdini/">
+            <time datetime="2016-03-31T09:30:00.000Z" itemprop="datePublished">2016-03-31</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/Program/">Program</a>
+    </div>
+
+                        
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/css/">css</a>
+    </div>
+
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <blockquote>
+<p>其實…我想說這可能是最令我感到興奮..但又害怕頭痛的功能… - <a href="https://www.smashingmagazine.com/2016/03/houdini-maybe-the-most-exciting-development-in-css-youve-never-heard-of/" target="_blank" rel="noopener">原文連結</a></p>
+</blockquote>
+<p>你曾經想要使用某個 CSS 的新功能，但是最後卻因為這個功能瀏覽器還未全面支援而放棄了嗎？甚至更糟糕的狀況，瀏覽器已經支援了但卻充滿問題。我敢打賭這些情況你肯定遇過了。如果上面這種情形你曾經遇過，那麼你是應該關心一下 <code>Houdini</code>。</p>
+<a id="more"></a>
+<p><code>Houdini</code> 是 w3c 新的任務團隊，他們的終極目標就是解決上面這些問題 - 讓瀏覽器更迅速廣泛的支援 CSS 新特性。這個計畫試圖透過提供一系列新的 API，也是第一次讓開發者可以擴充 CSS 本身的能力。透過 hook 的方式讓我們可以在瀏覽器渲染的過程動點手腳。</p>
+<blockquote>
+<p>Hooks 簡易說明：Hooks 英文翻譯為鉤子，在程式術語中所表達的是在程式特定位置埋入一段預留的程式碼，用來呼叫其他對應的程式碼。可以大略想成在某個片段先空出一個位置，這個位置可以在事後再放入動作，不放也沒關係。</p>
+</blockquote>
+<p>不過具體來說這到底是什麼意思？這麼做真的好嗎？還有這樣做到底能在我們的開發過程提供些什麼幫助。</p>
+<p>在這篇文章，我將試著回答這些問題。不過在這之前我們必須要先搞清楚，到底我們在今時今日遇到什麼問題，為什麼我們需要做這些改變。接下來我們將會更具體的說明 <code>Houdini</code> 是什麼東西和這傢伙會怎麼解決這些問題，並且列出目前開發中一些令人興奮的功能。最後我將提供一些比較具體實例的說明。</p>
+<h1 id="Houdini-試圖要解決什麼問題？"><a href="#Houdini-試圖要解決什麼問題？" class="headerlink" title="Houdini 試圖要解決什麼問題？"></a>Houdini 試圖要解決什麼問題？</h1><p>每一次當我寫了一篇文章來介紹一些 CSS 的新功能時總是會有人留言像是 <code>這實在太棒了! 不過我們可能要再等個 10 年才能使用</code> 我能體會這種毫無建設性的留言….從過往的歷史來看，這的確需要花上好幾年的時間從功能提案到廣泛採用。而其中最關鍵的原因是唯一讓 CSS 增加新功能的方式就是透過下面這個標準流程。</p>
+<p><img src="https://media-mediatemple.netdna-ssl.com/wp-content/uploads/2016/03/01-standards-process-preview-opt.png" alt=""></p>
+<p>因為瀏覽器本身牽涉太廣泛，對於這樣的流程我本身沒有任何反對意見。當然我們也知道這會耗掉很長的時間。舉例來說 <code>flexbox</code> 首次提案是在 2009 年，而時至今日我們還是見到開發者在抱怨支援的瀏覽器不夠。這個問題正緩慢的解決中，因為幾乎所有的瀏覽器都會自動更新，不過即使是現代瀏覽器(Modern Browser)在功能提案到實際能使用該功能還是有一段挺長的時間。</p>
+<p>有趣的是並不是所有 Web 領域的東西都處在這樣的情況，看看最近的 Javascript，為什麼 Javascript 可以發展如此迅速</p>
+<p><img src="https://media-mediatemple.netdna-ssl.com/wp-content/uploads/2016/03/02-polyfill-process-preview-opt.png" alt=""></p>
+<p>從上圖這種流程，構想提案到實際用在產品上有時候只需要幾天的時間。例如：我已經在產品上使用了 <code>async/await</code> 的功能。這個功能甚至還沒有一個瀏覽器支援。</p>
+<p>你還可以看到兩個社群截然不同的狀況，在 Javascript 社群你可以聽到人們開始在抱怨更新速度太快，而在 CSS 社群則多是看到一堆人在抱怨學那麼多東西沒用，還需要非常久的時間才能使用。</p>
+<h1 id="那為什麼我們不可以使用-CSS-Polyfills？"><a href="#那為什麼我們不可以使用-CSS-Polyfills？" class="headerlink" title="那為什麼我們不可以使用 CSS Polyfills？"></a>那為什麼我們不可以使用 CSS Polyfills？</h1><p>看完 Javascript 的流程第一個直覺的想法是那我們也來為 CSS 提供 Polyfills，聽起來可能蠻可行的，如果有 Polyfills 那麼 CSS 也可以像 Javascript 一樣快速的演進，不是嗎？可惜的是，這並不像想的那麼容易，用舊有技術實現新的功能或 API 在 CSS 中異常的困難，在大部分的情況下會整個犧牲掉效能。</p>
+<p>Javascript 是一個動態語言，意味著我們相對容易用 Javascript 替 Javascript 補上 Polyfills。對 CSS 來說我們相對很少使用 CSS 來做 Polyfills。一般頂多就是使用轉譯器來產生 CSS 例如 PostCSS 就是這樣的東西。<br>如果你想直接對 DOM 結構或者元素的 Layout，位置加上 Polyfills，那麼我們就必須要在客戶端執行對應的邏輯程式。</p>
+<p>不幸的是瀏覽器對於這方面並不提供任何簡單的方式。</p>
+<p>下圖我們簡單的歸納瀏覽器從收到 HTML 文件到顯示在螢幕上概略的流程。藍色區塊就是 Javascript 能夠控制結果的關鍵點</p>
+<p><img src="https://media-mediatemple.netdna-ssl.com/wp-content/uploads/2016/03/03-rendering-process-preview-opt.png" alt=""></p>
+<p>在上圖中我們認知到身為一個開發者，你對於瀏覽器解析 HTML 和 CSS 轉換成 DOM, CSSOM 的過程幾乎沒有控制權，尤其在瀏覽器對元素佈局以及渲染方面。唯一在這個過程中我們能夠掌握的就是 DOM 的存取，是不是該換 CSSOM 做些開放了。不過這邊先提一下 Houdini 網站上提到的<code>改良 CSSOM</code>的部分：確認跨瀏覽器行為不一致以及<code>缺少關鍵功能</code>的問題。</p>
+<p>關於缺少關鍵功能部分，舉例來說，瀏覽器中的 CSSOM 並不會顯示跨站存取的樣式規則，而且會直接忽略那些它看不懂的樣式，這也意味著如果你想增加一個瀏覽器未支援的功能，你是不可以使用 CSSOM。反而要用 DOM 去找到 <code>&lt;style&gt;</code> 和 <code>&lt;link rel=&quot;stylesheet&quot;&gt;</code> 自己取得 CSS 然後解析再把它們補回 DOM。當然，更新 DOM 通常也表示瀏覽器必須要重新執行整個流程。</p>
+<p><img src="https://media-mediatemple.netdna-ssl.com/wp-content/uploads/2016/03/04-rendering-process-polyfilled-preview-opt.png" alt=""></p>
+<p>雖然整個流程重新渲染看起來並不會造成非常嚴重的效能問題，甚至這可能已經是常出現的情況，不過如果我們需要處理像是 <code>scoll</code> <code>window resize</code> <code>mouse</code> <code>keyboard</code> 這些事件，大量的更新次數可能就會很明顯地看出變慢了。更慘的是當你發現大部分的 CSS Polyfills 都有它們自己的解析方式和套用邏輯，而解析和套用是非常複雜的事情，導致這些 polyfills 通常不是很肥就是容易出錯。</p>
+<p>總結上述所說的就是，現階段如果你想要瀏覽器對於<code>呈現</code>做些不同的行為那麼你就必須要靠 DOM 去調整。</p>
+<h1 id="但，為什麼我需要修改瀏覽器內部的渲染引擎？"><a href="#但，為什麼我需要修改瀏覽器內部的渲染引擎？" class="headerlink" title="但，為什麼我需要修改瀏覽器內部的渲染引擎？"></a>但，為什麼我需要修改瀏覽器內部的渲染引擎？</h1><p>對我來說，這絕對是能夠回答整篇文章最關鍵的問題。如果你已經看到這邊，請仔細的閱讀這個部分!</p>
+<p>看到這邊我很肯定有一部份的人會想：我根本不需要這個。我只是建置一個一般的網頁，我不會想去對瀏覽器內部動手腳。如果你是這麼想的，那麼我強烈建議你先停一下，去檢查過去你已經用在開發中的那些技術。對瀏覽器套用樣式的流程取得一些存取權限和 hooks 並不是只為了創造一些很屌的火力展示 - 這主要是希望給開發者和框架作者有更多的<code>解決方案</code>，<code>功能</code>去完成下面這兩件事：</p>
+<ul>
+<li>統一跨瀏覽器樣式的不同行為</li>
+<li>開發新功能或者解決相容性問題 - 補上新功能的 polyfills ，讓我們可以快點使用到這些新技術</li>
+</ul>
+<p>如果你曾使用過像是 jQuery 這類的函式庫，你已經受惠於這種功能！事實上，這也是現今大多數前端框架或函式庫的主要賣點。Github 上 5 個流行的 Javascript 專案 - AngularJS, D3, jQuery, React, Ember 都處理了很多跨瀏覽器不同行為的問題。</p>
+<p>不過上面說的是 Javascript 的部分，現在讓我們來想想關於 CSS 和所有跨瀏覽器的問題。即便是最流行的 CSS Framework 像 Bootstrap，Fundation 也聲明跨瀏覽器相容性的問題他們並沒有完全處理 - 只是避開那些問題。跨瀏覽器 CSS 的 bug 不只在過去存在，即使是今天也還存在像是 <a href="https://github.com/philipwalton/flexbugs" target="_blank" rel="noopener">flexbox` 的問題</a>。</p>
+<p>想像一下如果任何 CSS 的樣式規則可以確保在任何瀏覽器有著一致的行為那我們的開發生涯該是多麽美好。再進一步如果任何你從 Blog，Conferences 或 Meetup 得知的新功能像是 <a href="https://drafts.csswg.org/css-grid/" target="_blank" rel="noopener">CSS Grids</a>, <a href="https://drafts.csswg.org/css-snappoints/" target="_blank" rel="noopener">CSS Sanp points</a>, <a href="https://drafts.csswg.org/css-position-3/#sticky-pos" target="_blank" rel="noopener">Sticky positioning</a> 我們馬上就能夠在今天開始使用，而你需要做的就是從 Github 下載程式碼。</p>
+<p>這就是 Houdini 的理想。這個未來正是該工作團隊試圖實現的目標。你說你根本不想去撰寫那些 polyfills 也沒關係，但你大概會想使用吧！？畢竟只要有人寫出 polyfills 我們就可以從中得到幫助。</p>
+<h1 id="那麼-Houdini-現階段有什麼功能正在開發？"><a href="#那麼-Houdini-現階段有什麼功能正在開發？" class="headerlink" title="那麼 Houdini 現階段有什麼功能正在開發？"></a>那麼 Houdini 現階段有什麼功能正在開發？</h1><p>如同上面提到的，開發者對於瀏覽器渲染的過程沒有太多存取控制的機會，現階段只能從 DOM 下手。</p>
+<p>為了解決這個問題，Houdini 團隊將提倡了一些新的規範，關於在渲染流程中賦予開發者其他部分的控制權。下圖顯示新的規範中開發者可以操作的部分。注意規範中灰色區塊是已規劃但還未被寫入規範的。</p>
+<p><img src="https://media-mediatemple.netdna-ssl.com/wp-content/uploads/2016/03/05-spec-coverage-preview-opt.png" alt=""></p>
+<p>下面我們將簡介每個新的規範並且說明其功能。完整的清單請查閱<a href="https://github.com/w3c/css-houdini-drafts" target="_blank" rel="noopener">Houdini Drafts</a></p>
+<h1 id="CSS-Parser-API"><a href="#CSS-Parser-API" class="headerlink" title="CSS Parser API"></a>CSS Parser API</h1><p><a href="https://drafts.css-houdini.org/css-parser-api/" target="_blank" rel="noopener">CSS Parser API</a> 目前還未被寫入規範，意思是這邊提到任何內容極有可能會改變。不過基本來說它的概念是讓開發者可以擴充 CSS Parser ，提供新的語法結構，舉例來說：新的 media 語法，新的偽類 pseudo-classes 等等</p>
+<p>一旦解析器知道關於新的結構，它就可以正確地將其運用在 CSSOM 上。</p>
+<h1 id="CSS-屬性與值的-API"><a href="#CSS-屬性與值的-API" class="headerlink" title="CSS 屬性與值的 API"></a>CSS 屬性與值的 API</h1><p>CSS 已經具有客製屬性的功能，並且在之前的<a href="http://philipwalton.com/articles/why-im-excited-about-native-css-variables/" target="_blank" rel="noopener">文章</a>說明過對此感到非常興奮。<a href="https://drafts.css-houdini.org/css-properties-values-api/" target="_blank" rel="noopener">CSS 屬性與值的 API</a>除了自訂屬性將更進一步使其具備型別。</p>
+<p>關於加入型別有非常多的好處，不過大體來說最大的賣點就是讓開發者可以客製 transition 和 animate。這在今天是辦不到的。不懂！？看看下面的例子</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-tag">body</span> &#123;</span><br><span class="line">  <span class="attribute">--primary-theme-color</span>: tomato;</span><br><span class="line">  <span class="attribute">transition</span>: --primary-theme-color <span class="number">1s</span> ease-in-out;</span><br><span class="line">&#125;</span><br><span class="line"><span class="selector-tag">body</span><span class="selector-class">.night-theme</span> &#123;</span><br><span class="line">  <span class="attribute">--primary-theme-color</span>: darkred;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上面的例子如果 <code>night-theme</code> class 被加到 <code>&lt;body&gt;</code> 元素那麼該頁面有參考 <code>--primary-theme-color</code> 屬性的值將會慢慢的從 <code>tomato</code> 轉換到 <code>darkred</code>。如下範例</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-tag">p</span> &#123;</span><br><span class="line">  <span class="attribute">color</span>: <span class="built_in">var</span>(--primary-theme-color);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在現階段，如果你要完成這個功能你得為每一個元素撰寫 transition，因為現在過渡效果是跟在元素上並不是跟著屬性。另一個有趣的功能就是<code>註冊 hook</code>，提供開發者一個方式來修改自訂屬性的最終值，用在 polyfills 方面這可能是非常實用的。</p>
+<h1 id="CSS-Typed-OM"><a href="#CSS-Typed-OM" class="headerlink" title="CSS Typed OM"></a>CSS Typed OM</h1><p><a href="https://drafts.css-houdini.org/css-typed-om/" target="_blank" rel="noopener">CSS Typed OM</a>大概就是目前 CSSOM 第二版的概念。目的是解決當前 CSS 模型的問題，也包含 CSS Parser API 和 CSS 屬性和值 API 追加的新功能。</p>
+<p>Typed OM 另外一個主要的目標是改善效能。將 CSSOM 目前使用的字串值換成具意義型別，因此在Javascript 操作的表現會得到顯著效能的提升。</p>
+<h1 id="CSS-Layout-API"><a href="#CSS-Layout-API" class="headerlink" title="CSS Layout API"></a>CSS Layout API</h1><p><a href="https://drafts.css-houdini.org/css-layout-api/" target="_blank" rel="noopener">CSS Layout API</a>提供開發者撰寫自己的佈局模組。透過<code>佈局模組</code>意味著任何東西可以被傳入 <code>display</code> 屬性。這將是第一次開發者有辦法透過原生的方式改變佈局提供像是 <code>display: flex</code> 和 <code>display: table</code> 這樣不同的模組。</p>
+<p>例如 <code>Masonry Layout 流瀑式版型</code> 這樣複雜的佈局方式在今天是不可能單單只透過 CSS 就完成的。雖然它的效果令人驚艷但可惜的是通常都有效能相關的問題，在低階的裝置上尤其明顯。</p>
+<p>CSS Layout API 讓開發者透過 <code>registerLayout</code> 的方法，允許註冊一個 layout 的名稱，然後用一個 Javascript class 來組織邏輯。下面就是一個簡單的範例</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">registerLayout(<span class="string">'masonry'</span>, <span class="class"><span class="keyword">class</span> </span>&#123;</span><br><span class="line">  <span class="keyword">static</span> get inputProperties() &#123;</span><br><span class="line">    <span class="keyword">return</span> [<span class="string">'width'</span>, <span class="string">'height'</span>]</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">static</span> get childrenInputProperties() &#123;</span><br><span class="line">    <span class="keyword">return</span> [<span class="string">'x'</span>, <span class="string">'y'</span>, <span class="string">'position'</span>]</span><br><span class="line">  &#125;</span><br><span class="line">  layout(children, constraintSpace, styleMap, breakToken) &#123;</span><br><span class="line">    <span class="comment">// Layout logic goes here.</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>如果你感受不到上面範例的意義，也不用擔心。最主要的是說你可以像下面範例這樣使用，你只要找到別人寫好的例如 <code>masonry.js</code> 接著在 CSS 中使用就好了。</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-tag">body</span> &#123;</span><br><span class="line">  <span class="attribute">display</span>: <span class="built_in">layout</span>(<span class="string">'masonry'</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="CSS-Paint-API"><a href="#CSS-Paint-API" class="headerlink" title="CSS Paint API"></a>CSS Paint API</h1><p><code>CSS Paint API</code> 和 <code>Layout API</code> 非常類似，不過它提供一個 <code>registerPaint</code> 方法。開發者可以在 CSS 中使用 <code>paint()</code> 函式，透過傳入的名稱產生一個 CSS 圖片。這邊有個簡單的範例就是繪製一個有顏色的圓形</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">registerPaint(<span class="string">'circle'</span>, <span class="class"><span class="keyword">class</span> </span>&#123;</span><br><span class="line">  <span class="keyword">static</span> get inputProperties() &#123; <span class="keyword">return</span> [<span class="string">'--circle-color'</span>]; &#125;</span><br><span class="line">  paint(ctx, geom, properties) &#123;</span><br><span class="line">    <span class="comment">// Change the fill color.</span></span><br><span class="line">    <span class="keyword">const</span> color = properties.get(<span class="string">'--circle-color'</span>);</span><br><span class="line">    ctx.fillStyle = color;</span><br><span class="line">    <span class="comment">// Determine the center point and radius.</span></span><br><span class="line">    <span class="keyword">const</span> x = geom.width / <span class="number">2</span>;</span><br><span class="line">    <span class="keyword">const</span> y = geom.height / <span class="number">2</span>;</span><br><span class="line">    <span class="keyword">const</span> radius = <span class="built_in">Math</span>.min(x, y);</span><br><span class="line">    <span class="comment">// Draw the circle \o/</span></span><br><span class="line">    ctx.beginPath();</span><br><span class="line">    ctx.arc(x, y, radius, <span class="number">0</span>, <span class="number">2</span> * <span class="built_in">Math</span>.PI, <span class="literal">false</span>);</span><br><span class="line">    ctx.fill();</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>CSS 的用法如下</p>
+<figure class="highlight css"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="selector-class">.bubble</span> &#123;</span><br><span class="line">  <span class="attribute">--circle-color</span>: blue;</span><br><span class="line">  <span class="attribute">background-image</span>: <span class="built_in">paint</span>(<span class="string">'circle'</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>現在套用 <code>.bubble</code> 的元素會產生一個藍色圓形的背景圖。這個圓會跟元素尺寸一樣且置中。</p>
+<h1 id="Worklets"><a href="#Worklets" class="headerlink" title="Worklets"></a>Worklets</h1><p>關於上面列出的規範和一些範例你可能會想知道你該把它們放在哪裏？答案是 <a href="https://drafts.css-houdini.org/worklets/" target="_blank" rel="noopener">worklet</a> scripts。<code>worklets</code> 類似於 <code>Web workers</code>，它允許我們匯入 script 檔案，可以在不同的階段執行 Javascript 程式碼，並且它不相依於主要執行緒。<code>worklet script</code> 為了確保效能會嚴格的限制能夠操作的型別。</p>
+<h1 id="捲軸效果和動畫"><a href="#捲軸效果和動畫" class="headerlink" title="捲軸效果和動畫"></a>捲軸效果和動畫</h1><p>雖然針對捲軸效果(scrolling)和動畫方面還沒有官方的規範，不過這是 Houdini 其中一個備受期待的功能。最終 API 會允許開發者將程式邏輯放在一個<code>負責組織執行的 worklet</code>，而不是主要執行緒上。這個東西會支援修改一些 DOM 的屬性。透過這種方式就可以只更新特定屬性，而不是全部重新渲染。</p>
+<p>如此一來開發者就可以容易的做出高效能的 scrolling 和動畫類型的應用，例如 <code>sticky scroll header</code> 或是平行捲動 <code>parallax</code> 的效果。你可以在<a href="https://github.com/w3c/css-houdini-drafts/blob/master/composited-scrolling-and-animation/UseCases.md" target="_blank" rel="noopener">使用案例</a>中得知這些 API 試圖要解決的問題。</p>
+<p>儘管還沒有正式的官方規範，實驗性的開發已經在 Chrome 上展開了。事實上 Chrome 團隊目前正在使用這些主要的 API 實作 <code>CSS Snap point</code> 和 <code>Sticky positioning</code>。這是很驚人的，因為這意味著 Houdini API 有足夠的效能讓 Chrome 新功能採用。<br>如果你仍然擔心 Houdini 效能的問題，你可以看看下面這個<a href="https://www.youtube.com/watch?v=EUlIxr8mk7s" target="_blank" rel="noopener">影片</a>以及<a href="https://github.com/GoogleChrome/houdini-samples/tree/master/twitter-header" target="_blank" rel="noopener">原始碼</a></p>
+<h1 id="那我現在可以做些什麼？"><a href="#那我現在可以做些什麼？" class="headerlink" title="那我現在可以做些什麼？"></a>那我現在可以做些什麼？</h1><p>如同上面提到的，我想每一個網站開發者都應該關注 Houdini。這將是讓我們開發生活變得更美好的未來。即使你不會直接使用 Houdini 規範內定義的東西，你幾乎會用到架構在它之上的許多東西。雖然這個未來還不會立即到來，但它可能比我們想的還要快到來。</p>
+<p>所有主流瀏覽器的廠商在 2016 年初已經在雪梨有場面對面的會議交流，對於 Houdini 的建置與開發沒有太多異議。可以說 Houdini 是否會成為下一件大事已經不是個問題，問題應該是何時導入比較恰當。</p>
+<p>當然瀏覽器供應商對於建置這些新功能自有一些優先順序，通常會根據那些使用者迫切需要的功能為優先。所以如果你關心這個關於樣式與佈局的擴展功能，你希望可以不用等待瀏覽器開發商經過漫長的開發程序，就使用 CSS 的新功能請告訴那些相關的開發成員你需要這個功能。</p>
+<p>另一方面你可以透過提供一些真實世界的使用案例，就是那些你想做的功能但現今技術卻異常難實現。已經有一些<a href="https://github.com/w3c/css-houdini-drafts" target="_blank" rel="noopener">案例</a>列在這個 Github 專案。你可以透過發個 <code>Pull Request</code> 來加入協作。</p>
+<p>Houdini 開發團隊真的希望能夠從網頁開發人員中取得真正需求與問題，使這些功能更加完善周到。因為通常參與規格書制訂的工程師只專注在瀏覽器身上，他們並不知道應用程式開發者的痛點。全靠我們來告訴他們了。</p>
+<h1 id="參考資源"><a href="#參考資源" class="headerlink" title="參考資源"></a>參考資源</h1><ul>
+<li><a href="https://drafts.css-houdini.org/" target="_blank" rel="noopener">CSS-TAG Houdini Editor Drafts</a> - W3C 最新草稿</li>
+<li><a href="https://github.com/w3c/css-houdini-drafts" target="_blank" rel="noopener">CSS-TAG Houdini Task Force Specifications</a> - 官方 Github 專案</li>
+<li><a href="https://github.com/GoogleChrome/houdini-samples" target="_blank" rel="noopener">Houdini Samples</a> - 實驗範例</li>
+<li><a href="https://www.smashingmagazine.com/2016/03/houdini-maybe-the-most-exciting-development-in-css-youve-never-heard-of/#comment-1288360" target="_blank" rel="noopener">原文出處</a></li>
+</ul>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+
+</div>
+
+    <a data-url="//andyyou.github.io/2016/03/31/introduce-houdini/" data-id="cklyrfc4j00cj5g72o90lsfmv" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        // Prevent duplicate binding
+        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
+            __SHARE_BUTTON_BINDED__ = true;
+        } else {
+            return;
+        }
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+            
+    
+
+        </footer>
+    </div>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2016/04/12/self-signed-ssl-and-others/" id="article-nav-newer" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">上一篇</strong>
+            <div class="article-nav-title">
+                
+                    SSL 相關筆記
+                
+            </div>
+        </a>
+    
+    
+        <a href="/2016/03/08/cache-notes/" id="article-nav-older" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">下一篇</strong>
+            <div class="article-nav-title">Cache 筆記</div>
+        </a>
+    
+</nav>
+
+
+    
+</article>
+
+
+    
+    <section id="comments">
+    
+    </section>
+
+</section>
+            
+                <aside id="sidebar">
+   
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">分類</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Cloud/">Cloud</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Database/">Database</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Fun/">Fun</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Mobile/">Mobile</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Program/">Program</a><span class="category-list-count">131</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/System/">System</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Tools/">Tools</a><span class="category-list-count">17</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">歸檔</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/03/">三月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/10/">十月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">五月 2019</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">六月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">十二月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">十一月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">九月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">十月 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">九月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">六月 2016</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">十二月 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">十一月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">十月 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">九月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">八月 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">七月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">五月 2015</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">四月 2015</a><span class="archive-list-count">19</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">十二月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/11/">十一月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/10/">十月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">九月 2014</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/08/">八月 2014</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/02/">二月 2014</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/01/">一月 2014</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">十一月 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">十月 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">九月 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">八月 2013</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/03/">三月 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">三月 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">一月 2012</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2011/11/">十一月 2011</a><span class="archive-list-count">3</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">標籤</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/net-mvc/">.net mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RoR/">RoR</a><span class="tag-list-count">15</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/api/">api</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aws/">aws</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/azure/">azure</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bot/">bot</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bundler/">bundler</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cache/">cache</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/carrier-wave/">carrier wave</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/centos/">centos</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/chrome/">chrome</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cloudflare/">cloudflare</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/compass/">compass</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/devise/">devise</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dnd/">dnd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/e-invoice/">e-invoice</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/entity-framework/">entity framework</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/es6/">es6</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/facebook/">facebook</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flux/">flux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/framework/">framework</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gcp/">gcp</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/grunt/">grunt</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gulp/">gulp</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/heroku/">heroku</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/html/">html</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/iisexpress/">iisexpress</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ios/">ios</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">69</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript-express-passport/">javascript express passport</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript-nodejs/">javascript nodejs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jekyll/">jekyll</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jetstream/">jetstream</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jspm/">jspm</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jwt/">jwt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/laravel/">laravel</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/letsencrypt/">letsencrypt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mechanism/">mechanism</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongodb/">mongodb</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/node/">node</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nodejs/">nodejs</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/oocss/">oocss</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/osx/">osx</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package-manager/">package manager</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/php/">php</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/postgres/">postgres</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/postgresql/">postgresql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/queue/">queue</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rabbitmq/">rabbitmq</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rack-server/">rack server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails/">rails</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails-webpack-stimulus-javascript-bootstrap/">rails webpack stimulus javascript bootstrap</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/raspberry-pi/">raspberry-pi</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react/">react</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react-native/">react native</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/reactjs/">reactjs</a><span class="tag-list-count">32</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redux/">redux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sass/">sass</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/selenium/">selenium</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/slim/">slim</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssh/">ssh</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssl/">ssl</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/stimulus/">stimulus</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/svg-javascript/">svg javascript</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/task-runner/">task runner</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tmux/">tmux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tools/">tools</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vm/">vm</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/">vue</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vuejs/">vuejs</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/webpack/">webpack</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/windows/">windows</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/xml/">xml</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">標籤雲</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/net-mvc/" style="font-size: 10px;">.net mvc</a> <a href="/tags/RoR/" style="font-size: 16.67px;">RoR</a> <a href="/tags/api/" style="font-size: 10px;">api</a> <a href="/tags/aws/" style="font-size: 12.5px;">aws</a> <a href="/tags/azure/" style="font-size: 10.83px;">azure</a> <a href="/tags/bot/" style="font-size: 10px;">bot</a> <a href="/tags/bundler/" style="font-size: 10.83px;">bundler</a> <a href="/tags/cache/" style="font-size: 10px;">cache</a> <a href="/tags/carrier-wave/" style="font-size: 10.83px;">carrier wave</a> <a href="/tags/centos/" style="font-size: 10px;">centos</a> <a href="/tags/chrome/" style="font-size: 10px;">chrome</a> <a href="/tags/cloudflare/" style="font-size: 10px;">cloudflare</a> <a href="/tags/compass/" style="font-size: 10px;">compass</a> <a href="/tags/css/" style="font-size: 17.5px;">css</a> <a href="/tags/devise/" style="font-size: 10px;">devise</a> <a href="/tags/dnd/" style="font-size: 10px;">dnd</a> <a href="/tags/docker/" style="font-size: 10.83px;">docker</a> <a href="/tags/e-invoice/" style="font-size: 10px;">e-invoice</a> <a href="/tags/entity-framework/" style="font-size: 10px;">entity framework</a> <a href="/tags/es6/" style="font-size: 11.67px;">es6</a> <a href="/tags/facebook/" style="font-size: 10px;">facebook</a> <a href="/tags/flux/" style="font-size: 10px;">flux</a> <a href="/tags/framework/" style="font-size: 10.83px;">framework</a> <a href="/tags/gcp/" style="font-size: 10.83px;">gcp</a> <a href="/tags/go/" style="font-size: 10px;">go</a> <a href="/tags/grunt/" style="font-size: 12.5px;">grunt</a> <a href="/tags/gulp/" style="font-size: 11.67px;">gulp</a> <a href="/tags/heroku/" style="font-size: 14.17px;">heroku</a> <a href="/tags/html/" style="font-size: 10.83px;">html</a> <a href="/tags/iisexpress/" style="font-size: 10px;">iisexpress</a> <a href="/tags/ios/" style="font-size: 11.67px;">ios</a> <a href="/tags/javascript/" style="font-size: 20px;">javascript</a> <a href="/tags/javascript-express-passport/" style="font-size: 10px;">javascript express passport</a> <a href="/tags/javascript-nodejs/" style="font-size: 10px;">javascript nodejs</a> <a href="/tags/jekyll/" style="font-size: 10.83px;">jekyll</a> <a href="/tags/jetstream/" style="font-size: 10px;">jetstream</a> <a href="/tags/jspm/" style="font-size: 10px;">jspm</a> <a href="/tags/jwt/" style="font-size: 10px;">jwt</a> <a href="/tags/laravel/" style="font-size: 11.67px;">laravel</a> <a href="/tags/letsencrypt/" style="font-size: 10px;">letsencrypt</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/mechanism/" style="font-size: 10px;">mechanism</a> <a href="/tags/mongodb/" style="font-size: 10.83px;">mongodb</a> <a href="/tags/node/" style="font-size: 10px;">node</a> <a href="/tags/nodejs/" style="font-size: 15px;">nodejs</a> <a href="/tags/oocss/" style="font-size: 10px;">oocss</a> <a href="/tags/osx/" style="font-size: 14.17px;">osx</a> <a href="/tags/package-manager/" style="font-size: 14.17px;">package manager</a> <a href="/tags/php/" style="font-size: 10.83px;">php</a> <a href="/tags/postgres/" style="font-size: 10px;">postgres</a> <a href="/tags/postgresql/" style="font-size: 10.83px;">postgresql</a> <a href="/tags/queue/" style="font-size: 10.83px;">queue</a> <a href="/tags/rabbitmq/" style="font-size: 10.83px;">rabbitmq</a> <a href="/tags/rack-server/" style="font-size: 10px;">rack server</a> <a href="/tags/rails/" style="font-size: 14.17px;">rails</a> <a href="/tags/rails-webpack-stimulus-javascript-bootstrap/" style="font-size: 10px;">rails webpack stimulus javascript bootstrap</a> <a href="/tags/raspberry-pi/" style="font-size: 10px;">raspberry-pi</a> <a href="/tags/react/" style="font-size: 15.83px;">react</a> <a href="/tags/react-native/" style="font-size: 10px;">react native</a> <a href="/tags/reactjs/" style="font-size: 19.17px;">reactjs</a> <a href="/tags/redux/" style="font-size: 10px;">redux</a> <a href="/tags/ruby/" style="font-size: 18.33px;">ruby</a> <a href="/tags/sass/" style="font-size: 10.83px;">sass</a> <a href="/tags/selenium/" style="font-size: 10px;">selenium</a> <a href="/tags/slim/" style="font-size: 10px;">slim</a> <a href="/tags/ssh/" style="font-size: 10px;">ssh</a> <a href="/tags/ssl/" style="font-size: 10.83px;">ssl</a> <a href="/tags/stimulus/" style="font-size: 10px;">stimulus</a> <a href="/tags/svg-javascript/" style="font-size: 11.67px;">svg javascript</a> <a href="/tags/task-runner/" style="font-size: 11.67px;">task runner</a> <a href="/tags/tmux/" style="font-size: 10px;">tmux</a> <a href="/tags/tools/" style="font-size: 10px;">tools</a> <a href="/tags/ubuntu/" style="font-size: 10.83px;">ubuntu</a> <a href="/tags/vm/" style="font-size: 10px;">vm</a> <a href="/tags/vue/" style="font-size: 10px;">vue</a> <a href="/tags/vuejs/" style="font-size: 13.33px;">vuejs</a> <a href="/tags/webpack/" style="font-size: 12.5px;">webpack</a> <a href="/tags/windows/" style="font-size: 10px;">windows</a> <a href="/tags/xml/" style="font-size: 10px;">xml</a>
+        </div>
+    </div>
+
+    
+    <div id="toTop" class="fa fa-angle-up"></div>
+</aside>
+            
+        </div>
+        <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2021 andyyou(You,ZongYan)
+        </div>
+    </div>
+</footer>
+
+        
+
+    
+        <script src="/lib/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-share.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-video.min.js"></script>
+    
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+</body>
+</html>

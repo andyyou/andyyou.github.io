@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    
+    <title>Node 實作 jwt 驗證 API | DEVLOG of andyyou</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <!-- Google Tag Manager -->
+    <script>(function (w, d, s, l, i) {
+        w[l] = w[l] || []; w[l].push({
+          'gtm.start':
+            new Date().getTime(), event: 'gtm.js'
+        }); var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+            'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+      })(window, document, 'script', 'dataLayer', 'GTM-57LT2GG');</script>
+    <!-- End Google Tag Manager -->
+    <meta name="description" content="基於 token 的驗證機制在今天，我們應該常常能看到大量使用 token 來處理驗證的服務，由於大部分的網站服務開始大量使用 API，於是 token 就成了處理驗證使用者最好的方式。我們的應用程式選擇使用 token 驗證機制有些非常重要的原因，最主要是因為:  對於伺服器來說它具備 stateless(無狀態), scalable(擴展性) 移動裝置也能一併使用 可將驗證結果導向其他應用程式">
+<meta name="keywords" content="javascript,nodejs,jwt,api">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Node 實作 jwt 驗證 API">
+<meta property="og:url" content="//andyyou.github.io/2016/06/09/implement-jwt-with-understanding/index.html">
+<meta property="og:site_name" content="DEVLOG of andyyou">
+<meta property="og:description" content="基於 token 的驗證機制在今天，我們應該常常能看到大量使用 token 來處理驗證的服務，由於大部分的網站服務開始大量使用 API，於是 token 就成了處理驗證使用者最好的方式。我們的應用程式選擇使用 token 驗證機制有些非常重要的原因，最主要是因為:  對於伺服器來說它具備 stateless(無狀態), scalable(擴展性) 移動裝置也能一併使用 可將驗證結果導向其他應用程式">
+<meta property="og:locale" content="zh-TW">
+<meta property="og:image" content="https://cask.scotch.io/2014/11/tokens-traditional.png">
+<meta property="og:image" content="https://cask.scotch.io/2014/11/tokens-new.png">
+<meta property="og:image" content="https://cask.scotch.io/2014/11/json-web-token-overview1.png">
+<meta property="og:image" content="http://i.imgur.com/AGmSNwE.png">
+<meta property="og:updated_time" content="2016-12-19T02:32:00.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Node 實作 jwt 驗證 API">
+<meta name="twitter:description" content="基於 token 的驗證機制在今天，我們應該常常能看到大量使用 token 來處理驗證的服務，由於大部分的網站服務開始大量使用 API，於是 token 就成了處理驗證使用者最好的方式。我們的應用程式選擇使用 token 驗證機制有些非常重要的原因，最主要是因為:  對於伺服器來說它具備 stateless(無狀態), scalable(擴展性) 移動裝置也能一併使用 可將驗證結果導向其他應用程式">
+<meta name="twitter:image" content="https://cask.scotch.io/2014/11/tokens-traditional.png">
+    
+
+    
+
+    
+        <link rel="icon" href="/images/favicon.png">
+    
+
+    <link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/lib/open-sans/styles.css">
+    <link rel="stylesheet" href="/lib/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/lib/jquery/2.1.3/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/lib/lightgallery/css/lightgallery.min.css">
+    
+    
+    
+        <script type="text/javascript">
+(function(i,s,o,g,r,a,m) {i['GoogleAnalyticsObject']=r;i[r]=i[r]||function() {
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-39208536-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+    
+    
+    
+
+
+</head>
+</html>
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-57LT2GG" height="0" width="0"
+        style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    <div id="container">
+        <header id="header">
+    <div id="header-main" class="header-inner">
+        <div class="outer">
+            <a href="/" id="logo">
+                <i class="logo"></i>
+                <span class="site-title">DEVLOG of andyyou</span>
+            </a>
+            <nav id="main-nav">
+                
+                    <a class="main-nav-link" href="/.">Home</a>
+                
+                    <a class="main-nav-link" href="/archives">Archives</a>
+                
+                    <a class="main-nav-link" href="/categories">Categories</a>
+                
+                    <a class="main-nav-link" href="/tags">Tags</a>
+                
+            </nav>
+            
+                
+                <nav id="sub-nav">
+                    <div class="profile" id="profile-nav">
+                        <a id="profile-anchor" href="javascript:;">
+                            <img class="avatar" src="https://avatars2.githubusercontent.com/u/665690?v=3&amp;s=466">
+                            <i class="fa fa-caret-down"></i>
+                        </a>
+                    </div>
+                </nav>
+            
+            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜尋">
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="Type something...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: 'Pages',
+            CATEGORIES: '分類',
+            TAGS: '標籤',
+            UNTITLED: '(Untitled)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+        </div>
+    </div>
+    <div id="main-nav-mobile" class="header-sub header-inner">
+        <table class="menu outer">
+            <tr>
+                
+                    <td><a class="main-nav-link" href="/.">Home</a></td>
+                
+                    <td><a class="main-nav-link" href="/archives">Archives</a></td>
+                
+                    <td><a class="main-nav-link" href="/categories">Categories</a></td>
+                
+                    <td><a class="main-nav-link" href="/tags">Tags</a></td>
+                
+                <td>
+                    
+    <div class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜尋">
+    </div>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+</header>
+
+        <div class="outer">
+            
+                
+
+<aside id="profile">
+    <div class="inner profile-inner">
+        <div class="base-info profile-block">
+            <img id="avatar" src="https://avatars2.githubusercontent.com/u/665690?v=3&amp;s=466">
+            <h2 id="name">andyyou</h2>
+            <h3 id="title">Web Developer</h3>
+            <span id="location"><i class="fa fa-map-marker"></i>Taipei, Taiwan</span>
+            <a id="follow" target="_blank" href="https://github.com/andyyou">關注我</a>
+        </div>
+        <div class="article-info profile-block">
+            <div class="article-info-block">
+                184
+                <span>文章</span>
+            </div>
+            <div class="article-info-block">
+                79
+                <span>標籤</span>
+            </div>
+        </div>
+        
+        <div class="profile-block social-links">
+            <table>
+                <tr>
+                    
+                    
+                    <td>
+                        <a href="https://github.com/andyyou" target="_blank" title="github" class="tooltip">
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="https://www.linkedin.com/pub/zongyan-you/2a/493/16" target="_blank" title="linkedin" class="tooltip">
+                            <i class="fa fa-linkedin"></i>
+                        </a>
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
+        
+    </div>
+</aside>
+
+            
+            <section id="main"><article id="post-implement-jwt-with-understanding" class="article article-type-post" itemscope="" itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+            Node 實作 jwt 驗證 API
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2016/06/09/implement-jwt-with-understanding/">
+            <time datetime="2016-06-09T04:00:00.000Z" itemprop="datePublished">2016-06-09</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/Program/">Program</a>
+    </div>
+
+                        
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/api/">api</a>, <a class="tag-link" href="/tags/javascript/">javascript</a>, <a class="tag-link" href="/tags/jwt/">jwt</a>, <a class="tag-link" href="/tags/nodejs/">nodejs</a>
+    </div>
+
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <h1 id="基於-token-的驗證機制"><a href="#基於-token-的驗證機制" class="headerlink" title="基於 token 的驗證機制"></a>基於 token 的驗證機制</h1><p>在今天，我們應該常常能看到大量使用 token 來處理驗證的服務，由於大部分的網站服務開始大量使用 API，於是 token 就成了處理驗證使用者最好的方式。<br>我們的應用程式選擇使用 token 驗證機制有些非常重要的原因，最主要是因為:</p>
+<ul>
+<li>對於伺服器來說它具備 stateless(無狀態), scalable(擴展性)</li>
+<li>移動裝置也能一併使用</li>
+<li>可將驗證結果導向其他應用程式</li>
+<li>更安全</li>
+</ul>
+<a id="more"></a>
+<h1 id="誰已經使用-token-驗證機制"><a href="#誰已經使用-token-驗證機制" class="headerlink" title="誰已經使用 token 驗證機制"></a>誰已經使用 token 驗證機制</h1><p>大多您已經使用的 API 或網站服務已經使用 token 的方式像是 Facebook, Twitter, Google+, Github 等等</p>
+<h1 id="為什麼-token-會被大家接受"><a href="#為什麼-token-會被大家接受" class="headerlink" title="為什麼 token 會被大家接受"></a>為什麼 token 會被大家接受</h1><p>在我們開始了解 token 的運作原理和優點之前我們先來看看過去的做法 <code>Server based authentication</code> 基於伺服器的驗證機制</p>
+<p>由於 HTTP 協定是不儲存狀態的(stateless)，這意味著當我們透過帳號密碼驗證一個使用者時，當下一個 request 時它就把剛剛的資料忘了。於是我們的程式就不知道誰是誰，就要再驗證一次。過去我們的應用程式記得使用者的方式就是把資料存放在伺服器。伺服器透過 session 紀錄而儲存有幾種不同的方式，可以被存在記憶體或者是硬碟。</p>
+<p>大略的說從 HTTP 是無法保持狀態開始，然後人們因為動態網頁的需求，需要辨別使用者或之前的操作於是有了 cookie 讓客戶端能夠紀錄資訊，在每次請求的時候附上這些資訊以提供伺服器處理。接著基於一些安全性的需求我們透過<code>發放編號 session id</code>的方式，把那些不希望被竄改的資訊存在伺服器記錄。之後透過 session id 來辨別使用者。</p>
+<p>本文並非要深入探討舊有的方式所以我們簡單理解 session <code>會話期間</code>(意義為進行一系列活動/溝通之期間)於網路協議時包含<code>連線</code> &amp; <code>維持狀態</code>的行為與資訊就是一種讓我們解決<code>保持狀態</code>問題的方法。</p>
+<p>下圖就是伺服器的工作流程。</p>
+<p><img src="https://cask.scotch.io/2014/11/tokens-traditional.png" alt=""></p>
+<ul>
+<li>使用者對伺服器發出內容請求</li>
+<li>伺服器回應內容給客戶端</li>
+<li>當使用者登入時，伺服器會把登入資料儲存在 session 中，第一次進來的時候伺服器會發放一組號碼牌(session id)給使用者</li>
+<li>下次同一個使用者(瀏覽器)再進來的時候，伺服器就可以靠 session id 來判斷這位使用者</li>
+</ul>
+<p>這樣的方式陪伴著我們好多年，不過在 web 與 mobile 應用爆發性成長的今日，這樣的方式就顯現出一些問題，尤其是在擴展方面。</p>
+<h1 id="伺服器驗證機制的問題"><a href="#伺服器驗證機制的問題" class="headerlink" title="伺服器驗證機制的問題"></a>伺服器驗證機制的問題</h1><p>其中幾個最主要的問題:</p>
+<ul>
+<li>sessions: 每一次使用者驗證，必須建立一組紀錄在伺服器上。通常會存在記憶體中，當驗證的使用者越多存放的資料就越多。</li>
+<li>擴展性: 由於 session 存在記憶體這就會造成擴展時的問題，當我們使用一些雲端服務增加伺服器執行負載平衡的時候把這些重要的資訊存在記憶體就會受到一些限制。</li>
+<li>跨站: 當我們想要讓程式的一些資料交換給其他程式或行動裝置使用的時候就會遇到 cros 跨網域存取的問題。想像一下如果我們需要在一個手機 app 中呼叫原本程式中的 API 就會遇到。</li>
+<li>CSRF 偽造跨站請求: 我們仍可能會遇到偽造跨站請求的問題，當使用者已經登入的時候 就可能會遇到這類的攻擊。</li>
+</ul>
+<p>不過在這些問題中最大的問題還是屬於擴展性。</p>
+<h1 id="token-驗證機制如何運作"><a href="#token-驗證機制如何運作" class="headerlink" title="token 驗證機制如何運作"></a>token 驗證機制如何運作</h1><p>基於 token 的驗證機制屬於無狀態的方式，我們不並需要在伺服器儲存任何關於使用者的資料。這個概念本身就是為了處理上述的那些問題。<br>少了 session 表示我們的程式在使用負載平衡擴展伺服器時就不用因為這些資料交換的問題而受到限制。</p>
+<p>雖然實作有很多種方式，不過大致上流程如下:</p>
+<ol>
+<li>使用者提供帳密發出驗證請求</li>
+<li>程式驗證憑證</li>
+<li>程式提供回傳一個簽署過的 token 給客戶端</li>
+<li>客戶端儲存 token ，後續請求都必須要一併包含這個 token</li>
+<li>伺服器驗證 token 然後才回傳資料</li>
+</ol>
+<p>每一道 request 都要包含 token。這個 token 應該要被包含在 HTTP header 中，也因此這種方式達成了 stateless 的特性。接著我們就可以將伺服器的存取限制設定為 <code>Access-Control-Allow-Origin: *</code>。關於 <code>ACAO</code> header 中設定為 <code>*</code> 同時表示這不允許請求提供憑證例如: HTTP 憑證, 客戶端的 SSL 憑證或 cookie。下圖顯示整個流程</p>
+<p><img src="https://cask.scotch.io/2014/11/tokens-new.png" alt=""></p>
+<p>一旦通過驗證我們就會擁有 token，我們就可以透過這個 token 做出許多應用。我們可以基於 token 建立授權甚至是傳遞給第三方應用使用。透過 token 我們就可以決定哪些行為可以放行。</p>
+<h1 id="token-的優點"><a href="#token-的優點" class="headerlink" title="token 的優點"></a>token 的優點</h1><p>最大的好處就是擴展性和 stateless。因為 stateless 的關係我們的程式隨時都可以導入負載平衡。如果我們使用 session 那麼當使用者登入之後要繼續後續的動作就必須要把資料送回同一台伺服器。然後就可能對伺服器造成壓力。一旦採用 token 那麼這些問題就不用再擔心了。</p>
+<h1 id="安全性"><a href="#安全性" class="headerlink" title="安全性"></a>安全性</h1><p>token 不像 cookie，它會在每一次 request 的時候都要帶一次，因為沒有被存放到 cookie 中也就沒有機會被其他客戶端的程式直接存取。甚至是您將 token 儲存在 cookie 中，cookie 也只是一種儲存方式而不是實際驗證機制。</p>
+<p>token 也會過期，所以使用者會被要求在登入一次，這協助我們提高安全性。這裡提到 <a href="https://tools.ietf.org/html/rfc7009" target="_blank" rel="noopener">token revocation</a> 的概念，讓我們可以指定某個 token 失效或者是一整組基於同一個授權的 token。</p>
+<h1 id="擴展性"><a href="#擴展性" class="headerlink" title="擴展性"></a>擴展性</h1><p>token 也可以讓我們的程式共享權限。舉例來說我們透過連結到社群平台驗證登入像是 Facebook 或 Twitter。又例如當我們在 Buffer 給予 Twitter 權限那麼我們就可以透過 Buffer 發文到 Twitter 上。使用 token 我們就可以提供特定權限或功能給第三方的應用程式。</p>
+<h1 id="跨平台與網域"><a href="#跨平台與網域" class="headerlink" title="跨平台與網域"></a>跨平台與網域</h1><p>稍早我們提到 CORS，當我們需要增加其他的服務或程式我們就需要提供存取權限給該網域或程式。又比如我們有一個 API 只負責提供資料，這個時候我們或許就會使用 CDN 來處理 CORS 的問題。如果我們可以直接把伺服器的設定換成</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Access-Control-Allow-Origin: *</span><br></pre></td></tr></table></figure>
+<p>我們的資料或服務就可以提供給任何網域或程式來使用，當然你會說有安全性的問題，不過別忘了我們現在有 token 協助我們去驗證使用者。</p>
+<h1 id="標準"><a href="#標準" class="headerlink" title="標準"></a>標準</h1><p>關於建立 token 我們有一些選擇。在下面的章節我們會深入關於 API 安全性的議題，不過主要會介紹 JSON Web Tokens 標準。<a href="https://jwt.io/" target="_blank" rel="noopener">jwt.io</a>提供了一些方便的除錯工具與函式庫支援的圖表。可以看到大部分的語言都有支援。</p>
+<h1 id="JSON-Web-Token-解析"><a href="#JSON-Web-Token-解析" class="headerlink" title="JSON Web Token 解析"></a>JSON Web Token 解析</h1><p>近年來 API 盛行不管是 Open Data 等，也就造成一個程式想要充分發揮潛能，常常會需要從其他地方取得資料，與第三方的程式整合。想想 Facebook 提供 API 讓我們可以取得資料和登入功能，Facebook 即所謂提供我們這些第三方應用存取其資料的例子。而這些都是透過 API 完成的。</p>
+<p>現在當我們討論到關於我們自己打造自己的 API，不管是誰要完成這件事都需要面對一個問題，那就是如何確保 API 的安全性。上面我們已經探討過基於 toke 的驗證機制。現在我們要來討論的事關於 JSON Web Tokens 這個標準以及我們如何建置它。</p>
+<h1 id="JSON-Web-Token-是啥"><a href="#JSON-Web-Token-是啥" class="headerlink" title="JSON Web Token 是啥?"></a>JSON Web Token 是啥?</h1><p>JSON Web Tokens 又稱 <code>JWT</code> 發音是 <code>jot</code> 從名字不難看出資料是透過 JSON 傳遞的。<a href="http://self-issued.info/docs/draft-ietf-oauth-json-web-token.html" target="_blank" rel="noopener">這裡</a>有關於 JWT 的規格草稿，不過它並不好讀。<br>JWT 可以在不同的語言中使用包含 .NET, Python, NodeJS, Java, PHP, Ruby, Go, Haskell 等。所以基本上在各種情況下我們都能夠使用。<br>JWT 不相依於其他東西是可以獨立使用的: 它會包含自己所有需要的資料，意味著 JWT 是可以會傳送關於自身的基本資料，一個 payload 通常指的是使用者的資訊以及一個 signature 簽章。</p>
+<p>JWT 可以被輕易的傳送: 因為 JWT 自身就包含了必須的資料且不依賴其他東西，因此當我們要透過 API 驗證的時候它可以完美的透過 HTTP header 或者網址來傳遞。</p>
+<h1 id="那麼一個-JWT-到底長啥樣"><a href="#那麼一個-JWT-到底長啥樣" class="headerlink" title="那麼一個 JWT 到底長啥樣?"></a>那麼一個 JWT 到底長啥樣?</h1><p>要辨別一個 JWT 非常簡單，它就是三個字串透過 <code>.</code> 合在一起</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">aaaaaaaaaa.bbbbbbbbbbb.cccccccccccc</span><br></pre></td></tr></table></figure>
+<h1 id="解析一個-JWT"><a href="#解析一個-JWT" class="headerlink" title="解析一個 JWT"></a>解析一個 JWT</h1><p>我們很容易的就可以看出這是透過 <code>.</code> 連結三個不同的部份它們各自代表的是:</p>
+<ul>
+<li>header: 標頭資訊</li>
+<li>payload: 處理的內容實際資料</li>
+<li>signature: 簽章</li>
+</ul>
+<p><img src="https://cask.scotch.io/2014/11/json-web-token-overview1.png" alt=""></p>
+<h1 id="Header"><a href="#Header" class="headerlink" title="Header"></a>Header</h1><p>header 包含兩個部分</p>
+<ul>
+<li>宣告型別是 JWT</li>
+<li>使用的演算法，在這個例子中是 <code>HMAC SHA256</code></li>
+</ul>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="string">"typ"</span>: <span class="string">"JWT"</span>,</span><br><span class="line">  <span class="string">"alg"</span>: <span class="string">"HS256"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>一旦將上面的資訊使用 <code>base64encode</code> 我們就會得到第一個部分的 token</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9</span><br></pre></td></tr></table></figure>
+<p>你可以拿著上面的 token 去 <code>jwt.io</code> 網站上使用工具試試。</p>
+<h1 id="Payload"><a href="#Payload" class="headerlink" title="Payload"></a>Payload</h1><p>關於 payload 大體來說就是需要處理的<code>實際資料內容</code>，這個 payload 通常會是整個 JWT 中比較重要的資料又稱 JWT Claims 即紀錄這個 JWT 的主張或者說本次傳輸主要的目的，主張是比較抽象的描述但具體來說就是資料。我們將想要傳送的資料和一些附加的資訊放在這裡。Claims 可以不只一個，為了不產生疑義後續我們將使用英文術語 - JWT Claims。</p>
+<h1 id="Registered-Claims"><a href="#Registered-Claims" class="headerlink" title="Registered Claims"></a>Registered Claims</h1><p>關於 Claims 即傳遞的資料並不是必須的，不過根據規範我們可以使用下面這些預先定義好的 Claims 名稱讓我們可以使用:</p>
+<ul>
+<li>iss: 發行者的 token</li>
+<li>sub: 主題的 token</li>
+<li>aud: 接受者(聽眾)的 token</li>
+<li>exp: 這可能是 Registered Claims 最常用的，定義數字格式的有效期限，重點是有效期限一定要大於現在的時間</li>
+<li>nbf: 生效時間，定義一個時間在這個時間之前 JWT 不能進行處理</li>
+<li>iat: 發行的時間，可以被用來判斷 JWT 已經發出了多久</li>
+<li>jti: JWT 唯一的識別值，可用來防止 JWT 被重複使用，尤其在一次性的 token 特別好用</li>
+</ul>
+<h1 id="Public-Claims"><a href="#Public-Claims" class="headerlink" title="Public Claims"></a>Public Claims</h1><p>我們所建立的公開資訊例如使用者姓名等等。</p>
+<h1 id="Private-Claims"><a href="#Private-Claims" class="headerlink" title="Private Claims"></a>Private Claims</h1><p>發行者與訂閱者自行溝通定義的 Claims Name 與資料</p>
+<h1 id="payload-範例"><a href="#payload-範例" class="headerlink" title="payload 範例"></a>payload 範例</h1><p>下面這個範例有兩個 <code>registered claims</code>(iss 和 exp)以及兩個 <code>public claims</code>(name, admin)</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="string">"iss"</span>: <span class="string">"andyyou.github.io"</span>,</span><br><span class="line">  <span class="string">"exp"</span>: <span class="number">1465700328092</span>,</span><br><span class="line">  <span class="string">"name"</span>: <span class="string">"andyyou"</span>,</span><br><span class="line">  <span class="string">"admin"</span>: <span class="literal">true</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>第二部分的 JWT 編譯過後就是</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">eyJpc3MiOiJhbmR5eW91LmdpdGh1Yi5pbyIsImV4cCI6MTQ2NTcwMDMyODA5MiwibmFtZSI6ImFuZHl5b3UiLCJhZG1pbiI6dHJ1ZX0</span><br></pre></td></tr></table></figure>
+<h1 id="Signature-簽章"><a href="#Signature-簽章" class="headerlink" title="Signature 簽章"></a>Signature 簽章</h1><p>第三個部分就是簽章，這個簽章由下面三個部分組成</p>
+<ul>
+<li>header</li>
+<li>payload</li>
+<li>secret</li>
+</ul>
+<p>看看範例程式碼便知是如何得到</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> encodedString = base64UrlEncode(header) + <span class="string">'.'</span> + base64UrlEncode(payload)</span><br><span class="line">HMACSHA256(encodedString, <span class="string">'secret'</span>)</span><br></pre></td></tr></table></figure>
+<p><code>secret</code> 的部分由伺服器持有，也因此伺服器才有辦法驗證 token 和簽發</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">6srTK4rBbOqlWj7le2hrwFP-iayHblLdhgVFIYU3gVg</span><br></pre></td></tr></table></figure>
+<p>最終得到的 JWT 就如同一開始提到的由兩個 <code>.</code> 串接三個編碼</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhbmR5eW91LmdpdGh1Yi5pbyIsImV4cCI6MTQ2NTcwMDMyODA5MiwibmFtZSI6ImFuZHl5b3UiLCJhZG1pbiI6dHJ1ZX0.6srTK4rBbOqlWj7le2hrwFP-iayHblLdhgVFIYU3gVg</span><br></pre></td></tr></table></figure>
+<p>總結來說 JWT 可以跨平台跨語言，讓不同的裝置應用或服務之間溝通，同時這個 token 可以搭配 URL, POST 參數, 或者 HTTP 標頭來傳遞使用。<br>透過 JWT 讓我們可以快速方便的賦予 API 驗證機制。</p>
+<h1 id="Nodejs-實作"><a href="#Nodejs-實作" class="headerlink" title="Nodejs 實作"></a>Nodejs 實作</h1><p>接下來讓我們透過 Node 與 Express 實踐一個簡單的 API 然後透過 POSTman 來測試。這個範例主要的工作流程</p>
+<ol>
+<li>個別有公開和需要授權的路由</li>
+<li>使用者需要帳密通過驗證取得 token</li>
+<li>使用者將 token 儲存在客戶端，之後的每一次請求都將包含此 token</li>
+<li>收到請求後會驗證 token ，當 token 正確才回傳資料</li>
+</ol>
+<h3 id="建構專案目錄結構"><a href="#建構專案目錄結構" class="headerlink" title="建構專案目錄結構"></a>建構專案目錄結構</h3><p>首先我們先來看看這個 Node 應用程式的檔案架構，為了單純我們會將大部分的邏輯都寫在 <code>server.js</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ mkdir simple-api</span><br><span class="line">$ <span class="built_in">cd</span> simple-api</span><br><span class="line">$ npm init --yes</span><br><span class="line">$ mkdir -p app/models</span><br><span class="line">$ touch app/models/user.js</span><br><span class="line">$ touch config.js</span><br><span class="line">$ touch server.js</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">├── app</span><br><span class="line">│   └── models</span><br><span class="line">│       └── user.js</span><br><span class="line">├── config.js</span><br><span class="line">├── package.json</span><br><span class="line">└── server.js</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>在實務上您應該盡可能分拆與組織檔案，而不是把全部的邏輯都放在一起。</p>
+</blockquote>
+<h3 id="設定"><a href="#設定" class="headerlink" title="設定"></a>設定</h3><p>設定 <code>package.json</code></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  <span class="string">"name"</span>: <span class="string">"simple-api"</span>,</span><br><span class="line">  <span class="string">"version"</span>: <span class="string">"1.0.0"</span>,</span><br><span class="line">  <span class="string">"main"</span>: <span class="string">"server.js"</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>接著安裝我們需要用到的套件與函式庫</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">$ npm i express body-parser morgan mongoose jsonwebtoken -S</span><br><span class="line"></span><br><span class="line"><span class="comment"># express: 輕量化的 web framework</span></span><br><span class="line"><span class="comment"># mongoose: MongoDB 的 ORM 套件，我們使用它來操作資料庫</span></span><br><span class="line"><span class="comment"># morgan: HTTP request logger，會於 console 輸出 request 的資訊</span></span><br><span class="line"><span class="comment"># body-parser: 協助我們取得 POST request 的資料</span></span><br><span class="line"><span class="comment"># jsonwebtoken: 建置/驗證 JWT</span></span><br></pre></td></tr></table></figure>
+<h3 id="設定-Model"><a href="#設定-Model" class="headerlink" title="設定 Model"></a>設定 Model</h3><p>我們需要定義一個使用者的資料模型 Model，之後會用它來建立使用者資料，這個步驟是因為我們使用 MongoDB 搭配 Mongoose，所以我們要建立 <code>app/models/user.js</code> 來定義 Model, Schema。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> mongoose = <span class="built_in">require</span>(<span class="string">'mongoose'</span>)</span><br><span class="line"><span class="keyword">var</span> Schema = mongoose.Schema</span><br><span class="line"></span><br><span class="line"><span class="built_in">module</span>.exports = mongoose.model(<span class="string">'User'</span>, <span class="keyword">new</span> Schema(&#123;</span><br><span class="line">  name: <span class="built_in">String</span>,</span><br><span class="line">  password: <span class="built_in">String</span>,</span><br><span class="line">  admin: <span class="built_in">Boolean</span></span><br><span class="line">&#125;))</span><br></pre></td></tr></table></figure>
+<h3 id="應用程式設定檔-config-js"><a href="#應用程式設定檔-config-js" class="headerlink" title="應用程式設定檔 (config.js)"></a>應用程式設定檔 (config.js)</h3><p>通常程式會有一些設定的資料像是連線字串, secret 加密字串, 這些資料我們通常會彙整在一個檔案以方便日後調整。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">module</span>.exports = &#123;</span><br><span class="line">  <span class="string">'secret'</span>: <span class="string">'ilovera'</span>,</span><br><span class="line">  <span class="string">'database'</span>: <span class="string">'mongodb://localhost/jwt_dev'</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// secret: 加密與驗證 token</span></span><br><span class="line"><span class="comment">// database: 連線字串</span></span><br></pre></td></tr></table></figure>
+<p>到這一步我們已經完成大部分的前置作業，接著要進入核心部分 <code>server.js</code></p>
+<h3 id="Node-應用程式"><a href="#Node-應用程式" class="headerlink" title="Node 應用程式"></a>Node 應用程式</h3><p>在這一隻檔案中我們將會</p>
+<ul>
+<li>載入套件與資料模型等就是我們先前安裝的那些 express, body-parser, morgan 和 Model 的部分</li>
+<li>載入與配置設定</li>
+<li>建立基本路由</li>
+<li>建立 API 路由<ul>
+<li><code>POST http://localhost:8080/api/authenticate</code> 確認帳密是否與資料庫吻合，如果正確就回傳 token 這個路由本身不需要驗證</li>
+<li><code>GET http://localhost:8080/api/api</code> 隨機回傳資訊，這個路由需要授權也就是需要 token 才能存取</li>
+<li><code>GET http://localhost:8080/api/users</code> 列出所有使用者，同樣這個路由也需要授權</li>
+</ul>
+</li>
+</ul>
+<p>這支程式的基本功能</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 載入 server 程式需要的相關套件</span></span><br><span class="line"><span class="keyword">var</span> express = <span class="built_in">require</span>(<span class="string">'express'</span>)</span><br><span class="line"><span class="keyword">var</span> app = express()</span><br><span class="line"><span class="keyword">var</span> bodyParser = <span class="built_in">require</span>(<span class="string">'body-parser'</span>)</span><br><span class="line"><span class="keyword">var</span> morgan = <span class="built_in">require</span>(<span class="string">'morgan'</span>)</span><br><span class="line"><span class="keyword">var</span> mongoose = <span class="built_in">require</span>(<span class="string">'mongoose'</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 載入 jwt 函式庫協助處理建立/驗證 token</span></span><br><span class="line"><span class="keyword">var</span> jwt = <span class="built_in">require</span>(<span class="string">'jsonwebtoken'</span>)</span><br><span class="line"><span class="comment">// 載入設定</span></span><br><span class="line"><span class="keyword">var</span> config = <span class="built_in">require</span>(<span class="string">'./config'</span>)</span><br><span class="line"><span class="comment">// 載入資料模型</span></span><br><span class="line"><span class="keyword">var</span> User = <span class="built_in">require</span>(<span class="string">'./app/models/user'</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> port = process.env.PORT || <span class="number">8080</span></span><br><span class="line">mongoose.connect(config.database)</span><br><span class="line">app.set(<span class="string">'secret'</span>, config.secret)</span><br><span class="line"></span><br><span class="line"><span class="comment">// 套用 middleware</span></span><br><span class="line">app.use(bodyParser.urlencoded(&#123;<span class="attr">extended</span>: <span class="literal">false</span>&#125;))</span><br><span class="line">app.use(bodyParser.json())</span><br><span class="line">app.use(morgan(<span class="string">'dev'</span>))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">app.get(<span class="string">'/'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">  res.send(<span class="string">'Hi, The API is at http://localhost:'</span> + port + <span class="string">'/api'</span>)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">app.listen(port, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'The server is running at http://localhost:'</span> + port)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>完成檔案之後可以使用 <code>node server.js</code> 來測試，瀏覽 <code>http://localhost:8080</code> 應該要能看到 <code>Hi, The API is at http://localhost:8080/api</code> 的文字。因為我們有使用 <code>morgan</code> 所以應該也要能在 console 看到像 <code>GET / 200 2.846 ms - 43</code> 的資訊。</p>
+<h3 id="建立使用者帳號"><a href="#建立使用者帳號" class="headerlink" title="建立使用者帳號"></a>建立使用者帳號</h3><p>OK! 現在我們的程式能運作了，讓我們先來建立一組帳密。因為我們的主題是要了解 jwt 的運作流程所以這邊為了方便我們直接透過呼叫一個路由 <code>/setup</code> 直接建立一組帳密。在 <code>app.get(&#39;/&#39;)</code> 路由下面新增一組路由</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">app.get(<span class="string">'/setup'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> andyyou = <span class="keyword">new</span> User(&#123;</span><br><span class="line">    name: <span class="string">'andyyou'</span>,</span><br><span class="line">    password: <span class="string">'12345678'</span>,</span><br><span class="line">    admin: <span class="literal">true</span></span><br><span class="line">  &#125;)</span><br><span class="line">  andyyou.save(<span class="function"><span class="keyword">function</span> (<span class="params">err</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (err) <span class="keyword">throw</span> err</span><br><span class="line"></span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'User saved successfully'</span>)</span><br><span class="line">    res.json(&#123;<span class="attr">success</span>: <span class="literal">true</span>&#125;)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>值得注意的是在正式環境，密碼的部分不應該像上面的作法直接儲存明碼，應要加密。</p>
+</blockquote>
+<p>接著重啟 server <code>node server.js</code> 瀏覽 <code>http://localhost:8080/setup</code> 就會建立使用者。查看資料庫應會如下圖</p>
+<p><img src="http://i.imgur.com/AGmSNwE.png" alt=""></p>
+<h3 id="顯示使用者"><a href="#顯示使用者" class="headerlink" title="顯示使用者"></a>顯示使用者</h3><p>現在我們可以來實作使用者列表的 API 了，在這一步我們會使用 <code>express.Router()</code> 這麼做的好處是之後我們可以把整包相關的路由掛載到某個前綴路徑上。比如說我們有 <code>/</code>, <code>/users</code>, <code>edit</code> 等路由，透過 <code>app.use(&#39;/api&#39;, 路由實力物件)</code> 的方式產出 <code>/api</code>, <code>/api/users</code>, <code>/api/edit</code></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> api = express.Router()</span><br><span class="line"><span class="comment">// <span class="doctag">TODO:</span> authenticate</span></span><br><span class="line"><span class="comment">// <span class="doctag">TODO:</span> verify token</span></span><br><span class="line"></span><br><span class="line">api.get(<span class="string">'/'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">  res.json(&#123;<span class="attr">message</span>: <span class="string">'Welcome to the APIs'</span>&#125;)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">api.get(<span class="string">'/users'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">  User.find(&#123;&#125;, <span class="function"><span class="keyword">function</span> (<span class="params">err, users</span>) </span>&#123;</span><br><span class="line">    res.json(users)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;)</span><br><span class="line">app.use(<span class="string">'/api'</span>, api);</span><br></pre></td></tr></table></figure>
+<p>每一次修改程式碼都需要重啟，不然我們就需要使用像是 <code>nodemon</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ npm install -g nodemon</span><br><span class="line">$ nodemon server.js</span><br></pre></td></tr></table></figure>
+<p>剛剛我們加了兩道 API 現在我們可以透過 <code>postman</code> 來測試看看</p>
+<p><a href="http://i.imgur.com/LcwM9SM.png" target="_blank" rel="noopener">Imgur</a></p>
+<p><a href="http://i.imgur.com/gMhojhw.png" target="_blank" rel="noopener">Imgur</a></p>
+<p>現在我們可以顯示出列表了但在實務上我們大概都不希望任何人都能存取我們的這些資料，接著就是重點我們要透過驗證來保護這些資料只讓特定的使用者查詢。</p>
+<h3 id="驗證機制"><a href="#驗證機制" class="headerlink" title="驗證機制"></a>驗證機制</h3><p>透過 <code>http://localhost:8080/api/authenticate</code> 路由我們將允許那些通過驗證的人存取，這個過程我們會驗證帳密，然後建立派發 token<br>一旦使用者獲得 token，就會將其暫存在客戶端，之後每一個 request 都需要這個 token。接著伺服器端會透過 middleware 的方式在每個存取的過程驗證。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line">api.post(<span class="string">'/authenticate'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">  User.findOne(&#123;</span><br><span class="line">    name: req.body.name</span><br><span class="line">  &#125;, <span class="function"><span class="keyword">function</span> (<span class="params">err, user</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (err) <span class="keyword">throw</span> err</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (!user) &#123;</span><br><span class="line">      res.json(&#123; <span class="attr">success</span>: <span class="literal">false</span>, <span class="attr">message</span>: <span class="string">'Authenticate failed. User not found'</span>&#125;)</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (user) &#123;</span><br><span class="line">      <span class="keyword">if</span> (user.password != req.body.password) &#123;</span><br><span class="line">        res.json(&#123; <span class="attr">success</span>: <span class="literal">false</span>, <span class="attr">message</span>: <span class="string">'Authenticate failed. Wrong password'</span>&#125;)</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">var</span> token = jwt.sign(user, app.get(<span class="string">'secret'</span>), &#123;</span><br><span class="line">          expiresIn: <span class="number">60</span>*<span class="number">60</span>*<span class="number">24</span></span><br><span class="line">        &#125;)</span><br><span class="line"></span><br><span class="line">        res.json(&#123;</span><br><span class="line">          success: <span class="literal">true</span>,</span><br><span class="line">          message: <span class="string">'Enjoy your token'</span>,</span><br><span class="line">          token: token</span><br><span class="line">        &#125;)</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<p>接著透過 postman 測試我們剛完成的功能，首先 method 要換成 <code>POST</code>，然後參數的部份要切到 <code>Body</code> 使用 <code>x-www-form-urlencoded</code>。這個步驟我們使用 postman 模擬實際在網頁中送出 post 的過程。可以順便測試一下當密碼錯誤時是否回傳正確的資訊。</p>
+<p><a href="http://i.imgur.com/WrBVjQe.png" target="_blank" rel="noopener">Imgur</a></p>
+<h3 id="驗證-token"><a href="#驗證-token" class="headerlink" title="驗證 token"></a>驗證 token</h3><p>到了這一步我們已經實作了三道路由 <code>/api/authenticate</code>, <code>/api</code>, <code>/api/users</code>。最後的任務自然是要存取的過程時要驗證 token。現在我們需要建立路由的 middleware ，賦予 API驗證機制，其中 <code>/api/authenticate</code> 是不需要被保護的。需要注意的是 middleware 擺放的位置會影響是否要驗證。<br>要驗證的路由必須要 middleware 之後。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> api = express.Router()</span><br><span class="line"></span><br><span class="line"><span class="comment">// authenticate api</span></span><br><span class="line"></span><br><span class="line">api.use(<span class="function"><span class="keyword">function</span> (<span class="params">req, res, next</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> token = req.body.token || req.query.token || req.headers[<span class="string">'x-access-token'</span>]</span><br><span class="line">  <span class="keyword">if</span> (token) &#123;</span><br><span class="line">    jwt.verify(token, app.get(<span class="string">'secret'</span>), <span class="function"><span class="keyword">function</span> (<span class="params">err, decoded</span>) </span>&#123;</span><br><span class="line">      <span class="keyword">if</span> (err) &#123;</span><br><span class="line">        <span class="keyword">return</span> res.json(&#123;<span class="attr">success</span>: <span class="literal">false</span>, <span class="attr">message</span>: <span class="string">'Failed to authenticate token.'</span>&#125;)</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        req.decoded = decoded</span><br><span class="line">        next()</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> res.status(<span class="number">403</span>).send(&#123;</span><br><span class="line">      success: <span class="literal">false</span>,</span><br><span class="line">      message: <span class="string">'No token provided.'</span></span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="comment">// Others APIs</span></span><br><span class="line"><span class="comment">// /api</span></span><br><span class="line"><span class="comment">// /api.users</span></span><br><span class="line"></span><br><span class="line">app.use(<span class="string">'/api'</span>, api);</span><br></pre></td></tr></table></figure>
+<p>這個過程我們使用 <code>jsonwebtoken</code> 套件來協助我們處理驗證，重要的是那個 secret 要跟我們派發時的一致。經過 middleware 的處理我們就可以判斷使用者是否通過驗證。</p>
+<h3 id="測試-middleware"><a href="#測試-middleware" class="headerlink" title="測試 middleware"></a>測試 middleware</h3><p>經過 middleware 中介軟體的處理我們在 api 的每一道路由(在設定 middleware 之後)都會先執行 middleware。於是我們就在這個過程處理 token 判斷是否要放行。<br>現在我們就可以再次使用 postman 來測試，因為 jwt 的傳遞可以透過 header, body, URL Query 三種方式所以在 postman 中我們可以切換到 <code>GET</code> 然後使用 header 標頭方式來測試</p>
+<ul>
+<li>without token</li>
+</ul>
+<p><a href="http://i.imgur.com/SD956Gz.png" target="_blank" rel="noopener">Imgur</a></p>
+<ul>
+<li>with token</li>
+</ul>
+<p><a href="http://i.imgur.com/vJrUPMY.png" target="_blank" rel="noopener">Imgur</a></p>
+<p>當然我們也能透過 <code>query string</code> 的方式來通過驗證。通過實作我們大致理解了 API 驗證在 Node 的實作思路，下面附上完整 server.js 程式碼</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> express = <span class="built_in">require</span>(<span class="string">'express'</span>)</span><br><span class="line"><span class="keyword">var</span> app = express()</span><br><span class="line"><span class="keyword">var</span> bodyParser = <span class="built_in">require</span>(<span class="string">'body-parser'</span>)</span><br><span class="line"><span class="keyword">var</span> morgan = <span class="built_in">require</span>(<span class="string">'morgan'</span>)</span><br><span class="line"><span class="keyword">var</span> mongoose = <span class="built_in">require</span>(<span class="string">'mongoose'</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> jwt = <span class="built_in">require</span>(<span class="string">'jsonwebtoken'</span>)</span><br><span class="line"><span class="keyword">var</span> config = <span class="built_in">require</span>(<span class="string">'./config'</span>)</span><br><span class="line"><span class="keyword">var</span> User = <span class="built_in">require</span>(<span class="string">'./app/models/user'</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> port = process.env.PORT || <span class="number">8080</span></span><br><span class="line">mongoose.connect(config.database)</span><br><span class="line">app.set(<span class="string">'secret'</span>, config.secret)</span><br><span class="line"></span><br><span class="line">app.use(bodyParser.urlencoded(&#123;<span class="attr">extended</span>: <span class="literal">false</span>&#125;))</span><br><span class="line">app.use(bodyParser.json())</span><br><span class="line">app.use(morgan(<span class="string">'dev'</span>))</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">app.get(<span class="string">'/'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">  res.send(<span class="string">'Hi, The API is at http://localhost:'</span> + port + <span class="string">'/api'</span>)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">app.get(<span class="string">'/setup'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> andyyou = <span class="keyword">new</span> User(&#123;</span><br><span class="line">    name: <span class="string">'andyyou'</span>,</span><br><span class="line">    password: <span class="string">'12345678'</span>,</span><br><span class="line">    admin: <span class="literal">true</span></span><br><span class="line">  &#125;)</span><br><span class="line">  andyyou.save(<span class="function"><span class="keyword">function</span> (<span class="params">err</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (err) <span class="keyword">throw</span> err</span><br><span class="line"></span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">'User saved successfully'</span>)</span><br><span class="line">    res.json(&#123;<span class="attr">success</span>: <span class="literal">true</span>&#125;)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> api = express.Router()</span><br><span class="line"></span><br><span class="line">api.post(<span class="string">'/authenticate'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">  User.findOne(&#123;</span><br><span class="line">    name: req.body.name</span><br><span class="line">  &#125;, <span class="function"><span class="keyword">function</span> (<span class="params">err, user</span>) </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (err) <span class="keyword">throw</span> err</span><br><span class="line"></span><br><span class="line">    <span class="keyword">if</span> (!user) &#123;</span><br><span class="line">      res.json(&#123; <span class="attr">success</span>: <span class="literal">false</span>, <span class="attr">message</span>: <span class="string">'Authenticate failed. User not found'</span>&#125;)</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (user) &#123;</span><br><span class="line">      <span class="keyword">if</span> (user.password != req.body.password) &#123;</span><br><span class="line">        res.json(&#123; <span class="attr">success</span>: <span class="literal">false</span>, <span class="attr">message</span>: <span class="string">'Authenticate failed. Wrong password'</span>&#125;)</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">var</span> token = jwt.sign(user, app.get(<span class="string">'secret'</span>), &#123;</span><br><span class="line">          expiresIn: <span class="number">120</span></span><br><span class="line">        &#125;)</span><br><span class="line"></span><br><span class="line">        res.json(&#123;</span><br><span class="line">          success: <span class="literal">true</span>,</span><br><span class="line">          message: <span class="string">'Enjoy your token'</span>,</span><br><span class="line">          token: token</span><br><span class="line">        &#125;)</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">api.use(<span class="function"><span class="keyword">function</span> (<span class="params">req, res, next</span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> token = req.body.token || req.query.token || req.headers[<span class="string">'x-access-token'</span>]</span><br><span class="line">  <span class="keyword">if</span> (token) &#123;</span><br><span class="line">    jwt.verify(token, app.get(<span class="string">'secret'</span>), <span class="function"><span class="keyword">function</span> (<span class="params">err, decoded</span>) </span>&#123;</span><br><span class="line">      <span class="keyword">if</span> (err) &#123;</span><br><span class="line">        <span class="keyword">return</span> res.json(&#123;<span class="attr">success</span>: <span class="literal">false</span>, <span class="attr">message</span>: <span class="string">'Failed to authenticate token.'</span>&#125;)</span><br><span class="line">      &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        req.decoded = decoded</span><br><span class="line">        next()</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;)</span><br><span class="line">  &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">    <span class="keyword">return</span> res.status(<span class="number">403</span>).send(&#123;</span><br><span class="line">      success: <span class="literal">false</span>,</span><br><span class="line">      message: <span class="string">'No token provided.'</span></span><br><span class="line">    &#125;)</span><br><span class="line">  &#125;</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">api.get(<span class="string">'/'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">  res.json(&#123;<span class="attr">message</span>: <span class="string">'Welcome to the APIs'</span>&#125;)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">api.get(<span class="string">'/users'</span>, <span class="function"><span class="keyword">function</span> (<span class="params">req, res</span>) </span>&#123;</span><br><span class="line">  User.find(&#123;&#125;, <span class="function"><span class="keyword">function</span> (<span class="params">err, users</span>) </span>&#123;</span><br><span class="line">    res.json(users)</span><br><span class="line">  &#125;)</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">app.use(<span class="string">'/api'</span>, api)</span><br><span class="line"></span><br><span class="line">app.listen(port, <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'The server is running at http://localhost:'</span> + port)</span><br><span class="line">&#125;)</span><br></pre></td></tr></table></figure>
+<h1 id="觀察不同套件產生之-Token"><a href="#觀察不同套件產生之-Token" class="headerlink" title="觀察不同套件產生之 Token"></a>觀察不同套件產生之 Token</h1><p><strong>jsonwebtoken 產生的 token 範例</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyIkX18iOnsic3RyaWN0TW9kZSI6dHJ1ZSwiZ2V0dGVycyI6e30sIndhc1BvcHVsYXRlZCI6ZmFsc2UsImFjdGl2ZVBhdGhzIjp7InBhdGhzIjp7Il9fdiI6ImluaXQiLCJhZG1pbiI6ImluaXQiLCJwYXNzd29yZCI6ImluaXQiLCJuYW1lIjoiaW5pdCIsIl9pZCI6ImluaXQifSwic3RhdGVzIjp7Imlnbm9yZSI6e30sImRlZmF1bHQiOnt9LCJpbml0Ijp7Il9fdiI6dHJ1ZSwiYWRtaW4iOnRydWUsInBhc3N3b3JkIjp0cnVlLCJuYW1lIjp0cnVlLCJfaWQiOnRydWV9LCJtb2RpZnkiOnt9LCJyZXF1aXJlIjp7fX0sInN0YXRlTmFtZXMiOlsicmVxdWlyZSIsIm1vZGlmeSIsImluaXQiLCJkZWZhdWx0IiwiaWdub3JlIl19LCJlbWl0dGVyIjp7ImRvbWFpbiI6bnVsbCwiX2V2ZW50cyI6e30sIl9ldmVudHNDb3VudCI6MCwiX21heExpc3RlbmVycyI6MH19LCJpc05ldyI6ZmFsc2UsIl9kb2MiOnsiX192IjowLCJhZG1pbiI6dHJ1ZSwicGFzc3dvcmQiOiIxMjM0NTY3OCIsIm5hbWUiOiJhbmR5eW91IiwiX2lkIjoiNTc1Y2UxYTBkY2I1NDUwZDFhNzIwZjljIn0sIl9wcmVzIjp7IiRfX29yaWdpbmFsX3NhdmUiOltudWxsLG51bGxdfSwiX3Bvc3RzIjp7IiRfX29yaWdpbmFsX3NhdmUiOltdfSwiaWF0IjoxNDY1NzMxNjU4LCJleHAiOjE0NjU3MzE3Nzh9.toeuSCZ6M0XcjS1p2Tn1h30HQIOQmrBKRsAsgaWvx9g</span><br></pre></td></tr></table></figure>
+<p><strong>jsonwebtoken token 解析 payload 部分</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;$__&quot;: &#123;</span><br><span class="line">    &quot;strictMode&quot;: true,</span><br><span class="line">    &quot;getters&quot;: &#123;&#125;,</span><br><span class="line">    &quot;wasPopulated&quot;: false,</span><br><span class="line">    &quot;activePaths&quot;: &#123;</span><br><span class="line">      &quot;paths&quot;: &#123;</span><br><span class="line">        &quot;__v&quot;: &quot;init&quot;,</span><br><span class="line">        &quot;admin&quot;: &quot;init&quot;,</span><br><span class="line">        &quot;password&quot;: &quot;init&quot;,</span><br><span class="line">        &quot;name&quot;: &quot;init&quot;,</span><br><span class="line">        &quot;_id&quot;: &quot;init&quot;</span><br><span class="line">      &#125;,</span><br><span class="line">      &quot;states&quot;: &#123;</span><br><span class="line">        &quot;ignore&quot;: &#123;&#125;,</span><br><span class="line">        &quot;default&quot;: &#123;&#125;,</span><br><span class="line">        &quot;init&quot;: &#123;</span><br><span class="line">          &quot;__v&quot;: true,</span><br><span class="line">          &quot;admin&quot;: true,</span><br><span class="line">          &quot;password&quot;: true,</span><br><span class="line">          &quot;name&quot;: true,</span><br><span class="line">          &quot;_id&quot;: true</span><br><span class="line">        &#125;,</span><br><span class="line">        &quot;modify&quot;: &#123;&#125;,</span><br><span class="line">        &quot;require&quot;: &#123;&#125;</span><br><span class="line">      &#125;,</span><br><span class="line">      &quot;stateNames&quot;: [</span><br><span class="line">        &quot;require&quot;,</span><br><span class="line">        &quot;modify&quot;,</span><br><span class="line">        &quot;init&quot;,</span><br><span class="line">        &quot;default&quot;,</span><br><span class="line">        &quot;ignore&quot;</span><br><span class="line">      ]</span><br><span class="line">    &#125;,</span><br><span class="line">    &quot;emitter&quot;: &#123;</span><br><span class="line">      &quot;domain&quot;: null,</span><br><span class="line">      &quot;_events&quot;: &#123;&#125;,</span><br><span class="line">      &quot;_eventsCount&quot;: 0,</span><br><span class="line">      &quot;_maxListeners&quot;: 0</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;isNew&quot;: false,</span><br><span class="line">  &quot;_doc&quot;: &#123;</span><br><span class="line">    &quot;__v&quot;: 0,</span><br><span class="line">    &quot;admin&quot;: true,</span><br><span class="line">    &quot;password&quot;: &quot;12345678&quot;,</span><br><span class="line">    &quot;name&quot;: &quot;andyyou&quot;,</span><br><span class="line">    &quot;_id&quot;: &quot;575ce1a0dcb5450d1a720f9c&quot;</span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;_pres&quot;: &#123;</span><br><span class="line">    &quot;$__original_save&quot;: [</span><br><span class="line">      null,</span><br><span class="line">      null</span><br><span class="line">    ]</span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;_posts&quot;: &#123;</span><br><span class="line">    &quot;$__original_save&quot;: []</span><br><span class="line">  &#125;,</span><br><span class="line">  &quot;iat&quot;: 1465731658,</span><br><span class="line">  &quot;exp&quot;: 1465731778</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><strong> jwt-simple token sample</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJfaWQiOiI1NzVjZTFhMGRjYjU0NTBkMWE3MjBmOWMiLCJuYW1lIjoiYW5keXlvdSIsInBhc3N3b3JkIjoiMTIzNDU2NzgiLCJhZG1pbiI6dHJ1ZSwiX192IjowfQ.pZ3KHGGZwjgDryrLrAzKkfmTv4xJbekQGX3UCe8Fm1Q</span><br></pre></td></tr></table></figure>
+<p><strong> jwt-simple token 解析 payload</strong></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  &quot;_id&quot;: &quot;575ce1a0dcb5450d1a720f9c&quot;,</span><br><span class="line">  &quot;name&quot;: &quot;andyyou&quot;,</span><br><span class="line">  &quot;password&quot;: &quot;12345678&quot;,</span><br><span class="line">  &quot;admin&quot;: true,</span><br><span class="line">  &quot;__v&quot;: 0</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="小結"><a href="#小結" class="headerlink" title="小結"></a>小結</h1><p>透過上面的實作，我們對於 jwt 和如何實作有了基本的理解。</p>
+<h1 id="參考資料來源"><a href="#參考資料來源" class="headerlink" title="參考資料來源"></a>參考資料來源</h1><ul>
+<li><a href="https://scotch.io/tutorials/the-ins-and-outs-of-token-based-authentication#who-uses-token-based-authentication" target="_blank" rel="noopener">The Ins and Outs of Token Based Authentication</a></li>
+<li><a href="https://scotch.io/tutorials/the-anatomy-of-a-json-web-token" target="_blank" rel="noopener">The Anatomy of a JSON Web Token</a></li>
+<li><a href="https://scotch.io/tutorials/authenticate-a-node-js-api-with-json-web-tokens" target="_blank" rel="noopener">Authenticate a Node.js API with JSON Web Tokens</a></li>
+<li><a href="https://auth0.com/blog/2015/11/13/build-an-app-with-vuejs/" target="_blank" rel="noopener">Build an App with Vue.js: From Authentication to Calling an API</a></li>
+<li><a href="http://www.haomou.net/2014/08/07/2014_session/" target="_blank" rel="noopener">Session 介紹</a></li>
+<li><a href="http://haomou.net/2014/08/13/2014_web_token/" target="_blank" rel="noopener">使用 JWT</a></li>
+<li><a href="https://blog.yorkxin.org/posts/2013/09/30/oauth2-1-introduction/" target="_blank" rel="noopener">OAuth 2.0 筆記</a></li>
+<li><a href="http://luciastar.com/2016/05/21/postman%E7%AC%94%E8%AE%B0/" target="_blank" rel="noopener">Postman 使用筆記</a></li>
+</ul>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+
+</div>
+
+    <a data-url="//andyyou.github.io/2016/06/09/implement-jwt-with-understanding/" data-id="cklyrfc4z00de5g72p7i16q65" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        // Prevent duplicate binding
+        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
+            __SHARE_BUTTON_BINDED__ = true;
+        } else {
+            return;
+        }
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+            
+    
+
+        </footer>
+    </div>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2016/06/16/sytling-broken-images/" id="article-nav-newer" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">上一篇</strong>
+            <div class="article-nav-title">
+                
+                    [譯] 美化無法載入的圖片 &lt;img&gt;
+                
+            </div>
+        </a>
+    
+    
+        <a href="/2016/06/01/smooth-page-scroll/" id="article-nav-older" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">下一篇</strong>
+            <div class="article-nav-title">[譯] scroll-behavior 滑順的捲動效果</div>
+        </a>
+    
+</nav>
+
+
+    
+</article>
+
+
+    
+    <section id="comments">
+    
+    </section>
+
+</section>
+            
+                <aside id="sidebar">
+   
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">分類</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Cloud/">Cloud</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Database/">Database</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Fun/">Fun</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Mobile/">Mobile</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Program/">Program</a><span class="category-list-count">131</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/System/">System</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Tools/">Tools</a><span class="category-list-count">17</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">歸檔</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/03/">三月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/10/">十月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">五月 2019</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">六月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">十二月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">十一月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">九月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">十月 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">九月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">六月 2016</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">十二月 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">十一月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">十月 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">九月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">八月 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">七月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">五月 2015</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">四月 2015</a><span class="archive-list-count">19</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">十二月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/11/">十一月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/10/">十月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">九月 2014</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/08/">八月 2014</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/02/">二月 2014</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/01/">一月 2014</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">十一月 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">十月 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">九月 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">八月 2013</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/03/">三月 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">三月 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">一月 2012</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2011/11/">十一月 2011</a><span class="archive-list-count">3</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">標籤</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/net-mvc/">.net mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RoR/">RoR</a><span class="tag-list-count">15</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/api/">api</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aws/">aws</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/azure/">azure</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bot/">bot</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bundler/">bundler</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cache/">cache</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/carrier-wave/">carrier wave</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/centos/">centos</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/chrome/">chrome</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cloudflare/">cloudflare</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/compass/">compass</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/devise/">devise</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dnd/">dnd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/e-invoice/">e-invoice</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/entity-framework/">entity framework</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/es6/">es6</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/facebook/">facebook</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flux/">flux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/framework/">framework</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gcp/">gcp</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/grunt/">grunt</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gulp/">gulp</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/heroku/">heroku</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/html/">html</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/iisexpress/">iisexpress</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ios/">ios</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">69</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript-express-passport/">javascript express passport</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript-nodejs/">javascript nodejs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jekyll/">jekyll</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jetstream/">jetstream</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jspm/">jspm</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jwt/">jwt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/laravel/">laravel</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/letsencrypt/">letsencrypt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mechanism/">mechanism</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongodb/">mongodb</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/node/">node</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nodejs/">nodejs</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/oocss/">oocss</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/osx/">osx</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package-manager/">package manager</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/php/">php</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/postgres/">postgres</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/postgresql/">postgresql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/queue/">queue</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rabbitmq/">rabbitmq</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rack-server/">rack server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails/">rails</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails-webpack-stimulus-javascript-bootstrap/">rails webpack stimulus javascript bootstrap</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/raspberry-pi/">raspberry-pi</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react/">react</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react-native/">react native</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/reactjs/">reactjs</a><span class="tag-list-count">32</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redux/">redux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sass/">sass</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/selenium/">selenium</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/slim/">slim</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssh/">ssh</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssl/">ssl</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/stimulus/">stimulus</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/svg-javascript/">svg javascript</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/task-runner/">task runner</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tmux/">tmux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tools/">tools</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vm/">vm</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/">vue</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vuejs/">vuejs</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/webpack/">webpack</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/windows/">windows</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/xml/">xml</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">標籤雲</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/net-mvc/" style="font-size: 10px;">.net mvc</a> <a href="/tags/RoR/" style="font-size: 16.67px;">RoR</a> <a href="/tags/api/" style="font-size: 10px;">api</a> <a href="/tags/aws/" style="font-size: 12.5px;">aws</a> <a href="/tags/azure/" style="font-size: 10.83px;">azure</a> <a href="/tags/bot/" style="font-size: 10px;">bot</a> <a href="/tags/bundler/" style="font-size: 10.83px;">bundler</a> <a href="/tags/cache/" style="font-size: 10px;">cache</a> <a href="/tags/carrier-wave/" style="font-size: 10.83px;">carrier wave</a> <a href="/tags/centos/" style="font-size: 10px;">centos</a> <a href="/tags/chrome/" style="font-size: 10px;">chrome</a> <a href="/tags/cloudflare/" style="font-size: 10px;">cloudflare</a> <a href="/tags/compass/" style="font-size: 10px;">compass</a> <a href="/tags/css/" style="font-size: 17.5px;">css</a> <a href="/tags/devise/" style="font-size: 10px;">devise</a> <a href="/tags/dnd/" style="font-size: 10px;">dnd</a> <a href="/tags/docker/" style="font-size: 10.83px;">docker</a> <a href="/tags/e-invoice/" style="font-size: 10px;">e-invoice</a> <a href="/tags/entity-framework/" style="font-size: 10px;">entity framework</a> <a href="/tags/es6/" style="font-size: 11.67px;">es6</a> <a href="/tags/facebook/" style="font-size: 10px;">facebook</a> <a href="/tags/flux/" style="font-size: 10px;">flux</a> <a href="/tags/framework/" style="font-size: 10.83px;">framework</a> <a href="/tags/gcp/" style="font-size: 10.83px;">gcp</a> <a href="/tags/go/" style="font-size: 10px;">go</a> <a href="/tags/grunt/" style="font-size: 12.5px;">grunt</a> <a href="/tags/gulp/" style="font-size: 11.67px;">gulp</a> <a href="/tags/heroku/" style="font-size: 14.17px;">heroku</a> <a href="/tags/html/" style="font-size: 10.83px;">html</a> <a href="/tags/iisexpress/" style="font-size: 10px;">iisexpress</a> <a href="/tags/ios/" style="font-size: 11.67px;">ios</a> <a href="/tags/javascript/" style="font-size: 20px;">javascript</a> <a href="/tags/javascript-express-passport/" style="font-size: 10px;">javascript express passport</a> <a href="/tags/javascript-nodejs/" style="font-size: 10px;">javascript nodejs</a> <a href="/tags/jekyll/" style="font-size: 10.83px;">jekyll</a> <a href="/tags/jetstream/" style="font-size: 10px;">jetstream</a> <a href="/tags/jspm/" style="font-size: 10px;">jspm</a> <a href="/tags/jwt/" style="font-size: 10px;">jwt</a> <a href="/tags/laravel/" style="font-size: 11.67px;">laravel</a> <a href="/tags/letsencrypt/" style="font-size: 10px;">letsencrypt</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/mechanism/" style="font-size: 10px;">mechanism</a> <a href="/tags/mongodb/" style="font-size: 10.83px;">mongodb</a> <a href="/tags/node/" style="font-size: 10px;">node</a> <a href="/tags/nodejs/" style="font-size: 15px;">nodejs</a> <a href="/tags/oocss/" style="font-size: 10px;">oocss</a> <a href="/tags/osx/" style="font-size: 14.17px;">osx</a> <a href="/tags/package-manager/" style="font-size: 14.17px;">package manager</a> <a href="/tags/php/" style="font-size: 10.83px;">php</a> <a href="/tags/postgres/" style="font-size: 10px;">postgres</a> <a href="/tags/postgresql/" style="font-size: 10.83px;">postgresql</a> <a href="/tags/queue/" style="font-size: 10.83px;">queue</a> <a href="/tags/rabbitmq/" style="font-size: 10.83px;">rabbitmq</a> <a href="/tags/rack-server/" style="font-size: 10px;">rack server</a> <a href="/tags/rails/" style="font-size: 14.17px;">rails</a> <a href="/tags/rails-webpack-stimulus-javascript-bootstrap/" style="font-size: 10px;">rails webpack stimulus javascript bootstrap</a> <a href="/tags/raspberry-pi/" style="font-size: 10px;">raspberry-pi</a> <a href="/tags/react/" style="font-size: 15.83px;">react</a> <a href="/tags/react-native/" style="font-size: 10px;">react native</a> <a href="/tags/reactjs/" style="font-size: 19.17px;">reactjs</a> <a href="/tags/redux/" style="font-size: 10px;">redux</a> <a href="/tags/ruby/" style="font-size: 18.33px;">ruby</a> <a href="/tags/sass/" style="font-size: 10.83px;">sass</a> <a href="/tags/selenium/" style="font-size: 10px;">selenium</a> <a href="/tags/slim/" style="font-size: 10px;">slim</a> <a href="/tags/ssh/" style="font-size: 10px;">ssh</a> <a href="/tags/ssl/" style="font-size: 10.83px;">ssl</a> <a href="/tags/stimulus/" style="font-size: 10px;">stimulus</a> <a href="/tags/svg-javascript/" style="font-size: 11.67px;">svg javascript</a> <a href="/tags/task-runner/" style="font-size: 11.67px;">task runner</a> <a href="/tags/tmux/" style="font-size: 10px;">tmux</a> <a href="/tags/tools/" style="font-size: 10px;">tools</a> <a href="/tags/ubuntu/" style="font-size: 10.83px;">ubuntu</a> <a href="/tags/vm/" style="font-size: 10px;">vm</a> <a href="/tags/vue/" style="font-size: 10px;">vue</a> <a href="/tags/vuejs/" style="font-size: 13.33px;">vuejs</a> <a href="/tags/webpack/" style="font-size: 12.5px;">webpack</a> <a href="/tags/windows/" style="font-size: 10px;">windows</a> <a href="/tags/xml/" style="font-size: 10px;">xml</a>
+        </div>
+    </div>
+
+    
+    <div id="toTop" class="fa fa-angle-up"></div>
+</aside>
+            
+        </div>
+        <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2021 andyyou(You,ZongYan)
+        </div>
+    </div>
+</footer>
+
+        
+
+    
+        <script src="/lib/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-share.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-video.min.js"></script>
+    
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    
+    <title>[譯]您閱讀的 Nodejs/Express.js 驗證機制教學（很可能)錯了 | DEVLOG of andyyou</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <!-- Google Tag Manager -->
+    <script>(function (w, d, s, l, i) {
+        w[l] = w[l] || []; w[l].push({
+          'gtm.start':
+            new Date().getTime(), event: 'gtm.js'
+        }); var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+            'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+      })(window, document, 'script', 'dataLayer', 'GTM-57LT2GG');</script>
+    <!-- End Google Tag Manager -->
+    <meta name="description" content="原文：Your Node.js authentication tutorial is (probably) wrong  最近花了些時間搜尋、研究 Node.js/Express.js 有關驗證機制的教學。大部分的文章要不是不夠完整，要嘛就是在安全性的部分有錯，並可能造成用戶潛在的風險。這篇文章預計要探討這些常見驗證機制的問題、陷阱，以及點出該如何避免發生。同時也檢視一下自己閱讀或寫作的教學。在">
+<meta name="keywords" content="javascript nodejs">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[譯]您閱讀的 Nodejs&#x2F;Express.js 驗證機制教學（很可能)錯了">
+<meta property="og:url" content="//andyyou.github.io/2017/09/06/your-nodejs-authentication-probably-wrong/index.html">
+<meta property="og:site_name" content="DEVLOG of andyyou">
+<meta property="og:description" content="原文：Your Node.js authentication tutorial is (probably) wrong  最近花了些時間搜尋、研究 Node.js/Express.js 有關驗證機制的教學。大部分的文章要不是不夠完整，要嘛就是在安全性的部分有錯，並可能造成用戶潛在的風險。這篇文章預計要探討這些常見驗證機制的問題、陷阱，以及點出該如何避免發生。同時也檢視一下自己閱讀或寫作的教學。在">
+<meta property="og:locale" content="zh-TW">
+<meta property="og:updated_time" content="2017-09-06T02:42:18.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="[譯]您閱讀的 Nodejs&#x2F;Express.js 驗證機制教學（很可能)錯了">
+<meta name="twitter:description" content="原文：Your Node.js authentication tutorial is (probably) wrong  最近花了些時間搜尋、研究 Node.js/Express.js 有關驗證機制的教學。大部分的文章要不是不夠完整，要嘛就是在安全性的部分有錯，並可能造成用戶潛在的風險。這篇文章預計要探討這些常見驗證機制的問題、陷阱，以及點出該如何避免發生。同時也檢視一下自己閱讀或寫作的教學。在">
+    
+
+    
+
+    
+        <link rel="icon" href="/images/favicon.png">
+    
+
+    <link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/lib/open-sans/styles.css">
+    <link rel="stylesheet" href="/lib/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/lib/jquery/2.1.3/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/lib/lightgallery/css/lightgallery.min.css">
+    
+    
+    
+        <script type="text/javascript">
+(function(i,s,o,g,r,a,m) {i['GoogleAnalyticsObject']=r;i[r]=i[r]||function() {
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-39208536-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+    
+    
+    
+
+
+</head>
+</html>
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-57LT2GG" height="0" width="0"
+        style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    <div id="container">
+        <header id="header">
+    <div id="header-main" class="header-inner">
+        <div class="outer">
+            <a href="/" id="logo">
+                <i class="logo"></i>
+                <span class="site-title">DEVLOG of andyyou</span>
+            </a>
+            <nav id="main-nav">
+                
+                    <a class="main-nav-link" href="/.">Home</a>
+                
+                    <a class="main-nav-link" href="/archives">Archives</a>
+                
+                    <a class="main-nav-link" href="/categories">Categories</a>
+                
+                    <a class="main-nav-link" href="/tags">Tags</a>
+                
+            </nav>
+            
+                
+                <nav id="sub-nav">
+                    <div class="profile" id="profile-nav">
+                        <a id="profile-anchor" href="javascript:;">
+                            <img class="avatar" src="https://avatars2.githubusercontent.com/u/665690?v=3&amp;s=466">
+                            <i class="fa fa-caret-down"></i>
+                        </a>
+                    </div>
+                </nav>
+            
+            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜尋">
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="Type something...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: 'Pages',
+            CATEGORIES: '分類',
+            TAGS: '標籤',
+            UNTITLED: '(Untitled)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+        </div>
+    </div>
+    <div id="main-nav-mobile" class="header-sub header-inner">
+        <table class="menu outer">
+            <tr>
+                
+                    <td><a class="main-nav-link" href="/.">Home</a></td>
+                
+                    <td><a class="main-nav-link" href="/archives">Archives</a></td>
+                
+                    <td><a class="main-nav-link" href="/categories">Categories</a></td>
+                
+                    <td><a class="main-nav-link" href="/tags">Tags</a></td>
+                
+                <td>
+                    
+    <div class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜尋">
+    </div>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+</header>
+
+        <div class="outer">
+            
+                
+
+<aside id="profile">
+    <div class="inner profile-inner">
+        <div class="base-info profile-block">
+            <img id="avatar" src="https://avatars2.githubusercontent.com/u/665690?v=3&amp;s=466">
+            <h2 id="name">andyyou</h2>
+            <h3 id="title">Web Developer</h3>
+            <span id="location"><i class="fa fa-map-marker"></i>Taipei, Taiwan</span>
+            <a id="follow" target="_blank" href="https://github.com/andyyou">關注我</a>
+        </div>
+        <div class="article-info profile-block">
+            <div class="article-info-block">
+                184
+                <span>文章</span>
+            </div>
+            <div class="article-info-block">
+                79
+                <span>標籤</span>
+            </div>
+        </div>
+        
+        <div class="profile-block social-links">
+            <table>
+                <tr>
+                    
+                    
+                    <td>
+                        <a href="https://github.com/andyyou" target="_blank" title="github" class="tooltip">
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="https://www.linkedin.com/pub/zongyan-you/2a/493/16" target="_blank" title="linkedin" class="tooltip">
+                            <i class="fa fa-linkedin"></i>
+                        </a>
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
+        
+    </div>
+</aside>
+
+            
+            <section id="main"><article id="post-your-nodejs-authentication-probably-wrong" class="article article-type-post" itemscope="" itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+            [譯]您閱讀的 Nodejs/Express.js 驗證機制教學（很可能)錯了
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2017/09/06/your-nodejs-authentication-probably-wrong/">
+            <time datetime="2017-09-06T02:42:18.000Z" itemprop="datePublished">2017-09-06</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/Program/">Program</a>
+    </div>
+
+                        
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/javascript-nodejs/">javascript nodejs</a>
+    </div>
+
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <blockquote>
+<p>原文：<a href="https://hackernoon.com/your-node-js-authentication-tutorial-is-wrong-f1a3bf831a46" target="_blank" rel="noopener">Your Node.js authentication tutorial is (probably) wrong</a></p>
+</blockquote>
+<p>最近花了些時間搜尋、研究 Node.js/Express.js 有關驗證機制的教學。大部分的文章要不是不夠完整，要嘛就是在安全性的部分有錯，並可能造成用戶潛在的風險。<br>這篇文章預計要探討這些常見驗證機制的問題、陷阱，以及點出該如何避免發生。同時也檢視一下自己閱讀或寫作的教學。在撰寫文章的同時我仍然在尋找更穩固的全方位驗證方案（會員功能）。<br>同時我也希望可以找到 Nodejs/Express.js 中可以和 Rails 的 Devise 匹敵的方案。</p>
+<a id="more"></a>
+<p>一直以來，在我閒暇的時候一直都在研究、學習各種 Node.js 的教學，似乎每個 Node.js 的開發者都有自己的部落格且習慣分享他們如何<code>正確的完成任務</code>，更準確的說是<code>他們如何完成任務</code>並不一定是正確的。大量的前端開發者開始需要處理後端的程式，進入了後端的世界，嘗試從散落各地片段的教學和程式碼組合出<code>能用的東西</code>，不管是只會複製貼上不懂原理類型的開發者（Cargo Cult Programmer）又或者極度依賴 npm 套件類型的開發者，大家都希望快速的在期限前完成專案。</p>
+<p>糟糕的是在 Node.js 世界裡，實作驗證機制某種程度上其實是對開發者的考驗，大部分的開發者都是在摸索中完成功能的，您大概能找到的解決方案就是 <a href="http://passportjs.org/" target="_blank" rel="noopener">Passport</a>。如果我們想要更完整的方案，類似 Ruby on Rails 的套件 Devise 也只能勉強參考 <a href="https://auth0.com/" target="_blank" rel="noopener">Auth0</a> 這樣的服務。<br>比起 Devise，Passport 只是一個簡單的中介軟體（Middleware），除了驗證之外並沒有提供其他完整驗證機制需要的功能，意思是說 Node.js 的開發者需要自己處理 API token 的機制，重設密碼，更新 token，驗證機制，路由設計，甚至是樣板的部分。有很多的教學在介紹如何使用 Passport 但它們幾乎都有些錯，也沒有完整的實作和處理一個網頁應用程式應該要具備的完整功能。</p>
+<blockquote>
+<p>這裡並不是要跟其他提供教學的作者引戰，不過我們的確會透過他們的範例來說明一些安全性議題上的錯誤。如果您也是某篇教學的作者歡迎您在更新您的教學之後和<a href="https://hackernoon.com/your-node-js-authentication-tutorial-is-wrong-f1a3bf831a46" target="_blank" rel="noopener">原文作者聯絡</a>。讓我們一起為了 Node 的安全性作些貢獻。</p>
+</blockquote>
+<h1 id="容易犯錯的地方-1-憑證儲存-Credential-Storage"><a href="#容易犯錯的地方-1-憑證儲存-Credential-Storage" class="headerlink" title="容易犯錯的地方 1 -  憑證儲存 Credential Storage"></a>容易犯錯的地方 1 -  憑證儲存 Credential Storage</h1><p>讓我們從儲存憑證開始。儲存及使用憑證來核對對於認證身份是一種非常基本的方式，這裡說憑證可能比較術語一些，其實就是密碼的角色。過去我們比較常在資料庫或應用程式中處理。而 passport 作為一個 middleware 它其實只幫我們執行 “這個使用者可以放行” 或者 “不行喔！這個使用者沒有權限”的判斷。所以 passport 需要搭配使用驗證機制（策略）像是 <code>passport-local</code> 模組來完成儲存憑證的部分即協助處理存資料庫的部分，此時驗證的憑證就是存在資料庫的密碼。passport-local 也是 possport 作者寫的 strategy。</p>
+<blockquote>
+<p>strategy 翻成策略，大略來說就是<code>如何執行驗證的方式，憑證怎麼來？</code>像是從資料庫的會員資料驗證或者 Facebook 登入等方式。</p>
+</blockquote>
+<p>在我們更深入之前，我們可以參考一份 OWASP 的建議說明 <a href="https://www.owasp.org/index.php/Password_Storage_Cheat_Sheet" target="_blank" rel="noopener">great cheat sheet for password storage</a>，總結來說就是使用 salt （鹽）加密並儲存高度複雜性不可逆的密碼。<br><a href="https://codahale.com/how-to-safely-store-a-password/" target="_blank" rel="noopener">Coda Hale 的寫的如何儲存密碼</a>也提供了一些建議，雖然它有些爭議。</p>
+<blockquote>
+<p>一些有經驗的開發者可能想要使用 <code>Argon2</code> - 密碼雜湊競賽的贏家，而且在 Nodejs 可以<a href="https://github.com/emilbayes/secure-password" target="_blank" rel="noopener">輕鬆的透過函式庫使用</a>。不過比較可惜的是關於 Argon2 的實作文件和資料在 Nodejs 社群中是比較不足的。畢竟這樣的主題針對性比較強，不如直接使用 bcrypt 。</p>
+</blockquote>
+<p>作為一個 Express.js 和 Passport 新手，第一個看的資料便是 passport-local 的範例，感謝提供了 <a href="https://github.com/passport/express-4.x-local-example" target="_blank" rel="noopener">express 4.x 的範例</a>，不過在這個範例中並不支援資料庫，同時它假設我們會寫死一些帳號，在實際應用上沒啥太大的幫助。</p>
+<p>這個範例只展示了一個流程架構，範例中的密碼並沒有加密，並且使用明碼儲存，驗證資料的儲存和相關的加密處理更不在它包含的範圍中。</p>
+<p>好吧！讓我們 Google 看看有沒有其他使用 passport-local 的教學。首先找到了 RisingStack 的 <a href="https://blog.risingstack.com/node-hero-node-js-authentication-passport-js/" target="_blank" rel="noopener">Node Hero 系列文章</a>，但這篇文章和官方的範例有相同的問題（該文章在 2017-08-07 補上 bcrypt 加密的部分)</p>
+<p>可以說我們提到的文章都是挑過的。沒錯，挑過的意思其實就是 Google 搜尋的前幾個結果。有關 passport-local 稍微完整一點的教學是來自 TutsPlus 的<a href="https://code.tutsplus.com/tutorials/authenticating-nodejs-applications-with-passport--cms-21619" target="_blank" rel="noopener">這篇</a>。它使用了  bcrypt 搭配 cost 參數為 10 （定義參數你想要跑多慢，2 的幾次方次）。另外一篇比較值得推薦的教學是來自 scotch.io 的<a href="https://scotch.io/tutorials/easy-node-authentication-setup-and-local" target="_blank" rel="noopener">教學</a> 同樣是使用 bcrypt 搭配成本參數為 8。不過這些成本參數真的太低了，目前大部分的 bcrypt 函式庫預設使用 12。</p>
+<p>除了儲存密碼的部分這些教學都沒有實作關於重設密碼等相關功能。</p>
+<ul>
+<li><a href="https://github.com/lustan3216/BlogArticle/wiki/BCrypt-%E5%8A%A0%E5%AF%86%E6%BC%94%E7%AE%97%E6%B3%95%E7%B2%BE%E9%97%A2%E8%A7%A3%E9%87%8B" target="_blank" rel="noopener">補充</a></li>
+</ul>
+<h1 id="容易犯錯的地方-2-密碼重置"><a href="#容易犯錯的地方-2-密碼重置" class="headerlink" title="容易犯錯的地方 2 - 密碼重置"></a>容易犯錯的地方 2 - 密碼重置</h1><p>僅次於密碼儲存問題的就是重設密碼，然而在這個部分卻沒有任何基本的教學說明如何使用 passport 實作。<br>密碼重置功能實作上有太多地方可能犯錯，但在這方面卻沒有比較完整的教學，其中最常見犯的錯誤：</p>
+<ol>
+<li>可預測的 token：重新設定密碼時需要的驗證 token 是個容易犯錯的地方，使用時間戳記來當 token 就是一個常見的錯誤，寧可使用基本的亂數產生器也不要讓 token 容易被推測出來。</li>
+<li>錯誤的儲存：在資料庫中使用未加密的重設密碼 token，這意味著一旦資料庫資料外洩，這些 token 等於有效的密碼。使用隨機碼加密來產生長度較長的 token ，這樣也可以防範攻擊者直接從遠端針對 token 暴力破解。 重置密碼的 token 就跟密碼本身一樣重要應該要被謹慎處理。</li>
+<li>token 不會過期失效：一旦 token 不會過期就表示我們給予攻擊者更多的時間去試。</li>
+<li>缺少第二層（階段)的資料驗證：常見的安全問題其實就是一種針對重設密碼的第二層驗證，不過關於<a href="https://www.kaspersky.com/blog/security-questions-are-insecure/13004/" target="_blank" rel="noopener">安全問題也是有這個機制的問題</a>存在。</li>
+</ol>
+<p>在驗證的三種方式中</p>
+<pre><code>* something you Know
+* something you Have
+* something you Are
+</code></pre><p>我們知道 Email 是屬於 something you have 你有這個東西才能通過認證，而不像密碼僅屬於 something you know。也因此我們有必要使用這種方式來實作<code>忘記密碼</code>可以增加一層保護，於是 Email 在流程上便扮演著非常重要的角色，因為我們只會把 token 寄送到該信箱。</p>
+<ul>
+<li><a href="https://www.cs.cornell.edu/courses/cs513/2005fa/NNLauthPeople.html" target="_blank" rel="noopener">Something You Know, Have, or Are </a></li>
+</ul>
+<p>如果您剛接觸處理重設定密碼的功能，建議您看看 <a href="https://www.owasp.org/index.php/Forgot_Password_Cheat_Sheet" target="_blank" rel="noopener">Password Reset Cheat Sheet</a>。現在讓我們回到 Node 的世界。</p>
+<p>我們到 npm 上面搜尋看看有沒有人實作<code>重置密碼</code>相關的函式庫，我們只找到一個 5 年前出自於大神 substack 的東西。我們都知道 Node 的世界進化的非常快速，5 年前的東西等於是侏羅紀的產物，而且我們還得在雞蛋裡挑骨頭 - <a href="https://security.stackexchange.com/questions/84906/predicting-math-random-numbers" target="_blank" rel="noopener">V8 的 Math.random() 是可以被預測的</a>，所以不應該使用 Math.random 來產 token，而且它也不是使用 passport。</p>
+<p>接著，我們到 Stack Overflow 找找，但這邊沒有太多有幫助的資料，不過你大概可以一直找到一間 Stormpath 的公司不斷在相關的問題張貼他們的服務。<br>不過這些資訊也沒有用了，因為 Stormpath 在 2017-08-17 停止營業了。</p>
+<p>好吧！我們回到 Google，似乎有一篇唯一的教學。當我們搜尋 <code>express passport reset</code> 所找到的<a href="http://sahatyalkabov.com/how-to-implement-password-reset-in-nodejs/" target="_blank" rel="noopener">第一個結果</a>，教學中包含使用了我們先前介紹的 bcrypt 但是計算成本參數為 5 的確遠小於推薦值，除此之外這篇教學和其他文章相較之下算是比較完整的，在 token 部分使用了 <code>crypto.randomBytes</code> 也具備逾期的功能。不過 <code>#2</code> 錯誤的儲存 和 <code>#4</code> 第二層的驗證這兩點並不符合我們的期待。幸好這兩點所造成風險在有<code>逾期</code>限制的情況下降低了些。一般來說如果 token 和 密碼都有加密的話即便資料外洩攻擊者也無法直接偽造加密結果或者使用這些 token。照著上面這篇教學的作法，攻擊者就可以拿著這些未加密的 token 來重設密碼。</p>
+<h1 id="容易犯錯的地方-3-API-Tokens"><a href="#容易犯錯的地方-3-API-Tokens" class="headerlink" title="容易犯錯的地方 3 - API Tokens"></a>容易犯錯的地方 3 - API Tokens</h1><p>API tokens 就是一種憑證，它和密碼、重設密碼的 token 一樣都是機敏資訊。大部分的開發者也都知道這點，對於他們自己的 AWS key, Twitter secret 都很重視，不過當自己編寫程式的時候這樣的觀念似乎卻沒有一併轉過來。</p>
+<p>讓我們從使用 <a href="https://jwt.io/" target="_blank" rel="noopener">JSON Web Tokens</a> 來實作 API 的驗證憑證。 jwt 具備無狀態的特性，<a href="https://auth0.com/blog/blacklist-json-web-token-api-keys/" target="_blank" rel="noopener">支援黑名單功能</a>，可包含一些聲明資訊這些特性比起單純只有 key/secret 的設計更加優秀。<br>可能連 Node 新手都聽過 jwt 也可能看過 <code>passport-jwt</code> 這東西然後就直接拿它來實作。無論如何，jwt 看似是每個 Node.js 開發者都認為他們應該使用。<br>（<a href="https://news.ycombinator.com/item?id=13866883" target="_blank" rel="noopener">Thomas Ptacek 認為 jwt 不好</a>，但恐怕也阻止不了發展的趨勢，在這邊我們先不討論他的觀點）。</p>
+<p>我們先 Google <code>express js jwt</code> 然後找到 Soni Pandey 的教學 <a href="https://medium.com/@pandeysoni/user-authentication-using-jwt-json-web-token-in-node-js-using-express-framework-543151a38ea1" target="_blank" rel="noopener">User Authentication using JWT in Node.js</a>。不過這篇文章對我們沒有太多幫助，因為這篇教學並沒有使用 passport，於此同時我們也發現這篇教學有關於憑證儲存方面的錯誤。</p>
+<ol>
+<li>直接將<a href="https://github.com/pandeysoni/User-Authentication-using-JWT-JSON-Web-Token-in-Node.js-Express/blob/master/server/config/config.js#L13" target="_blank" rel="noopener">私鑰存在檔案庫</a>中</li>
+<li>使用對稱式(可逆)加密來存密碼，然後加密的金鑰跟 JWT secret 共用。</li>
+<li>使用 AES-256-CTR 來儲存密碼，正確來說使用 AES 這種模式並沒有幫助，不是很確定為什麼要這麼作，但這麼作可以讓加密的內容增加其他彈性的作法。</li>
+</ol>
+<p>讓我們回到 Google 搜尋其他教學。我們在 <a href="https://scotch.io/tutorials/authenticate-a-node-js-api-with-json-web-tokens" target="_blank" rel="noopener">Scotch 找到一篇還算OK的教學</a>，不過他用了 passport-local 把密碼儲成明碼。</p>
+<p>我們點出的這些教學都不能完全照抄，然後這篇教學除了明碼的問題這篇教學也把整個 mongoose 的 User 物件資料都序列化進 jwt 了。<br>我們 clone 了 scotch 的教學，照著步驟執行 <code>http://localhost:8080/setup</code> 建立 User，接著用 Postman 請求 <code>/api/authenticate</code> 來取得 token。</p>
+<p>！<a href="https://cdn-images-1.medium.com/max/800/1*wvb2F4-Rx4I1ji2EJIyXZg.png" target="_blank" rel="noopener"></a></p>
+<p>注意：JSON Web Token 是 signed 不是加密，小弟(譯者)認為 sign 簽章其實是一種統一格式的用途，容易對資料進行判斷和過濾，它不能算是加密，也就是說這個 base64 編碼我們是可以反解回明碼資訊的</p>
+<p>！<a href="https://cdn-images-1.medium.com/max/800/1*5KcDyNtIfWXVe9uVUD0A_g.png" target="_blank" rel="noopener"></a></p>
+<p>現在，每個人都知道密碼和 token 的逾期資訊還有存在 mongoose 物件上的資料。資料在 http 傳輸過程中，攻擊者就可以用一些側錄工具取得這些資訊。</p>
+<p>下一篇教學呢？ <a href="https://jonathanmh.com/express-passport-json-web-token-jwt-authentication-beginners/" target="_blank" rel="noopener">Express, Passport and JSON Web Token （jwt) Authentication for Beginners</a>也是一樣有洩漏的問題，大部分的教學都有一樣的問題，到這邊我已經放棄尋找了。</p>
+<h1 id="容易犯錯的地方-4-限制登入錯誤的頻率"><a href="#容易犯錯的地方-4-限制登入錯誤的頻率" class="headerlink" title="容易犯錯的地方 4 - 限制登入錯誤的頻率"></a>容易犯錯的地方 4 - 限制登入錯誤的頻率</h1><p>另外上面這些教學都沒提到關於鎖定帳號的部分，沒有這個機制攻擊者可以使用像是 <a href="https://portswigger.net/burp/help/intruder_using.html" target="_blank" rel="noopener">Burp Intruder</a> 這種檢查工具使用字典檔不斷的嘗試登入暴力破解。<br>鎖定帳號的機制也可以在使用者下一次登入時增加其他登入所需的資訊藉此防範這種攻擊手法。</p>
+<p>同時限制登入頻率也可以幫助我們避免不斷被嘗試登入而導致 bcrypt 大量使用浪費 CPU 效能，甚至導致程式 crash。<br>這個部分沒有找到完整的教學文章，但我們找到許多 Express Middleware 例如：<a href="https://github.com/nfriedly/express-rate-limit" target="_blank" rel="noopener">express-rate-limit</a>，<a href="https://www.npmjs.com/package/express-limiter" target="_blank" rel="noopener">express-limiter</a>，<a href="https://github.com/AdamPflug/express-brute" target="_blank" rel="noopener">express-brute</a>。關於這些函式庫或 Middleware 我無法給予太多建議，甚至我沒有研究它們。一般來說我的建議是使用<a href="https://expressjs.com/en/advanced/best-practice-performance.html#use-a-reverse-proxy" target="_blank" rel="noopener">反向代理功能</a>然後使用 <a href="https://www.nginx.com/blog/rate-limiting-nginx/" target="_blank" rel="noopener">Nginx 的請求（頻率）限制</a> 或負載平衡器來負責這個功能。</p>
+<h1 id="驗證機制非常困難"><a href="#驗證機制非常困難" class="headerlink" title="驗證機制非常困難"></a>驗證機制非常困難</h1><p>我很確定部分文章的作者會說：他只是針對基礎的部分講解！而且不會有人在產品上這麼作。然而我再三強調這是個錯誤的行為，特別是當你寫了篇教學又提供程式碼的時候你可能不知道會影響多少人，畢竟你比那些新手知道更多知識。至少在 Nodejs 的世界裡，如果你還是新手請不要輕易全然相信找到的教學，應該多方謹慎求證，直接複製教學很容易給你的產品帶來災難性的問題。現階段如果你需要一個完整的驗證機制那麼你最好回到基礎一步一步的掌握概念靠自己實作，你可以參考 Rails/Devise 自己一步步實作。雖然 Node.js 看似很容易使用，且大量的開發者在推廣，但不得不說對於那些想要用 javascript 快速開發產品的人來說真的需要注意 Node.js 的世界很多東西的細節還夠不完善，這個社群似乎比較專注那些新穎酷炫的東西。如果你是前端出身的且沒學過其他語言，我個人推薦您選擇 Ruby，借鑑神人們的經驗比較不會自己找自己麻煩。</p>
+<p>如果您有在寫教學文，期望您盡可能提供的程式碼可以直接在 production 上使用，至少備註一下該注意什麼。</p>
+<p>如果您是死忠的 Node.js 開發者希望您可以從這篇簡短的說明中知道在使用 passport 的時候什麼事情需要避免。這篇文章沒有完整的列出所有該注意的地方，只是起個頭希望您注意一下您的 Express 程式。</p>
+<h1 id="附錄（2017-08-10-更新）"><a href="#附錄（2017-08-10-更新）" class="headerlink" title="附錄（2017-08-10 更新）"></a>附錄（2017-08-10 更新）</h1><p>這篇文章源自於自己發現的問題。現在已收到許多回應，更引起超過預期的爭議。很顯然的這個問題對開發者來說的確是個痛點。如果您還發現其他錯誤，請告知原文作者，我們將會儘快修正，實作是不希望有更多誤導別人的文章。</p>
+<p>同時我希望大家不要只是評論這篇文章，讓我們具體的為社群作些貢獻。如果您有發現其他不應該出現在 production 的問題也請您直接告知原文作者。<br>最後，原作者發起了一個 <a href="https://gitlab.com/micaksica/nodeauth-best-practices" target="_blank" rel="noopener">GitLab</a> 用來紀錄相關的議題。</p>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+
+</div>
+
+    <a data-url="//andyyou.github.io/2017/09/06/your-nodejs-authentication-probably-wrong/" data-id="cklyrfc6e00gm5g72pjrzyxwk" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        // Prevent duplicate binding
+        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
+            __SHARE_BUTTON_BINDED__ = true;
+        } else {
+            return;
+        }
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+            
+    
+
+        </footer>
+    </div>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2017/09/07/rabbitmq-ubuntu/" id="article-nav-newer" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">上一篇</strong>
+            <div class="article-nav-title">
+                
+                    Debian/Ubuntu 安裝 RabbitMQ
+                
+            </div>
+        </a>
+    
+    
+        <a href="/2017/08/19/dynamic-type-check/" id="article-nav-older" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">下一篇</strong>
+            <div class="article-nav-title">[譯]typeof 與 instanceof 技巧 - 簡易的動態型別檢查</div>
+        </a>
+    
+</nav>
+
+
+    
+</article>
+
+
+    
+    <section id="comments">
+    
+    </section>
+
+</section>
+            
+                <aside id="sidebar">
+   
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">分類</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Cloud/">Cloud</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Database/">Database</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Fun/">Fun</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Mobile/">Mobile</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Program/">Program</a><span class="category-list-count">131</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/System/">System</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Tools/">Tools</a><span class="category-list-count">17</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">歸檔</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/03/">三月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/10/">十月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">五月 2019</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">六月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">十二月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">十一月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">九月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">十月 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">九月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">六月 2016</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">十二月 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">十一月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">十月 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">九月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">八月 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">七月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">五月 2015</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">四月 2015</a><span class="archive-list-count">19</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">十二月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/11/">十一月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/10/">十月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">九月 2014</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/08/">八月 2014</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/02/">二月 2014</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/01/">一月 2014</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">十一月 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">十月 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">九月 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">八月 2013</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/03/">三月 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">三月 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">一月 2012</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2011/11/">十一月 2011</a><span class="archive-list-count">3</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">標籤</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/net-mvc/">.net mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RoR/">RoR</a><span class="tag-list-count">15</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/api/">api</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aws/">aws</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/azure/">azure</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bot/">bot</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bundler/">bundler</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cache/">cache</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/carrier-wave/">carrier wave</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/centos/">centos</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/chrome/">chrome</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cloudflare/">cloudflare</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/compass/">compass</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/devise/">devise</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dnd/">dnd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/e-invoice/">e-invoice</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/entity-framework/">entity framework</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/es6/">es6</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/facebook/">facebook</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flux/">flux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/framework/">framework</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gcp/">gcp</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/grunt/">grunt</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gulp/">gulp</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/heroku/">heroku</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/html/">html</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/iisexpress/">iisexpress</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ios/">ios</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">69</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript-express-passport/">javascript express passport</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript-nodejs/">javascript nodejs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jekyll/">jekyll</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jetstream/">jetstream</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jspm/">jspm</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jwt/">jwt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/laravel/">laravel</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/letsencrypt/">letsencrypt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mechanism/">mechanism</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongodb/">mongodb</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/node/">node</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nodejs/">nodejs</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/oocss/">oocss</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/osx/">osx</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package-manager/">package manager</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/php/">php</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/postgres/">postgres</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/postgresql/">postgresql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/queue/">queue</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rabbitmq/">rabbitmq</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rack-server/">rack server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails/">rails</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails-webpack-stimulus-javascript-bootstrap/">rails webpack stimulus javascript bootstrap</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/raspberry-pi/">raspberry-pi</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react/">react</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react-native/">react native</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/reactjs/">reactjs</a><span class="tag-list-count">32</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redux/">redux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sass/">sass</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/selenium/">selenium</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/slim/">slim</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssh/">ssh</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssl/">ssl</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/stimulus/">stimulus</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/svg-javascript/">svg javascript</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/task-runner/">task runner</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tmux/">tmux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tools/">tools</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vm/">vm</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/">vue</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vuejs/">vuejs</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/webpack/">webpack</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/windows/">windows</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/xml/">xml</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">標籤雲</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/net-mvc/" style="font-size: 10px;">.net mvc</a> <a href="/tags/RoR/" style="font-size: 16.67px;">RoR</a> <a href="/tags/api/" style="font-size: 10px;">api</a> <a href="/tags/aws/" style="font-size: 12.5px;">aws</a> <a href="/tags/azure/" style="font-size: 10.83px;">azure</a> <a href="/tags/bot/" style="font-size: 10px;">bot</a> <a href="/tags/bundler/" style="font-size: 10.83px;">bundler</a> <a href="/tags/cache/" style="font-size: 10px;">cache</a> <a href="/tags/carrier-wave/" style="font-size: 10.83px;">carrier wave</a> <a href="/tags/centos/" style="font-size: 10px;">centos</a> <a href="/tags/chrome/" style="font-size: 10px;">chrome</a> <a href="/tags/cloudflare/" style="font-size: 10px;">cloudflare</a> <a href="/tags/compass/" style="font-size: 10px;">compass</a> <a href="/tags/css/" style="font-size: 17.5px;">css</a> <a href="/tags/devise/" style="font-size: 10px;">devise</a> <a href="/tags/dnd/" style="font-size: 10px;">dnd</a> <a href="/tags/docker/" style="font-size: 10.83px;">docker</a> <a href="/tags/e-invoice/" style="font-size: 10px;">e-invoice</a> <a href="/tags/entity-framework/" style="font-size: 10px;">entity framework</a> <a href="/tags/es6/" style="font-size: 11.67px;">es6</a> <a href="/tags/facebook/" style="font-size: 10px;">facebook</a> <a href="/tags/flux/" style="font-size: 10px;">flux</a> <a href="/tags/framework/" style="font-size: 10.83px;">framework</a> <a href="/tags/gcp/" style="font-size: 10.83px;">gcp</a> <a href="/tags/go/" style="font-size: 10px;">go</a> <a href="/tags/grunt/" style="font-size: 12.5px;">grunt</a> <a href="/tags/gulp/" style="font-size: 11.67px;">gulp</a> <a href="/tags/heroku/" style="font-size: 14.17px;">heroku</a> <a href="/tags/html/" style="font-size: 10.83px;">html</a> <a href="/tags/iisexpress/" style="font-size: 10px;">iisexpress</a> <a href="/tags/ios/" style="font-size: 11.67px;">ios</a> <a href="/tags/javascript/" style="font-size: 20px;">javascript</a> <a href="/tags/javascript-express-passport/" style="font-size: 10px;">javascript express passport</a> <a href="/tags/javascript-nodejs/" style="font-size: 10px;">javascript nodejs</a> <a href="/tags/jekyll/" style="font-size: 10.83px;">jekyll</a> <a href="/tags/jetstream/" style="font-size: 10px;">jetstream</a> <a href="/tags/jspm/" style="font-size: 10px;">jspm</a> <a href="/tags/jwt/" style="font-size: 10px;">jwt</a> <a href="/tags/laravel/" style="font-size: 11.67px;">laravel</a> <a href="/tags/letsencrypt/" style="font-size: 10px;">letsencrypt</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/mechanism/" style="font-size: 10px;">mechanism</a> <a href="/tags/mongodb/" style="font-size: 10.83px;">mongodb</a> <a href="/tags/node/" style="font-size: 10px;">node</a> <a href="/tags/nodejs/" style="font-size: 15px;">nodejs</a> <a href="/tags/oocss/" style="font-size: 10px;">oocss</a> <a href="/tags/osx/" style="font-size: 14.17px;">osx</a> <a href="/tags/package-manager/" style="font-size: 14.17px;">package manager</a> <a href="/tags/php/" style="font-size: 10.83px;">php</a> <a href="/tags/postgres/" style="font-size: 10px;">postgres</a> <a href="/tags/postgresql/" style="font-size: 10.83px;">postgresql</a> <a href="/tags/queue/" style="font-size: 10.83px;">queue</a> <a href="/tags/rabbitmq/" style="font-size: 10.83px;">rabbitmq</a> <a href="/tags/rack-server/" style="font-size: 10px;">rack server</a> <a href="/tags/rails/" style="font-size: 14.17px;">rails</a> <a href="/tags/rails-webpack-stimulus-javascript-bootstrap/" style="font-size: 10px;">rails webpack stimulus javascript bootstrap</a> <a href="/tags/raspberry-pi/" style="font-size: 10px;">raspberry-pi</a> <a href="/tags/react/" style="font-size: 15.83px;">react</a> <a href="/tags/react-native/" style="font-size: 10px;">react native</a> <a href="/tags/reactjs/" style="font-size: 19.17px;">reactjs</a> <a href="/tags/redux/" style="font-size: 10px;">redux</a> <a href="/tags/ruby/" style="font-size: 18.33px;">ruby</a> <a href="/tags/sass/" style="font-size: 10.83px;">sass</a> <a href="/tags/selenium/" style="font-size: 10px;">selenium</a> <a href="/tags/slim/" style="font-size: 10px;">slim</a> <a href="/tags/ssh/" style="font-size: 10px;">ssh</a> <a href="/tags/ssl/" style="font-size: 10.83px;">ssl</a> <a href="/tags/stimulus/" style="font-size: 10px;">stimulus</a> <a href="/tags/svg-javascript/" style="font-size: 11.67px;">svg javascript</a> <a href="/tags/task-runner/" style="font-size: 11.67px;">task runner</a> <a href="/tags/tmux/" style="font-size: 10px;">tmux</a> <a href="/tags/tools/" style="font-size: 10px;">tools</a> <a href="/tags/ubuntu/" style="font-size: 10.83px;">ubuntu</a> <a href="/tags/vm/" style="font-size: 10px;">vm</a> <a href="/tags/vue/" style="font-size: 10px;">vue</a> <a href="/tags/vuejs/" style="font-size: 13.33px;">vuejs</a> <a href="/tags/webpack/" style="font-size: 12.5px;">webpack</a> <a href="/tags/windows/" style="font-size: 10px;">windows</a> <a href="/tags/xml/" style="font-size: 10px;">xml</a>
+        </div>
+    </div>
+
+    
+    <div id="toTop" class="fa fa-angle-up"></div>
+</aside>
+            
+        </div>
+        <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2021 andyyou(You,ZongYan)
+        </div>
+    </div>
+</footer>
+
+        
+
+    
+        <script src="/lib/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-share.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-video.min.js"></script>
+    
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+</body>
+</html>

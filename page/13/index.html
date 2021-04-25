@@ -211,7 +211,7 @@ ga('send', 'pageview');
 
             
             <section id="main">
-    <article id="post-action-pack-note" class="article article-type-post" itemscope="" itemprop="blogPost">
+    <article id="post-welcome-to-jekyll" class="article article-type-post" itemscope="" itemprop="blogPost">
     <div class="article-inner">
         
         
@@ -219,7 +219,7 @@ ga('send', 'pageview');
                 
     
         <h1 itemprop="name">
-            <a class="article-title" href="/2015/04/04/action-pack-note/">ActionPack 雜記</a>
+            <a class="article-title" href="/2015/04/04/welcome-to-jekyll/">歡迎使用 Jekyll</a>
         </h1>
     
 
@@ -228,7 +228,7 @@ ga('send', 'pageview');
                         
     <div class="article-date">
         <i class="fa fa-calendar"></i>
-        <a href="/2015/04/04/action-pack-note/">
+        <a href="/2015/04/04/welcome-to-jekyll/">
             <time datetime="2015-04-04T04:00:00.000Z" itemprop="datePublished">2015-04-04</time>
         </a>
     </div>
@@ -243,7 +243,7 @@ ga('send', 'pageview');
                         
     <div class="article-tag">
         <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/RoR/">RoR</a>, <a class="tag-link" href="/tags/ruby/">ruby</a>
+        <a class="tag-link" href="/tags/jekyll/">jekyll</a>
     </div>
 
                     </div>
@@ -253,9 +253,9 @@ ga('send', 'pageview');
         
         <div class="article-entry" itemprop="articleBody">
         
-            <p></p><h1 id="Action-Pack"><a href="#Action-Pack" class="headerlink" title="Action Pack"></a>Action Pack</h1><p>Action Pack 是整個 Rails 的核心部份，由 ActionDispatch, ActionController, ActionView 組成<br>ActionDispatch 處理接收到的請求(Requests)，即網址的部分，ActionController 負責把請求對應轉換成回應(Responses)<br>接著 ActionController 調用 ActionView 來處理回應的格式(html, js, json, xml) 等<br></p>
+            <p></p><p>哈囉 <code>jekyll</code> ！這是一篇展示的文章。使用 <code>Markdown</code> 格式所撰寫</p><p></p>
             <p class="article-more-link">
-                <a href="/2015/04/04/action-pack-note/#more">繼續閱讀</a>
+                <a href="/2015/04/04/welcome-to-jekyll/#more">繼續閱讀</a>
             </p>
         
         </div>
@@ -266,7 +266,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="//andyyou.github.io/2015/04/04/action-pack-note/" data-id="cknx2m9sf0090zs72md7j46fc" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="//andyyou.github.io/2015/04/04/welcome-to-jekyll/" data-id="cknx2m9sw009zzs72b1p1cb6y" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -342,7 +342,7 @@ ga('send', 'pageview');
 
 
 
-    <article id="post-deploy" class="article article-type-post" itemscope="" itemprop="blogPost">
+    <article id="post-ruby-notes" class="article article-type-post" itemscope="" itemprop="blogPost">
     <div class="article-inner">
         
         
@@ -350,7 +350,7 @@ ga('send', 'pageview');
                 
     
         <h1 itemprop="name">
-            <a class="article-title" href="/2015/04/04/deploy/">CentOS Rails 環境安裝</a>
+            <a class="article-title" href="/2015/04/04/ruby-notes/">Ruby 快速筆記</a>
         </h1>
     
 
@@ -359,7 +359,7 @@ ga('send', 'pageview');
                         
     <div class="article-date">
         <i class="fa fa-calendar"></i>
-        <a href="/2015/04/04/deploy/">
+        <a href="/2015/04/04/ruby-notes/">
             <time datetime="2015-04-04T04:00:00.000Z" itemprop="datePublished">2015-04-04</time>
         </a>
     </div>
@@ -368,13 +368,13 @@ ga('send', 'pageview');
                         
     <div class="article-category">
     	<i class="fa fa-folder"></i>
-        <a class="article-category-link" href="/categories/System/">System</a>
+        <a class="article-category-link" href="/categories/Program/">Program</a>
     </div>
 
                         
     <div class="article-tag">
         <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/RoR/">RoR</a>, <a class="tag-link" href="/tags/centos/">centos</a>, <a class="tag-link" href="/tags/ruby/">ruby</a>
+        <a class="tag-link" href="/tags/ruby/">ruby</a>
     </div>
 
                     </div>
@@ -384,9 +384,14 @@ ga('send', 'pageview');
         
         <div class="article-entry" itemprop="articleBody">
         
-            <p></p><h1 id="CentOS-Rails-環境安裝"><a href="#CentOS-Rails-環境安裝" class="headerlink" title="CentOS Rails 環境安裝"></a>CentOS Rails 環境安裝</h1><h2 id="安裝-Apache-amp-PostgreSQL"><a href="#安裝-Apache-amp-PostgreSQL" class="headerlink" title="安裝 Apache &amp; PostgreSQL"></a>安裝 Apache &amp; PostgreSQL</h2><p></p>
+            <p></p><h2 id="Ruby-快速筆記"><a href="#Ruby-快速筆記" class="headerlink" title="Ruby 快速筆記"></a>Ruby 快速筆記</h2><ul>
+<li>Ruby 中的字串需要包在 <code>&quot;</code> 或者 <code>&#39;</code> 中不過兩者有一點微妙的差別，在雙引號中可以使用逸出字元(\n \r \) 等等，不過單引號會原封不動的輸出除了 <code>\\</code> 例外</li>
+<li>在呼叫方法的時候 Ruby 可以省略 ()</li>
+<li>puts 和 print 的差別是 puts 會在行末加上 \n，如果是用 , 分開不同的參數輸出則每個參數後面都會有 \n</li>
+<li>第三個輸出的 method 是 p ，puts 和 print 不管輸出的是數字或字串都只會顯示內容</li>
+</ul><p></p>
             <p class="article-more-link">
-                <a href="/2015/04/04/deploy/#more">繼續閱讀</a>
+                <a href="/2015/04/04/ruby-notes/#more">繼續閱讀</a>
             </p>
         
         </div>
@@ -397,7 +402,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="//andyyou.github.io/2015/04/04/deploy/" data-id="cknx2m9st009szs72uyiznun5" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="//andyyou.github.io/2015/04/04/ruby-notes/" data-id="cknx2m9t000a6zs72ifew3axb" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding

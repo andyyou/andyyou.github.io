@@ -211,7 +211,7 @@ ga('send', 'pageview');
 
             
             <section id="main">
-    <article id="post-vue-in-slim-delims-problem" class="article article-type-post" itemscope="" itemprop="blogPost">
+    <article id="post-variable-delete-operate" class="article article-type-post" itemscope="" itemprop="blogPost">
     <div class="article-inner">
         
         
@@ -219,7 +219,7 @@ ga('send', 'pageview');
                 
     
         <h1 itemprop="name">
-            <a class="article-title" href="/2016/02/25/vue-in-slim-delims-problem/">Vue.js in Slim 語法的小問題 Slim::Parser::SyntaxError</a>
+            <a class="article-title" href="/2016/02/25/variable-delete-operate/">關於 delete 變數詭異行為與解釋</a>
         </h1>
     
 
@@ -228,7 +228,7 @@ ga('send', 'pageview');
                         
     <div class="article-date">
         <i class="fa fa-calendar"></i>
-        <a href="/2016/02/25/vue-in-slim-delims-problem/">
+        <a href="/2016/02/25/variable-delete-operate/">
             <time datetime="2016-02-25T04:00:00.000Z" itemprop="datePublished">2016-02-25</time>
         </a>
     </div>
@@ -243,7 +243,7 @@ ga('send', 'pageview');
                         
     <div class="article-tag">
         <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/RoR/">RoR</a>, <a class="tag-link" href="/tags/javascript/">javascript</a>, <a class="tag-link" href="/tags/slim/">slim</a>, <a class="tag-link" href="/tags/vuejs/">vuejs</a>
+        <a class="tag-link" href="/tags/RoR/">RoR</a>, <a class="tag-link" href="/tags/javascript/">javascript</a>
     </div>
 
                     </div>
@@ -254,20 +254,17 @@ ga('send', 'pageview');
         <div class="article-entry" itemprop="articleBody">
         
             
-            <p>當我們使用 <code>Vue.js</code> 搭配 <code>slim</code> 時(事實上 <code>Angular</code> 應該也有相同的問題)時</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">div id=&quot;app&quot;</span><br><span class="line">  p &#123;&#123;message&#125;&#125;</span><br><span class="line"></span><br><span class="line">javascript:</span><br><span class="line">  new Vue(&#123;</span><br><span class="line">    el: &apos;#app&apos;,</span><br><span class="line">    data: &#123;</span><br><span class="line">      message: &quot;Hello, Vue.js&quot;</span><br><span class="line">    &#125;</span><br><span class="line">    &#125;)</span><br></pre></td></tr></table></figure>
-<p>立馬收到<code>Slim::Parser::SyntaxError</code>的錯誤訊息。</p>
-<p>但是改成這樣卻又正常</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">div id=&quot;app&quot; &#123;&#123; message &#125;&#125;</span><br></pre></td></tr></table></figure>
-<p>好啦！答案很明顯了就是我們有地方寫錯，讓 slim engine 誤會了。</p>
-<p>這邊紀錄一下解法：</p>
-<h3 id="補上屬性"><a href="#補上屬性" class="headerlink" title="補上屬性"></a>補上屬性</h3><p>第一個最簡單的方式就是幫 <code>p</code> 補上隨意一個屬性</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">div id=&quot;app&quot;</span><br><span class="line">  p class=&quot;&quot; &#123;&#123; message &#125;&#125;</span><br><span class="line"></span><br><span class="line">javascript:</span><br><span class="line">  new Vue(&#123;</span><br><span class="line">    el: &apos;#app&apos;,</span><br><span class="line">    data: &#123;</span><br><span class="line">      message: &apos;Hello Vue.js&apos;,</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;)</span><br></pre></td></tr></table></figure>
-<h3 id="加上-任何一種"><a href="#加上-任何一種" class="headerlink" title="加上 [], (), {} 任何一種"></a>加上 [], (), {} 任何一種</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">div id=&quot;app&quot;</span><br><span class="line">  p () &#123;&#123; message &#125;&#125;</span><br><span class="line"></span><br><span class="line">javascript:</span><br><span class="line">  new Vue(&#123;</span><br><span class="line">    el: &apos;#app&apos;,</span><br><span class="line">    data: &#123;</span><br><span class="line">      message: &apos;Hello Vue.js&apos;,</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;)</span><br></pre></td></tr></table></figure>
-<h3 id="使用"><a href="#使用" class="headerlink" title="使用 |"></a>使用 |</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">div id=&quot;app&quot;</span><br><span class="line">  p</span><br><span class="line">    | &#123;&#123; message &#125;&#125;</span><br><span class="line"></span><br><span class="line">javascript:</span><br><span class="line">  new Vue(&#123;</span><br><span class="line">    el: &apos;#app&apos;,</span><br><span class="line">    data: &#123;</span><br><span class="line">      message: &apos;Hello Vue.js&apos;,</span><br><span class="line">    &#125;</span><br><span class="line">  &#125;)</span><br></pre></td></tr></table></figure>
-<h3 id="修改設定"><a href="#修改設定" class="headerlink" title="修改設定"></a>修改設定</h3><p>上面的解法都是因為 slim 預設會把 <code>{}</code> <code>()</code> <code>[]</code> 和 tag 後面接的 <code>property=value</code> 當作屬性(attributes)來解析。<br>所以我們只要把 <code>{}</code> 拿掉就正常了。</p>
-<p>新增或修改 <code>config/initializers/slim.rb</code> 加入</p>
-<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Slim::Engine.set_options <span class="symbol">:attr_list_delims</span> =&gt; &#123;<span class="string">'('</span> =&gt; <span class="string">')'</span>, <span class="string">'['</span> =&gt; <span class="string">']'</span>&#125;</span><br></pre></td></tr></table></figure>
+            <h1 id="問題"><a href="#問題" class="headerlink" title="問題"></a>問題</h1><p>發生在當我們撰寫下面程式碼的時候所發現的奇怪行為。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a = <span class="number">1</span>;</span><br><span class="line">b = <span class="number">2</span>;</span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log(a); <span class="comment">// 1</span></span><br><span class="line"><span class="built_in">console</span>.log(b); <span class="comment">// 2</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 使用瀏覽器測試請使用 window 如果是用 node 的 REPL 環境那請改成 global</span></span><br><span class="line"><span class="built_in">console</span>.log(<span class="built_in">window</span>.a); <span class="comment">// 1</span></span><br><span class="line"><span class="built_in">console</span>.log(<span class="built_in">window</span>.b); <span class="comment">// 2</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 但接下來這麼操作</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">delete</span> a; <span class="comment">// false 不能刪</span></span><br><span class="line"><span class="keyword">delete</span> b; <span class="comment">// true 可以刪</span></span><br><span class="line"></span><br><span class="line">a; <span class="comment">// 1</span></span><br><span class="line">b; <span class="comment">// undefined</span></span><br></pre></td></tr></table></figure>
+<h1 id="解釋"><a href="#解釋" class="headerlink" title="解釋"></a>解釋</h1><p>首先根據<a href="http://ecma-international.org/ecma-262/5.1/#sec-10.3" target="_blank" rel="noopener">ECMA-262 §10.3,</a>的定義 <code>Variable environment</code> 是一種特定<br>型別的 <code>Lexical environment</code>，我們沒辦法透過任何方式直接存取。</p>
+<p>一個 <code>Lexical environment</code> 用來記錄執行環境的資訊，可以把它想成是一個物件，我們會把在一個<code>執行環境 Context</code>的變數，函數都存在這個物件的屬性上<br>針對函數那些定義的參數(Parameter)也會被記錄，舉例來說 <code>function foo (a, b)()</code> 中的 <code>a</code> 和 <code>b</code> 就會被記在 <code>foo</code> 的執行環境資訊中。</p>
+<p>一個 <code>Lexical environment</code> 也有一個連結可以連結到外在的 <code>Lexical environment</code> 就是所謂的 <code>scope chain</code>。<br>這個機制可以協助我們取得目前執行環境以外的變數，舉例來說就是 function 裡面可以拿到 global 的變數。</p>
+<p>一個 <code>Variable environment</code> 就只是 <code>Lexical environment</code> 的一部份，本質上就是透過 <code>var</code> 宣告在執行環境中的變數或函數。</p>
+<h1 id="使用了-var"><a href="#使用了-var" class="headerlink" title="使用了 var"></a>使用了 var</h1><p>上面的 <code>a</code> 使用了 <code>var</code> 根據 ECMAScript 定義會被記錄在 <code>Variable environment</code> 根據定義 <code>Variable environment</code> 是不能手動刪除的。<br>也就是說除非用了 <code>eavl</code>，否則是不能被 <code>delete</code> 的。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> a = <span class="number">1</span>;</span><br><span class="line"><span class="keyword">delete</span> a; <span class="comment">// false</span></span><br><span class="line"><span class="built_in">console</span>.log(a); <span class="comment">// 1</span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 記得清除整個環境</span></span><br><span class="line"><span class="built_in">eval</span>(<span class="string">'var a = 1; delete a; console.log(a)'</span>); <span class="comment">// undefined</span></span><br></pre></td></tr></table></figure>
+<h1 id="沒使用-var"><a href="#沒使用-var" class="headerlink" title="沒使用 var"></a>沒使用 var</h1><p>當我們賦值卻沒有用 <code>var</code>，Javascript 會嘗試在 <code>Lexical environment</code> 尋找同名的參考。<br>最大的不同是 <code>Lexical environment</code> 是嵌套的，就是它可以關聯到外面其他的 <code>Lexical environment</code>。<br>當在本地找不到的時候就會往上層去找，換句話說每個 <code>Lexical environment</code> 都有個<code>爸爸</code>，而最外層的就是 <code>global</code><br>所以當我們不使用 var 而宣告一個變數時會開始在各個 scope 尋找同名變數，最終 Javascript 會拿一個 window(global) 的屬性來當作參考。<br>而物件的屬性是可以刪除的。</p>
+<p>結論就是第一個 var 的變數被放在 <code>Variable environment</code> 是不能 <code>delete</code> 的而第二個沒有 var 的變數它是 global 的屬性。</p>
+<p>然後你就會問我，那為什麼第一個 <code>a</code> 可以用 <code>window.a</code> 取得，因為全域的 <code>variable object</code> 就是 <code>global(window)</code> 本身。<br>但誰是<code>屬性</code>誰放在<code>variable environment</code>是有差的，因為程式碼看起來沒差所以會搞死人啊。</p>
 
         
         </div>
@@ -278,7 +275,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="//andyyou.github.io/2016/02/25/vue-in-slim-delims-problem/" data-id="cknx2m9u600czzs7229kel9bd" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="//andyyou.github.io/2016/02/25/variable-delete-operate/" data-id="cknx2m9u800d6zs72s7whl6um" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding

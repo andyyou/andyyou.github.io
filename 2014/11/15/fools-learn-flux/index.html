@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    
+    <title>輕鬆學 Flux | DEVLOG of andyyou</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <!-- Google Tag Manager -->
+    <script>(function (w, d, s, l, i) {
+        w[l] = w[l] || []; w[l].push({
+          'gtm.start':
+            new Date().getTime(), event: 'gtm.js'
+        }); var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+            'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+      })(window, document, 'script', 'dataLayer', 'GTM-57LT2GG');</script>
+    <!-- End Google Tag Manager -->
+    <meta name="description" content="前言小弟身為一個資質駑鈍的人，這正是我在學習 Flux 初期最希望有人可以幫我總結的事。服用本篇前須對 React 有基本的認識。因為底子不好在參透官方範例時一直東奔西跑的查資料一下這個 merge 是什麼意思，一下又怎麼這邊一個 Dispatcher, AppDispatcher 然後又 ActionCreator總之是你搞得我好亂啊。不過因為最近 React 的盛行讓我得以閱讀許多大大的分享因">
+<meta name="keywords" content="reactjs">
+<meta property="og:type" content="article">
+<meta property="og:title" content="輕鬆學 Flux">
+<meta property="og:url" content="//andyyou.github.io/2014/11/15/fools-learn-flux/index.html">
+<meta property="og:site_name" content="DEVLOG of andyyou">
+<meta property="og:description" content="前言小弟身為一個資質駑鈍的人，這正是我在學習 Flux 初期最希望有人可以幫我總結的事。服用本篇前須對 React 有基本的認識。因為底子不好在參透官方範例時一直東奔西跑的查資料一下這個 merge 是什麼意思，一下又怎麼這邊一個 Dispatcher, AppDispatcher 然後又 ActionCreator總之是你搞得我好亂啊。不過因為最近 React 的盛行讓我得以閱讀許多大大的分享因">
+<meta property="og:locale" content="zh-TW">
+<meta property="og:updated_time" content="2016-12-19T02:31:59.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="輕鬆學 Flux">
+<meta name="twitter:description" content="前言小弟身為一個資質駑鈍的人，這正是我在學習 Flux 初期最希望有人可以幫我總結的事。服用本篇前須對 React 有基本的認識。因為底子不好在參透官方範例時一直東奔西跑的查資料一下這個 merge 是什麼意思，一下又怎麼這邊一個 Dispatcher, AppDispatcher 然後又 ActionCreator總之是你搞得我好亂啊。不過因為最近 React 的盛行讓我得以閱讀許多大大的分享因">
+    
+
+    
+
+    
+        <link rel="icon" href="/images/favicon.png">
+    
+
+    <link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/lib/open-sans/styles.css">
+    <link rel="stylesheet" href="/lib/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/lib/jquery/2.1.3/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/lib/lightgallery/css/lightgallery.min.css">
+    
+    
+    
+        <script type="text/javascript">
+(function(i,s,o,g,r,a,m) {i['GoogleAnalyticsObject']=r;i[r]=i[r]||function() {
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-39208536-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+    
+    
+    
+
+
+</head>
+</html>
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-57LT2GG" height="0" width="0"
+        style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    <div id="container">
+        <header id="header">
+    <div id="header-main" class="header-inner">
+        <div class="outer">
+            <a href="/" id="logo">
+                <i class="logo"></i>
+                <span class="site-title">DEVLOG of andyyou</span>
+            </a>
+            <nav id="main-nav">
+                
+                    <a class="main-nav-link" href="/.">Home</a>
+                
+                    <a class="main-nav-link" href="/archives">Archives</a>
+                
+                    <a class="main-nav-link" href="/categories">Categories</a>
+                
+                    <a class="main-nav-link" href="/tags">Tags</a>
+                
+            </nav>
+            
+                
+                <nav id="sub-nav">
+                    <div class="profile" id="profile-nav">
+                        <a id="profile-anchor" href="javascript:;">
+                            <img class="avatar" src="https://avatars2.githubusercontent.com/u/665690?v=3&amp;s=466">
+                            <i class="fa fa-caret-down"></i>
+                        </a>
+                    </div>
+                </nav>
+            
+            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜尋">
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="Type something...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: 'Pages',
+            CATEGORIES: '分類',
+            TAGS: '標籤',
+            UNTITLED: '(Untitled)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+        </div>
+    </div>
+    <div id="main-nav-mobile" class="header-sub header-inner">
+        <table class="menu outer">
+            <tr>
+                
+                    <td><a class="main-nav-link" href="/.">Home</a></td>
+                
+                    <td><a class="main-nav-link" href="/archives">Archives</a></td>
+                
+                    <td><a class="main-nav-link" href="/categories">Categories</a></td>
+                
+                    <td><a class="main-nav-link" href="/tags">Tags</a></td>
+                
+                <td>
+                    
+    <div class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜尋">
+    </div>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+</header>
+
+        <div class="outer">
+            
+                
+
+<aside id="profile">
+    <div class="inner profile-inner">
+        <div class="base-info profile-block">
+            <img id="avatar" src="https://avatars2.githubusercontent.com/u/665690?v=3&amp;s=466">
+            <h2 id="name">andyyou</h2>
+            <h3 id="title">Web Developer</h3>
+            <span id="location"><i class="fa fa-map-marker"></i>Taipei, Taiwan</span>
+            <a id="follow" target="_blank" href="https://github.com/andyyou">關注我</a>
+        </div>
+        <div class="article-info profile-block">
+            <div class="article-info-block">
+                185
+                <span>文章</span>
+            </div>
+            <div class="article-info-block">
+                79
+                <span>標籤</span>
+            </div>
+        </div>
+        
+        <div class="profile-block social-links">
+            <table>
+                <tr>
+                    
+                    
+                    <td>
+                        <a href="https://github.com/andyyou" target="_blank" title="github" class="tooltip">
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="https://www.linkedin.com/pub/zongyan-you/2a/493/16" target="_blank" title="linkedin" class="tooltip">
+                            <i class="fa fa-linkedin"></i>
+                        </a>
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
+        
+    </div>
+</aside>
+
+            
+            <section id="main"><article id="post-fools-learn-flux" class="article article-type-post" itemscope="" itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+            輕鬆學 Flux
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2014/11/15/fools-learn-flux/">
+            <time datetime="2014-11-15T12:58:00.000Z" itemprop="datePublished">2014-11-15</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/Program/">Program</a>
+    </div>
+
+                        
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/reactjs/">reactjs</a>
+    </div>
+
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>小弟身為一個資質駑鈍的人，這正是我在學習 Flux 初期最希望有人可以幫我總結的事。服用本篇前須對 React 有基本的認識。<br>因為底子不好在參透官方範例時一直東奔西跑的查資料一下這個 merge 是什麼意思，一下又怎麼這邊一個 Dispatcher, AppDispatcher 然後又 ActionCreator<br>總之是你搞得我好亂啊。不過因為最近 React 的盛行讓我得以閱讀許多大大的分享因而有這一篇<br><a id="more"></a></p>
+<h1 id="我應該使用-Flux-嗎？"><a href="#我應該使用-Flux-嗎？" class="headerlink" title="我應該使用 Flux 嗎？"></a>我應該使用 Flux 嗎？</h1><p>如果您的應用程式需要處理很多動態的資料那麼答案是 YES! 您可能應該使用 Flux<br>但如果您的應用程式只是靜態頁面，且不需要去共用一些應用程式的<code>狀態</code>，也從來不需要更新資料那麼這個答案就是 NO<br>Flux 不能帶給你任何好處</p>
+<h1 id="為什麼要用-Flux"><a href="#為什麼要用-Flux" class="headerlink" title="為什麼要用 Flux?"></a>為什麼要用 Flux?</h1><p>Flux 是一個相當複雜的概念，為什麼要增加程式的複雜度呢？哈！開玩笑的！！<br>百分之九十的 iOS 應用程式透過 table view 來呈現資料。iOS toolkit 擁有非常好的架構來處理關於資料模型的問題，這使得開發起來非常容易。</p>
+<p>不過在前端的世界(HTML, Javascript, CSS) 我們沒有那些東西也沒人強迫我們一定得用這些，取而代之的是我們有一個大問題。沒人知道該怎麼完美的處理前端架構這個問題。<br>處理前端的工作已經好一陣子了，所謂的最佳實踐從來沒有完美的解決所有問題，現實反而是針對個別小問題的函式庫解決了他們<br>jQuery? Backbone? Handlebars? 其實我們也都知道真正的問題是關於資料，一但它邏輯和 UX 變得越來越複雜就很少人可以精準的控制他。</p>
+<h1 id="什麼是-Flux"><a href="#什麼是-Flux" class="headerlink" title="什麼是 Flux?"></a>什麼是 Flux?</h1><p>Flux 是一個 Facebook 創造的術語: 用來描述單一方向的資料流搭配特定的事件和註冊監聽的設計模型。並沒有一定是指 Flux 的函式庫，不過您的確需要 Flux Dispatcher 以及事件函式庫。<br>官方文件是用一種概念的方式在介紹因此對於像我這種資質比較差的人的確不是個很好的起點。沒幫我分解片段片段程式碼就吸收得很慢。<br>不過一旦你了解了關於 Flux 的想法您應該就能夠讀懂那些東西。</p>
+<p>先不要試圖去比較 Flux 和 MVC 結構，把它們兩者搞在一起的話只會得到混亂。</p>
+<p>OK! 談論夠多了，讓我們慢慢的探討，這篇文章將會慢慢解釋所有概念佐以程式碼。</p>
+<h1 id="1-你的-Views-React-Component-分派了動作"><a href="#1-你的-Views-React-Component-分派了動作" class="headerlink" title="1. 你的 Views (React Component) 分派了動作"></a>1. 你的 Views (React Component) 分派了動作</h1><p>一個 dispatcher 本質上是一套事件機制。它負責廣播事件和註冊回呼函式(callback)。而且全部就只有一個，一個全域的 dispatcher 物件。<br>為了讓事情單純你應該就直接使用 Facebook 的 Dispatcher Library 官方在解釋 Dispatcher 那段一開始的確讓我慌了。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> Dispatcher = <span class="built_in">require</span>(<span class="string">'flux'</span>).Dispatcher;</span><br><span class="line"><span class="keyword">var</span> AppDispatcher = <span class="keyword">new</span> Dispatcher();</span><br></pre></td></tr></table></figure>
+<p>接著我們假設您的應用程式中有一個新增的按鈕功能是加入一個項目到清單中:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;button onClick=&#123; <span class="keyword">this</span>.createNewItem &#125;&gt;New Item&lt;<span class="regexp">/button&gt;</span></span><br></pre></td></tr></table></figure>
+<p>當按鈕點擊的時候會發生什麼事情呢？您的 View 派送了一個非常特別的事件，這個事件包含著兩件事<code>事件名稱</code>和<code>該項目的資料</code></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">createNewItem: <span class="function"><span class="keyword">function</span>(<span class="params"> evt </span>) </span>&#123;</span><br><span class="line"></span><br><span class="line">    AppDispatcher.dispatch(&#123;</span><br><span class="line">        eventName: <span class="string">'new-item'</span>,</span><br><span class="line">        newItem: &#123; <span class="attr">name</span>: <span class="string">'Andy'</span> &#125; <span class="comment">// example data</span></span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="2-您的-Store-需要回應被派送來的事件"><a href="#2-您的-Store-需要回應被派送來的事件" class="headerlink" title="2. 您的 Store 需要回應被派送來的事件"></a>2. 您的 Store 需要回應被派送來的事件</h1><p>就像 Flux 一樣 “store” 也是 Facebook 創造的術語。對於我們的應用程式來說，我們需要一個邏輯集合(就是處理邏輯的物件)與資料來處理這份清單。<br>這指的就是 Store ，它不只要管理資料模型也需要回應上面提到的<code>特殊的事件</code>。在這邊我們就稱它為 ListStore<br>一個 store 本身是單獨的物件，應該就只有一個，意思是你不應該 new 出另外一個物件。換言之我們的 ListStore 是獨一無二全域的物件。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 一個全域物件用來處理清單資料和邏輯</span></span><br><span class="line"><span class="keyword">var</span> ListStore = &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 實際資料模型的集合</span></span><br><span class="line">    items: [],</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 存取方法，後續我們將使用它來取得資料</span></span><br><span class="line">    getAll: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">this</span>.items;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>這個 store 接著要回應 dispatcher 發過來的<code>特殊事件</code>。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> ListStore = …</span><br><span class="line"></span><br><span class="line">AppDispatcher.register( <span class="function"><span class="keyword">function</span>(<span class="params"> payload </span>) </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">switch</span>( payload.eventName ) &#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">case</span> <span class="string">'new-item'</span>:</span><br><span class="line"></span><br><span class="line">            ListStore.items.push( payload.newItem );</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line"></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>這是典型的 Flux 處理回應 dispatcher 派送過來的 action 的機制。每一個 payload 包含著事件名稱和資料，透過 dispatcher 分派過來。好了我們同時解釋了在官網那張圖上的 action 與 payload 。</p>
+<blockquote>
+<p>dispatcher.dipatch({}) 發動這個 method =&gt; 派送一個 action<br>{} 裡面的物件我們稱為 payload</p>
+</blockquote>
+<p>接著用一個 switch 程式片段用來決定該執行什麼動作。</p>
+<ul>
+<li>核心概念 1: 一個 store 不只是一個資料模型，但其包含著資料模型。</li>
+<li>核心概念 2: store 在程式中是唯一知道該如何更新資料的角色。這也是整個 Flux 最重要的部分。dispatcher 觸發的事件並不知道如何處理資料。對應回官方的說明這叫做一個 action。</li>
+<li>對應的行為是寫在 store 然後透過 AppDispatcher.register 註冊。</li>
+</ul>
+<p>舉例來說如果有其他部分需要追蹤關於圖片的資料您就應該再開一個 store 並叫做 <code>ImageStore</code>。一個 store 只負責處理單一需求。<br>當您的程式變大的時候可以很輕易地根據需求找到對應的部分。如果程式不複雜可能您只需要一個 store。</p>
+<p>記住！只有 store 是被允許註冊 dispatcher 的 callback。View 永遠不會呼叫 <code>AppDispatcher.register</code> 。而 dispatcher 也只能夠從 View 送訊息到 store。</p>
+<h1 id="3-Store-觸發了一個-“Change”-事件"><a href="#3-Store-觸發了一個-“Change”-事件" class="headerlink" title="3. Store 觸發了一個 “Change” 事件"></a>3. Store 觸發了一個 “Change” 事件</h1><p>我們幾乎快學完了！現在您的資料確實已經改變了，但是我們需要通知程式中其他角色。<br>store 接著會觸發一個事件，但不是靠 dispatcher 。這邊通常是初學者容易搞混的地方，但這就是 Flux 採用的方式。這邊我們讓 store 具備有觸發事件的能力<br>方法有很東種例如使用 <a href="http://notes.jetienne.com/2011/03/22/microeventjs.html" target="_blank" rel="noopener">MicroEvent</a> 或者採用 EventEmitter。這邊為了讓你釐清觀念也不要加入太多東西<br>所以我們先用 MicroEvent 其觀念就是讓 Store 具備廣播事件的能力，你可能就會問廣播什麼事件？大略你可以先理解成這是一個發佈/訂閱的事件機制。<br>當 store 告訴全世界: 嘿！我飯煮好了！該吃飯的人就自己自動過來吃 XD。</p>
+<blockquote>
+<p>註: 官方採用的方式可能一直在調整，從 merge 到 object-assign 其實觀念都是一樣的就是讓 store 具備廣播事件的能力且官方使用 EventEmitter。</p>
+</blockquote>
+<p>這邊我們就透過 MicroEvent 讓 store 可以通知全世界:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">MicroEvent.mixin( ListStore );</span><br></pre></td></tr></table></figure>
+<p>好了！store 已經具備該能力了那就直接在下面呼叫</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">AppDispatcher.register( <span class="function"><span class="keyword">function</span>(<span class="params"> payload </span>) </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">switch</span>( payload.eventName ) &#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">case</span> <span class="string">'new-item'</span>:</span><br><span class="line"></span><br><span class="line">            ListStore.items.push( payload.newItem );</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 告訴其他人我已經改變好了</span></span><br><span class="line">            ListStore.trigger( <span class="string">'change'</span> );</span><br><span class="line">            <span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line"></span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>核心觀念: 當我們觸發事件時我們不需要再把資料帶出去。view 只需要知道資料已經有更新了。讓我們繼續看下去來理解原理</p>
+<h1 id="4-View-回應-Change-事件"><a href="#4-View-回應-Change-事件" class="headerlink" title="4. View 回應 Change 事件"></a>4. View 回應 Change 事件</h1><p>現在我們需要顯示清單。當清單發生改變，我們的 view 將會全部重新渲染輸出，沒有錯是全部！<br>為了讓 view 知道何時該更新，從 view 被掛載後它就必須監聽從 store 發出的 <code>change</code> 事件。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">componentDidMount: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;  </span><br><span class="line">    ListStore.bind( <span class="string">'change'</span>, <span class="keyword">this</span>.listChanged );</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+<p>為了簡單起見，我們會使用 <code>forceUpdate</code> 強制重新渲染。另一個方法是將整個清單存到 <code>state</code>。<br>在 React 元件內的方法就會如下:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">listChanged: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;  </span><br><span class="line">    <span class="comment">// Since the list changed, trigger a new render.</span></span><br><span class="line">    <span class="keyword">this</span>.forceUpdate();</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+<p>別忘記當卸載時把監聽清除</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">componentWillUnmount: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;  </span><br><span class="line">    ListStore.unbind( <span class="string">'change'</span>, <span class="keyword">this</span>.listChanged );</span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+<p>然後呢？讓我們來看看 <code>render</code> 函式，我們特意保留到最後再看</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">render: <span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 記住, ListStore 是全域物件!</span></span><br><span class="line">    <span class="comment">// 透過它取得資料</span></span><br><span class="line">    <span class="keyword">var</span> items = ListStore.getAll();</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="keyword">var</span> itemHtml = items.map( <span class="function"><span class="keyword">function</span>(<span class="params"> item </span>) </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> <span class="xml"><span class="tag">&lt;<span class="name">li</span> <span class="attr">key</span>=<span class="string">&#123;</span> <span class="attr">listItem.id</span> &#125;&gt;</span></span></span><br><span class="line"><span class="xml">            &#123; listItem.name &#125;</span></span><br><span class="line"><span class="xml">          <span class="tag">&lt;/<span class="name">li</span>&gt;</span></span>;</span><br><span class="line"></span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> <span class="xml"><span class="tag">&lt;<span class="name">div</span>&gt;</span></span></span><br><span class="line">        &lt;ul&gt;</span><br><span class="line">            &#123; itemHtml &#125;</span><br><span class="line"><span class="xml">        <span class="tag">&lt;/<span class="name">ul</span>&gt;</span></span></span><br><span class="line"><span class="xml"></span></span><br><span class="line"><span class="xml">        <span class="tag">&lt;<span class="name">button</span> <span class="attr">onClick</span>=<span class="string">&#123;</span> <span class="attr">this.createNewItem</span> &#125;&gt;</span>New Item<span class="tag">&lt;/<span class="name">button</span>&gt;</span></span></span><br><span class="line"><span class="xml"></span></span><br><span class="line"><span class="xml">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>好了！我們已經完成整個循環。當你加入新的項目 -&gt; view 透過 dispatcher 派送一個 action -&gt; store 回應這個 action 處理資料(處理的 callback 已經被註冊到 dispatcher) -&gt; store 處理完畢觸發 change 事件<br>-&gt; view 因為有監聽這個事件所以做出對應的處理更新。</p>
+<p>不過這邊還有一個問題，每一次我們都重新渲染了整個 view ，這難道不會造成什麼效能異常糟糕嗎？</p>
+<p>不會！</p>
+<p>沒錯我們的確是讓 render 方法重新在渲染一次，所有在 render 內部的程式碼會重跑一次，不過 React 只會在當資料有所改變的時候才會更新實際的 DOM，關於 render 事實上他只是產生一個虛擬的 DOM。<br>然後 React 會自動去和上一次的比較，如果兩個虛擬的 DOM 不同的話 React 才會更新實際的 DOM 而且是只有實際 DOM 不同的地方而已。</p>
+<p>核心觀念: 當 store 的資料改變 view 不需要知道資料到底是增加還是減少或者修改，view 只要負責重新輸出整個元件，接著 React 的虛擬 DOM 機制會幫你處理如何有效率的更新 DOM。<br>是不是整個變得很單純。</p>
+<h1 id="還有一個東西-Action-Creator-是什麼鬼？"><a href="#還有一個東西-Action-Creator-是什麼鬼？" class="headerlink" title="還有一個東西: Action Creator 是什麼鬼？"></a>還有一個東西: Action Creator 是什麼鬼？</h1><p>記得，當我們點擊我們的按鈕時我們派送了一個特殊的事件:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">AppDispatcher.dispatch(&#123;  </span><br><span class="line">    eventName: <span class="string">'new-item'</span>,</span><br><span class="line">    newItem: &#123; <span class="attr">name</span>: <span class="string">'Andy'</span> &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>如果很多 view 需要這一個事件，那麼很快這一小段程式碼將到處重複，很快當你需要修改的時候又會搞不清楚。Flux 建議我們將這些派送的事件抽象化，叫做 action creator。<br>就只是把這些 <code>AppDispatcher.dispatch</code> 根據其功能分門別類，這樣其他 view 要用就只要引用就好</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">ListActions = &#123;</span><br><span class="line"></span><br><span class="line">    add: <span class="function"><span class="keyword">function</span>(<span class="params"> item </span>) </span>&#123;</span><br><span class="line">        AppDispatcher.dispatch(&#123;</span><br><span class="line">            eventName: <span class="string">'new-item'</span>,</span><br><span class="line">            newItem: item</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+<p>現在您的 view 就可以單純呼叫 <code>ListActions.add</code> 。</p>
+<p>希望到這邊為止可以建立起 Flux 的概念，剩下的就在看看官方的範例應該就比較看得懂了。</p>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+
+</div>
+
+    <a data-url="//andyyou.github.io/2014/11/15/fools-learn-flux/" data-id="cknx2z29r007a3m72eps2wujs" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        // Prevent duplicate binding
+        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
+            __SHARE_BUTTON_BINDED__ = true;
+        } else {
+            return;
+        }
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+            
+    
+
+        </footer>
+    </div>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2014/12/23/use-selenium-to-match-cloud-based-stress-test/" id="article-nav-newer" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">上一篇</strong>
+            <div class="article-nav-title">
+                
+                    使用 Selenium 搭配 Cloud-based 壓力測試
+                
+            </div>
+        </a>
+    
+    
+        <a href="/2014/11/11/flux-notes/" id="article-nav-older" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">下一篇</strong>
+            <div class="article-nav-title">Flux 概念詳述篇</div>
+        </a>
+    
+</nav>
+
+
+    
+</article>
+
+
+    
+    <section id="comments">
+    
+    </section>
+
+</section>
+            
+                <aside id="sidebar">
+   
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">分類</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Cloud/">Cloud</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Database/">Database</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Fun/">Fun</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Mobile/">Mobile</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Program/">Program</a><span class="category-list-count">132</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/System/">System</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Tools/">Tools</a><span class="category-list-count">17</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">歸檔</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/04/">四月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/03/">三月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/10/">十月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">五月 2019</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">六月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">十二月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">十一月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">九月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">十月 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">九月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">六月 2016</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">十二月 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">十一月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">十月 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">九月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">八月 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">七月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">五月 2015</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">四月 2015</a><span class="archive-list-count">19</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">十二月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/11/">十一月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/10/">十月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">九月 2014</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/08/">八月 2014</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/02/">二月 2014</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/01/">一月 2014</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">十一月 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">十月 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">九月 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">八月 2013</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/03/">三月 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">三月 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">一月 2012</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2011/11/">十一月 2011</a><span class="archive-list-count">3</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">標籤</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/net-mvc/">.net mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RoR/">RoR</a><span class="tag-list-count">15</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/api/">api</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aws/">aws</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/azure/">azure</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bot/">bot</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bundler/">bundler</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cache/">cache</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/carrier-wave/">carrier wave</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/centos/">centos</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/chrome/">chrome</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cloudflare/">cloudflare</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/compass/">compass</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/devise/">devise</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dnd/">dnd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/e-invoice/">e-invoice</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/entity-framework/">entity framework</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/es6/">es6</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/facebook/">facebook</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flux/">flux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/framework/">framework</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gcp/">gcp</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/grunt/">grunt</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gulp/">gulp</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/heroku/">heroku</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/html/">html</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/iisexpress/">iisexpress</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ios/">ios</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">70</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript-express-passport/">javascript express passport</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript-nodejs/">javascript nodejs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jekyll/">jekyll</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jetstream/">jetstream</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jspm/">jspm</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jwt/">jwt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/laravel/">laravel</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/letsencrypt/">letsencrypt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mechanism/">mechanism</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongodb/">mongodb</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/node/">node</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nodejs/">nodejs</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/oocss/">oocss</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/osx/">osx</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package-manager/">package manager</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/php/">php</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/postgres/">postgres</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/postgresql/">postgresql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/queue/">queue</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rabbitmq/">rabbitmq</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rack-server/">rack server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails/">rails</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails-webpack-stimulus-javascript-bootstrap/">rails webpack stimulus javascript bootstrap</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/raspberry-pi/">raspberry-pi</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react/">react</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react-native/">react native</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/reactjs/">reactjs</a><span class="tag-list-count">32</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redux/">redux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sass/">sass</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/selenium/">selenium</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/slim/">slim</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssh/">ssh</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssl/">ssl</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/stimulus/">stimulus</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/svg-javascript/">svg javascript</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/task-runner/">task runner</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tmux/">tmux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tools/">tools</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vm/">vm</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/">vue</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vuejs/">vuejs</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/webpack/">webpack</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/windows/">windows</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/xml/">xml</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">標籤雲</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/net-mvc/" style="font-size: 10px;">.net mvc</a> <a href="/tags/RoR/" style="font-size: 16.67px;">RoR</a> <a href="/tags/api/" style="font-size: 10px;">api</a> <a href="/tags/aws/" style="font-size: 12.5px;">aws</a> <a href="/tags/azure/" style="font-size: 10.83px;">azure</a> <a href="/tags/bot/" style="font-size: 10px;">bot</a> <a href="/tags/bundler/" style="font-size: 10.83px;">bundler</a> <a href="/tags/cache/" style="font-size: 10px;">cache</a> <a href="/tags/carrier-wave/" style="font-size: 10.83px;">carrier wave</a> <a href="/tags/centos/" style="font-size: 10px;">centos</a> <a href="/tags/chrome/" style="font-size: 10px;">chrome</a> <a href="/tags/cloudflare/" style="font-size: 10px;">cloudflare</a> <a href="/tags/compass/" style="font-size: 10px;">compass</a> <a href="/tags/css/" style="font-size: 17.5px;">css</a> <a href="/tags/devise/" style="font-size: 10px;">devise</a> <a href="/tags/dnd/" style="font-size: 10px;">dnd</a> <a href="/tags/docker/" style="font-size: 10.83px;">docker</a> <a href="/tags/e-invoice/" style="font-size: 10px;">e-invoice</a> <a href="/tags/entity-framework/" style="font-size: 10px;">entity framework</a> <a href="/tags/es6/" style="font-size: 11.67px;">es6</a> <a href="/tags/facebook/" style="font-size: 10px;">facebook</a> <a href="/tags/flux/" style="font-size: 10px;">flux</a> <a href="/tags/framework/" style="font-size: 10.83px;">framework</a> <a href="/tags/gcp/" style="font-size: 10.83px;">gcp</a> <a href="/tags/go/" style="font-size: 10px;">go</a> <a href="/tags/grunt/" style="font-size: 12.5px;">grunt</a> <a href="/tags/gulp/" style="font-size: 11.67px;">gulp</a> <a href="/tags/heroku/" style="font-size: 14.17px;">heroku</a> <a href="/tags/html/" style="font-size: 10.83px;">html</a> <a href="/tags/iisexpress/" style="font-size: 10px;">iisexpress</a> <a href="/tags/ios/" style="font-size: 11.67px;">ios</a> <a href="/tags/javascript/" style="font-size: 20px;">javascript</a> <a href="/tags/javascript-express-passport/" style="font-size: 10px;">javascript express passport</a> <a href="/tags/javascript-nodejs/" style="font-size: 10px;">javascript nodejs</a> <a href="/tags/jekyll/" style="font-size: 10.83px;">jekyll</a> <a href="/tags/jetstream/" style="font-size: 10px;">jetstream</a> <a href="/tags/jspm/" style="font-size: 10px;">jspm</a> <a href="/tags/jwt/" style="font-size: 10px;">jwt</a> <a href="/tags/laravel/" style="font-size: 11.67px;">laravel</a> <a href="/tags/letsencrypt/" style="font-size: 10px;">letsencrypt</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/mechanism/" style="font-size: 10px;">mechanism</a> <a href="/tags/mongodb/" style="font-size: 10.83px;">mongodb</a> <a href="/tags/node/" style="font-size: 10px;">node</a> <a href="/tags/nodejs/" style="font-size: 15px;">nodejs</a> <a href="/tags/oocss/" style="font-size: 10px;">oocss</a> <a href="/tags/osx/" style="font-size: 14.17px;">osx</a> <a href="/tags/package-manager/" style="font-size: 14.17px;">package manager</a> <a href="/tags/php/" style="font-size: 10.83px;">php</a> <a href="/tags/postgres/" style="font-size: 10px;">postgres</a> <a href="/tags/postgresql/" style="font-size: 10.83px;">postgresql</a> <a href="/tags/queue/" style="font-size: 10.83px;">queue</a> <a href="/tags/rabbitmq/" style="font-size: 10.83px;">rabbitmq</a> <a href="/tags/rack-server/" style="font-size: 10px;">rack server</a> <a href="/tags/rails/" style="font-size: 14.17px;">rails</a> <a href="/tags/rails-webpack-stimulus-javascript-bootstrap/" style="font-size: 10px;">rails webpack stimulus javascript bootstrap</a> <a href="/tags/raspberry-pi/" style="font-size: 10px;">raspberry-pi</a> <a href="/tags/react/" style="font-size: 15.83px;">react</a> <a href="/tags/react-native/" style="font-size: 10px;">react native</a> <a href="/tags/reactjs/" style="font-size: 19.17px;">reactjs</a> <a href="/tags/redux/" style="font-size: 10px;">redux</a> <a href="/tags/ruby/" style="font-size: 18.33px;">ruby</a> <a href="/tags/sass/" style="font-size: 10.83px;">sass</a> <a href="/tags/selenium/" style="font-size: 10px;">selenium</a> <a href="/tags/slim/" style="font-size: 10px;">slim</a> <a href="/tags/ssh/" style="font-size: 10px;">ssh</a> <a href="/tags/ssl/" style="font-size: 10.83px;">ssl</a> <a href="/tags/stimulus/" style="font-size: 10px;">stimulus</a> <a href="/tags/svg-javascript/" style="font-size: 11.67px;">svg javascript</a> <a href="/tags/task-runner/" style="font-size: 11.67px;">task runner</a> <a href="/tags/tmux/" style="font-size: 10px;">tmux</a> <a href="/tags/tools/" style="font-size: 10px;">tools</a> <a href="/tags/ubuntu/" style="font-size: 10.83px;">ubuntu</a> <a href="/tags/vm/" style="font-size: 10px;">vm</a> <a href="/tags/vue/" style="font-size: 10px;">vue</a> <a href="/tags/vuejs/" style="font-size: 13.33px;">vuejs</a> <a href="/tags/webpack/" style="font-size: 12.5px;">webpack</a> <a href="/tags/windows/" style="font-size: 10px;">windows</a> <a href="/tags/xml/" style="font-size: 10px;">xml</a>
+        </div>
+    </div>
+
+    
+    <div id="toTop" class="fa fa-angle-up"></div>
+</aside>
+            
+        </div>
+        <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2021 andyyou(You,ZongYan)
+        </div>
+    </div>
+</footer>
+
+        
+
+    
+        <script src="/lib/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-share.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-video.min.js"></script>
+    
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+</body>
+</html>

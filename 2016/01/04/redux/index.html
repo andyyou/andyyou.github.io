@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    
+    <title>從&lt;琅琊榜&gt;學 Redux | DEVLOG of andyyou</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <!-- Google Tag Manager -->
+    <script>(function (w, d, s, l, i) {
+        w[l] = w[l] || []; w[l].push({
+          'gtm.start':
+            new Date().getTime(), event: 'gtm.js'
+        }); var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+            'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+      })(window, document, 'script', 'dataLayer', 'GTM-57LT2GG');</script>
+    <!-- End Google Tag Manager -->
+    <meta name="description" content="前言這篇文章希望從另外一個角度來看關於 Redux 的機制與運用，在網路上各式的教學文章中值得先推薦的自然是官方教學如果英文不是很好的可以參考繁體中文版。這是小弟認為要學習 Redux 必讀的文件。另外還有A cartoon intro to redux也是值得一讀的好文可以加深記憶。 接著就讓我們開始吧，當然最後如果有任何錯誤，也歡迎您的指教。">
+<meta name="keywords" content="javascript,reactjs,redux">
+<meta property="og:type" content="article">
+<meta property="og:title" content="從&lt;琅琊榜&gt;學 Redux">
+<meta property="og:url" content="//andyyou.github.io/2016/01/04/redux/index.html">
+<meta property="og:site_name" content="DEVLOG of andyyou">
+<meta property="og:description" content="前言這篇文章希望從另外一個角度來看關於 Redux 的機制與運用，在網路上各式的教學文章中值得先推薦的自然是官方教學如果英文不是很好的可以參考繁體中文版。這是小弟認為要學習 Redux 必讀的文件。另外還有A cartoon intro to redux也是值得一讀的好文可以加深記憶。 接著就讓我們開始吧，當然最後如果有任何錯誤，也歡迎您的指教。">
+<meta property="og:locale" content="zh-TW">
+<meta property="og:image" content="http://i.imgur.com/kKxVJR7.jpg">
+<meta property="og:updated_time" content="2016-12-19T02:31:59.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="從&lt;琅琊榜&gt;學 Redux">
+<meta name="twitter:description" content="前言這篇文章希望從另外一個角度來看關於 Redux 的機制與運用，在網路上各式的教學文章中值得先推薦的自然是官方教學如果英文不是很好的可以參考繁體中文版。這是小弟認為要學習 Redux 必讀的文件。另外還有A cartoon intro to redux也是值得一讀的好文可以加深記憶。 接著就讓我們開始吧，當然最後如果有任何錯誤，也歡迎您的指教。">
+<meta name="twitter:image" content="http://i.imgur.com/kKxVJR7.jpg">
+    
+
+    
+
+    
+        <link rel="icon" href="/images/favicon.png">
+    
+
+    <link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/lib/open-sans/styles.css">
+    <link rel="stylesheet" href="/lib/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/lib/jquery/2.1.3/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/lib/lightgallery/css/lightgallery.min.css">
+    
+    
+    
+        <script type="text/javascript">
+(function(i,s,o,g,r,a,m) {i['GoogleAnalyticsObject']=r;i[r]=i[r]||function() {
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-39208536-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+    
+    
+    
+
+
+</head>
+</html>
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-57LT2GG" height="0" width="0"
+        style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    <div id="container">
+        <header id="header">
+    <div id="header-main" class="header-inner">
+        <div class="outer">
+            <a href="/" id="logo">
+                <i class="logo"></i>
+                <span class="site-title">DEVLOG of andyyou</span>
+            </a>
+            <nav id="main-nav">
+                
+                    <a class="main-nav-link" href="/.">Home</a>
+                
+                    <a class="main-nav-link" href="/archives">Archives</a>
+                
+                    <a class="main-nav-link" href="/categories">Categories</a>
+                
+                    <a class="main-nav-link" href="/tags">Tags</a>
+                
+            </nav>
+            
+                
+                <nav id="sub-nav">
+                    <div class="profile" id="profile-nav">
+                        <a id="profile-anchor" href="javascript:;">
+                            <img class="avatar" src="https://avatars2.githubusercontent.com/u/665690?v=3&amp;s=466">
+                            <i class="fa fa-caret-down"></i>
+                        </a>
+                    </div>
+                </nav>
+            
+            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜尋">
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="Type something...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: 'Pages',
+            CATEGORIES: '分類',
+            TAGS: '標籤',
+            UNTITLED: '(Untitled)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+        </div>
+    </div>
+    <div id="main-nav-mobile" class="header-sub header-inner">
+        <table class="menu outer">
+            <tr>
+                
+                    <td><a class="main-nav-link" href="/.">Home</a></td>
+                
+                    <td><a class="main-nav-link" href="/archives">Archives</a></td>
+                
+                    <td><a class="main-nav-link" href="/categories">Categories</a></td>
+                
+                    <td><a class="main-nav-link" href="/tags">Tags</a></td>
+                
+                <td>
+                    
+    <div class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜尋">
+    </div>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+</header>
+
+        <div class="outer">
+            
+                
+
+<aside id="profile">
+    <div class="inner profile-inner">
+        <div class="base-info profile-block">
+            <img id="avatar" src="https://avatars2.githubusercontent.com/u/665690?v=3&amp;s=466">
+            <h2 id="name">andyyou</h2>
+            <h3 id="title">Web Developer</h3>
+            <span id="location"><i class="fa fa-map-marker"></i>Taipei, Taiwan</span>
+            <a id="follow" target="_blank" href="https://github.com/andyyou">關注我</a>
+        </div>
+        <div class="article-info profile-block">
+            <div class="article-info-block">
+                185
+                <span>文章</span>
+            </div>
+            <div class="article-info-block">
+                79
+                <span>標籤</span>
+            </div>
+        </div>
+        
+        <div class="profile-block social-links">
+            <table>
+                <tr>
+                    
+                    
+                    <td>
+                        <a href="https://github.com/andyyou" target="_blank" title="github" class="tooltip">
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="https://www.linkedin.com/pub/zongyan-you/2a/493/16" target="_blank" title="linkedin" class="tooltip">
+                            <i class="fa fa-linkedin"></i>
+                        </a>
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
+        
+    </div>
+</aside>
+
+            
+            <section id="main"><article id="post-redux" class="article article-type-post" itemscope="" itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+            從&lt;琅琊榜&gt;學 Redux
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2016/01/04/redux/">
+            <time datetime="2016-01-04T06:00:00.000Z" itemprop="datePublished">2016-01-04</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/Program/">Program</a>
+    </div>
+
+                        
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/javascript/">javascript</a>, <a class="tag-link" href="/tags/reactjs/">reactjs</a>, <a class="tag-link" href="/tags/redux/">redux</a>
+    </div>
+
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>這篇文章希望從另外一個角度來看關於 Redux 的機制與運用，在網路上各式的教學文章中值得先推薦的自然是<a href="http://redux.js.org/index.html" target="_blank" rel="noopener">官方教學</a><br>如果英文不是很好的可以參考<a href="http://chentsulin.github.io/redux/index.html" target="_blank" rel="noopener">繁體中文版</a>。這是小弟認為要學習 Redux 必讀的文件。另外還有<a href="https://code-cartoons.com/a-cartoon-intro-to-redux-3afb775501a6#.u08wcg6kk" target="_blank" rel="noopener">A cartoon intro to redux</a>也是值得一讀的好文可以加深記憶。</p>
+<p>接著就讓我們開始吧，當然最後如果有任何錯誤，也歡迎您的指教。</p>
+<a id="more"></a>
+<h1 id="一個中國的古代智慧"><a href="#一個中國的古代智慧" class="headerlink" title="一個中國的古代智慧"></a>一個中國的古代智慧</h1><p>先別管 Flux, Redux,React 等術語了，在我們深入任何程式碼與實作之前讓我們先來聊一下關於中國的古裝宮廷劇的橋段。雖然連續劇上演的可能並不是古代真實的狀況，但就讓我們假設這樣的過程是對的。就讓我們從當紅電視劇 《琅琊榜》來聊起，相信你我都知道這樣的流程。當梁皇大大決定了要<code>加封蕭景琰從郡王變成親王</code>，這個時候皇上要做的就是下旨，下旨之後接著就需要一份實體的<code>聖旨</code>或稱詔書來完成整個流程。這份聖旨當然不是任何人都能撰寫的，它通常需要由<code>內閣</code>按照一定格式完成。聖旨完成之後，接著就需要<code>太監們</code>去負責傳旨這個流程，太監總管自然是可以差遣底下的太監去<br>正式的宣旨，在這過程中我們合理的推測太監總管是會通知像是<code>禮部</code>這類單位去準備親王穿的新衣服等等。好了，我們已經講完了關於單一資料流與 Redux 了！？</p>
+<h1 id="角色與其職"><a href="#角色與其職" class="headerlink" title="角色與其職"></a>角色與其職</h1><p>上面的沒頭沒腦地說明讓你開始想關掉這篇文章了嗎？讓我們先用較為通俗的比喻來對應這個流程，雖然這的確不是很精確。但我相信在學習過程中多少能有點幫助。<br>開始介紹各個角色與其對應之前先讓我們來看看 Redux 的世界裡有哪些主要角色？</p>
+<ul>
+<li>state</li>
+<li>action</li>
+<li>action creator</li>
+<li>reducer</li>
+<li>store</li>
+</ul>
+<h3 id="state-事件的狀態"><a href="#state-事件的狀態" class="headerlink" title="state 事件的狀態"></a>state 事件的狀態</h3><p>首先介紹的就是 <code>state</code> ，少了這個 <code>state</code> 那麼是無法交織出精彩的宮廷劇。這個 <code>state</code>表示的是一件事情的狀態，用上面的例子來說就是<code>蕭景琰是不是親王</code>。</p>
+<h3 id="action-聖旨"><a href="#action-聖旨" class="headerlink" title="action 聖旨"></a>action 聖旨</h3><p>在古代朝廷裡舉凡重要大事例如：加薪升職或者出兵打仗基本上都是需要聖旨，這個聖旨也就只是一份記錄下來，具備特定格式的文件。<br>而在 Redux 中剛好有這麼一個角色，它就是 <code>action</code> 。基本上他就是一個單純的物件，記錄著要做什麼事，就像聖旨一般。</p>
+<p>如下就是一個 action 在程式中的樣子</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">var action = &#123;</span><br><span class="line">  type: &apos;加封親王&apos;,</span><br><span class="line">  name: &apos;蕭景琰&apos; // 取自&lt;琅琊榜&gt;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="action-creator-內閣"><a href="#action-creator-內閣" class="headerlink" title="action creator 內閣"></a>action creator 內閣</h3><p>這個角色在劇中通常我們會忽略，因為他的任務好無聊啊！就只是把要 <code>執行的事情</code> 格式化成特定的文件。<br>講白一點，梁帝只說了一句話：加封蕭景琰為親王。自然就要有人來幫他寫完這份聖旨。</p>
+<p>下面即 action creator 在程式中的範例：<code>本質是一個 function 回傳 object ，這個 object 即 action</code></p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">function actionCreator(data) &#123;</span><br><span class="line">  return &#123;</span><br><span class="line">    type: &apos;加封親王&apos;,</span><br><span class="line">    name: &apos;蕭景琰&apos; // 取自&lt;琅琊榜&gt;</span><br><span class="line">  &#125;;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="store-梁帝身旁的太監總管-高湛"><a href="#store-梁帝身旁的太監總管-高湛" class="headerlink" title="store 梁帝身旁的太監總管 - 高湛"></a>store 梁帝身旁的太監總管 - 高湛</h3><p>簡單來說，梁帝得知任何情報消息都是靠他，甚至要發聖旨也要靠他。在一般情況下太監總管幾乎等於皇上的 <code>狀態管理中心</code> ，而且 <code>就只有一個</code> ，管理一個國家和管理程式的狀態一樣複雜，如果到處都可以發動命令修改狀態那總會有狀態因為時間差不一致的狀況。</p>
+<p>而要在程式中建立一個 store 我們需要先從 <code>redux</code> 匯入 <code>createStore</code> 接著如下建立</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">var store = createStore(reducer)</span><br></pre></td></tr></table></figure>
+<h3 id="reducer-實際宣旨的太監-負責實際的狀態變更"><a href="#reducer-實際宣旨的太監-負責實際的狀態變更" class="headerlink" title="reducer 實際宣旨的太監 - 負責實際的狀態變更"></a>reducer 實際宣旨的太監 - 負責實際的狀態變更</h3><p>當太監總管把任務交代下來，底下的太監就要去執行任務，reducer 才是真正變更了狀態的角色。</p>
+<p>雖然在劇中不是挺重要的角色，但在 Redux 所有的狀態都是由它進行異動的，要牢記的是 reducer 本質上是一個 function，必須要回傳 state 物件，最重要的是它永遠是傳入當前的 state 和 action 接著處理完後回傳<code>另一個完整</code>的 state ， 表示式為 <code>(state, action) =&gt; newState</code>。</p>
+<h3 id="流程"><a href="#流程" class="headerlink" title="流程"></a>流程</h3><p>在開演之前有些幕後工作要完成，首先是太監總管(store)要知道怎麼使喚部下(reducer)。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">store = createStore(reducer)</span><br></pre></td></tr></table></figure>
+<p><code>createStore()</code> 等於是前置作業，如此一來太監總管就知道該怎麼分派任務。當皇上下旨後，我們會需要內閣(action creator)的協助，得到一份聖旨(action)，接著太監總管(store)就分派(dispatch)聖旨(action)給底下的太監們(reducers)去執行。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">store.dispatch(action)</span><br></pre></td></tr></table></figure>
+<p>如果皇上想要知道事情的狀態那就得問太監總管</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">store.getState()</span><br></pre></td></tr></table></figure>
+<p>另外就是當聖旨宣布後，太監總管應該也要順便通知<code>禮部</code>等單位進行後續的準備</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">store.subscribe(listener)</span><br></pre></td></tr></table></figure>
+<p>這個 <code>listener</code> 就是當聖旨頒佈後後續要做的事，很合理的該單位總是也該知道事情進行到哪了，此時這個 function 便可以透過 <code>getState()</code> 來取得消息，不過要注意的是;這個太監總管不會先行通知，只會在發佈了聖旨後才會通知各部(listener)。</p>
+<p>看到這邊我們才驚覺原來在古代的中國早就知道單一資料流的好處 XD。</p>
+<p>而所謂的 Redux 概略的比喻就是<code>各司其職的這些角色</code>搭配<code>運作流程</code>的規範。最後讓我們先看一下概略示意虛擬碼：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">// 注意: Javascript 的變數與 function name 並不支援中文</span><br><span class="line">// action type</span><br><span class="line">const 加封七珠親王 = &apos;加封七珠親王&apos;;</span><br><span class="line"></span><br><span class="line">// action creator</span><br><span class="line">function 內閣撰寫聖旨加封 (人名, 官位) &#123;</span><br><span class="line">  // 傳回一個 action</span><br><span class="line">  return &#123;</span><br><span class="line">    type: 加封七珠親王,</span><br><span class="line">    name: 人名,</span><br><span class="line">    level: 官位</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// reducer</span><br><span class="line">function 負責的太監甲 (state, action) &#123;</span><br><span class="line">  switch (action.type) &#123;</span><br><span class="line">    case: 加封七珠親王:</span><br><span class="line">      return &#123;</span><br><span class="line">        ...state,</span><br><span class="line">        &#123;</span><br><span class="line">          ...state[action.name],</span><br><span class="line">          level: action.level</span><br><span class="line">        &#125;</span><br><span class="line">      &#125;;</span><br><span class="line">    default:</span><br><span class="line">      return state;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">// store</span><br><span class="line">var 太監總管 = createStore(太監們)</span><br><span class="line"></span><br><span class="line">// action</span><br><span class="line">var 聖旨 = 內閣撰寫聖旨加封(&apos;蕭景琰&apos;, &apos;親王&apos;)</span><br><span class="line"></span><br><span class="line">太監總管.dispatch(聖旨)</span><br></pre></td></tr></table></figure>
+<p>總體來說這邊只希望你記住三件事：</p>
+<ol>
+<li>太監總管只有一個; 整個應用程式的 state，被儲存在一個樹狀物件放在唯一的 store 裡面。</li>
+<li>要執行任何重大事件都需要<code>聖旨</code>; 改變 state 的唯一的方式是發出一個 action，也就是一個描述發生什麼事的物件。</li>
+<li>實際去宣旨的是太監(reducer); state 的轉變必須只能在 reducer 撰寫，這永遠是一個 (state, action) =&gt; newState 的 function。</li>
+</ol>
+<h1 id="實作-Redux"><a href="#實作-Redux" class="headerlink" title="實作 Redux"></a>實作 Redux</h1><p>上面段落扯了這麼多，是希望用一個通俗的說明，讓您先大略明白整個流程，有個概念，接著我們就要以實作流程來說明。我相信目前網路上的教學不論詳細程度還是文章的質量都很難比<code>官方教學</code>來得好，但就是因為該文件太詳細了，有些緣由對於初學者來說不太好掌握，所以這個部分我希望能夠快速帶你走過一遍個人的實作流程，讓你能夠掌握每一個角色，有了概念後建議您搭配官方教學來深入學習。</p>
+<h3 id="從規劃-state-物件開始"><a href="#從規劃-state-物件開始" class="headerlink" title="從規劃 state 物件開始"></a>從規劃 state 物件開始</h3><p>為了讓事情單純一點，我們將使用 <code>Boilerplate</code> 以避開一些繁瑣的設定，讓你能夠先專注在 redux 上。這個樣板包含了下面這些工具與函式庫的相關設定：</p>
+<ul>
+<li>webpack</li>
+<li>webpack-dev-server</li>
+<li>babel</li>
+<li>hot-reload</li>
+<li>react</li>
+</ul>
+<p>建立專案指令如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&gt; git clone https://github.com/gaearon/react-hot-boilerplate.git demo // demo 可換成你喜歡的專案名稱</span><br><span class="line">&gt; cd demo</span><br><span class="line">&gt; npm install</span><br><span class="line">&gt; npm install redux -S</span><br><span class="line"></span><br><span class="line"># npm start 便可以開啟網站</span><br></pre></td></tr></table></figure>
+<p>現在，假設我們只有一個陣列 <code>todos</code> 要維護，這個 <code>state 物件</code> 結構如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&#123;</span><br><span class="line">  todos: []</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>注意：這個 state 物件就是我們整個應用程式唯一的<code>狀態管理中心</code>，我們一般無法直接操作它，一切都是透過 <code>store</code> 管理，reducer 改變。</p>
+</blockquote>
+<h3 id="列舉出需要實作的行為-action-type"><a href="#列舉出需要實作的行為-action-type" class="headerlink" title="列舉出需要實作的行為 - action type"></a>列舉出需要實作的行為 - action type</h3><p>我們只會實作一個行為 <code>ADD_TODO</code> 用來解釋每個角色之間的使用與關係，接著用你喜歡的編輯器開啟 <code>demo</code> 目錄之後，我們先建立 <code>src/actions.js</code>，我們使用 <code>string</code> 來替這些行為命名，這就是 <code>action type</code>。<br>把 <code>action type</code> 宣告為<code>常數</code>並匯出<code>不是必須</code>的，你的確可以單純用字串就好，不過為了減少錯誤與重構的好處我們還是使用了<code>常數</code>的方式。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">/* file: src/actions.js */</span><br><span class="line"></span><br><span class="line">// action type</span><br><span class="line">export const ADD_TODO = &apos;ADD_TODO&apos;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * action creator</span><br><span class="line"> * 有一個 action type 就需要對應一個 action creator 用來格式化需要的資料</span><br><span class="line"> * 本質是一個 function 回傳一個 object 裡面包含著要執行的行為和需要的資料</span><br><span class="line"> */</span><br><span class="line">export function addTodo() &#123;</span><br><span class="line">  return &#123;</span><br><span class="line">    type: ADD_TODO</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="透過-root-reducer-定義資料結構"><a href="#透過-root-reducer-定義資料結構" class="headerlink" title="透過 root reducer 定義資料結構"></a>透過 root reducer 定義資料結構</h3><p>在此我們不深入探討原理，只需要知道使用 <code>combineReducers()</code> <code>傳入的物件參數等於我們最後會得到的 state 物件</code>。</p>
+<p>建立 <code>src/reducers.js</code> 並輸入程式碼如下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">/* file: src/reducers.js */</span><br><span class="line"></span><br><span class="line">import &#123;combineReducers&#125; from &apos;redux&apos;</span><br><span class="line">import &#123;ADD_TODO&#125; from &apos;./actions&apos;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * root reducer 就是決定 state 屬性的地方</span><br><span class="line"> */</span><br><span class="line">const rootReducer = combineReducers(&#123;</span><br><span class="line">  // 這邊等於 state 規劃的 property</span><br><span class="line">  todos</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">export default rootReducer</span><br></pre></td></tr></table></figure>
+<h3 id="透過-reducer-實作變更-state-的行為"><a href="#透過-reducer-實作變更-state-的行為" class="headerlink" title="透過 reducer 實作變更 state 的行為"></a>透過 reducer 實作變更 state 的行為</h3><p>用一個舊有的經驗來比喻，<code>combineReducers</code> 的參數部分所定義的物件，就像是我們在規劃資料庫時定義資料表(Table)一般。<br>至於內部欄位還得靠真正被傳進去的那些 reducer 。所以<code>實際的欄位</code>操作得在 reducer 定義。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line">/* file: src/reducers.js */</span><br><span class="line"></span><br><span class="line">import &#123;combineReducers&#125; from &apos;redux&apos;</span><br><span class="line">import &#123;ADD_TODO&#125; from &apos;./actions&apos;</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * root reducer 就是決定 state 屬性的地方</span><br><span class="line"> */</span><br><span class="line">const rootReducer = combineReducers(&#123;</span><br><span class="line">  // 這邊等於 state 規劃的 property</span><br><span class="line">  todos</span><br><span class="line">&#125;)</span><br><span class="line"></span><br><span class="line">/**</span><br><span class="line"> * reducer: 依據 rootReducer 的屬性實作 reducer 這個 function</span><br><span class="line"> * 注意: action 除了 type 外，還要包含修改 state 所需要的資料</span><br><span class="line"> * 這個資料可能是索引或者要加入的資料</span><br><span class="line"> *</span><br><span class="line"> */</span><br><span class="line">function todos (state = [], action) &#123;</span><br><span class="line">  switch (action.type) &#123;</span><br><span class="line">    case ADD_TODO:</span><br><span class="line">      return [</span><br><span class="line">        ...state,</span><br><span class="line">        action.todo</span><br><span class="line">      ]</span><br><span class="line">    // 處理不符合 action.type 的部分，一定要回傳 state</span><br><span class="line">    default:</span><br><span class="line">      return state</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">export default rootReducer</span><br></pre></td></tr></table></figure>
+<p>記住! reducer 是一個純函式遵循著 <code>(state, action) =&gt; newState</code> 的結構規範，且不得在內部產生任何 side effect。<br>簡單說 reducer 這個函式的工作就是把 state 和 action 當作參數傳入，回傳<code>另外一個</code>變更後的 state，這個 state 因為不能有 side effect 所以回傳的是另外一個全新的物件。</p>
+<p>再次強調 <code>(state, action) =&gt; newState</code> 所以就算你傳入的 action 跟該 reducer 無關，你也要再把 state 傳回去。記住上面的表示式，非常重要。</p>
+<blockquote>
+<p>action 只是一個聖旨記錄了要執行的事情，而 reducer 才是實際處理 state 的地方。</p>
+</blockquote>
+<h3 id="根據-reducer-所需，收斂整理出需要的資料，完善-action-creator-和-action"><a href="#根據-reducer-所需，收斂整理出需要的資料，完善-action-creator-和-action" class="headerlink" title="根據 reducer 所需，收斂整理出需要的資料，完善 action creator 和 action"></a>根據 reducer 所需，收斂整理出需要的資料，完善 action creator 和 action</h3><p>這一步會隨個人習慣有所差異，有人能夠在一開始就把 action 需要的資料都定義好，但對於反應較慢的小弟我來說<br>反過來從 reducer 推回去比較直覺一點。</p>
+<p>重點是 action 除了 <code>action.type</code> 即<code>我們的任務</code>之外還要包含處理這個任務所需要的資料。而剛剛的 reducer 我們先假定了有 <code>action.todo</code>，所以讓我們回到 <code>src/actions.js</code> 來完善他們</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">/* file: src/actions.js */</span><br><span class="line"></span><br><span class="line">// Action Type</span><br><span class="line">export const ADD_TODO = &apos;ADD_TODO&apos;;</span><br><span class="line"></span><br><span class="line">// Action Creator</span><br><span class="line">export function addTodo(todo) &#123;</span><br><span class="line">  return &#123;</span><br><span class="line">    type: ADD_TODO,</span><br><span class="line">    todo</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="store-的建立與實際測試"><a href="#store-的建立與實際測試" class="headerlink" title="store 的建立與實際測試"></a>store 的建立與實際測試</h3><p>到了這一步，我們可以來釐清這些角色之間的關係與該如何使用，開啟 <code>src/index.js</code> ，刪去預設產生的程式碼，改寫如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line">/* file: src/index.js */</span><br><span class="line"></span><br><span class="line">// 匯入 action creator: addTodo</span><br><span class="line">import &#123;addTodo&#125; from &apos;./actions&apos;</span><br><span class="line"></span><br><span class="line">import &#123; createStore &#125; from &apos;redux&apos;</span><br><span class="line"></span><br><span class="line">import rootReducer from &apos;./reducers&apos;</span><br><span class="line"></span><br><span class="line">var store = createStore(rootReducer);</span><br><span class="line"></span><br><span class="line">var unsubscribe = store.subscribe(() =&gt; &#123;</span><br><span class="line">  console.log(store.getState())</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">console.log(&apos;Initial:&apos;, store.getState());</span><br><span class="line"></span><br><span class="line">store.dispatch(addTodo(&apos;Hello, Redux&apos;));</span><br></pre></td></tr></table></figure>
+<p><img src="http://i.imgur.com/kKxVJR7.jpg" alt=""></p>
+<p>相信到這邊你已經明白 redux 的流程是怎麼回事了。</p>
+<h3 id="先設計一個單純只負責呈現的-component"><a href="#先設計一個單純只負責呈現的-component" class="headerlink" title="先設計一個單純只負責呈現的 component"></a>先設計一個單純只負責呈現的 component</h3><p>這部分我們要開始參透 redux 如何和 react 搭配使用，我假設你已經很了解 react ，因為這篇文章訴求是說明概念，因此就不在檔案架構上做太多分類切割。</p>
+<p>我們的這個 component 其實就只需要</p>
+<ul>
+<li>一個 input 用來把資料丟進 todos 這個陣列</li>
+<li>一個 button 觸發儲存的行為</li>
+<li>一個 ul li 結構用來顯示 todos</li>
+</ul>
+<p>當然下面這樣的做法在實務上不是很好，但希望可以協助你方便觀察理解角色之間的應用，所以我就把他們全部放在一個檔案裡。</p>
+<p>開啟 <code>src/App.js</code> 編輯程式碼如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line">/* file: src/App.js */</span><br><span class="line"></span><br><span class="line">import React, &#123; Component &#125; from &apos;react&apos;;</span><br><span class="line"></span><br><span class="line">export default class App extends Component &#123;</span><br><span class="line">  render() &#123;</span><br><span class="line">    const &#123;todos&#125; = this.props;</span><br><span class="line">    return (</span><br><span class="line">      &lt;div&gt;</span><br><span class="line">        &lt;input type=&apos;text&apos; ref=&apos;input&apos; /&gt;</span><br><span class="line">        &lt;button&gt;Add&lt;/button&gt;</span><br><span class="line">        &lt;ul&gt;</span><br><span class="line">        &#123;</span><br><span class="line">          todos.map((todo, index) =&gt; &lt;li key=&#123;index&#125;&gt;&#123;todo&#125;&lt;/li&gt;)</span><br><span class="line">        &#125;</span><br><span class="line">        &lt;/ul&gt;</span><br><span class="line">      &lt;/div&gt;</span><br><span class="line">    );</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="測試-component"><a href="#測試-component" class="headerlink" title="測試 component"></a>測試 component</h3><p>為了方便觀察所以並沒有把剛剛測試 store 的程式碼移除，釐清角色之間的關係而後依據目錄拆分檔案會更有幫助：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">/* file: src/index.js */</span><br><span class="line"></span><br><span class="line">import &#123; addTodo &#125; from &apos;./actions&apos;</span><br><span class="line">import &#123; createStore &#125; from &apos;redux&apos;</span><br><span class="line">import rootReducer from &apos;./reducers&apos;</span><br><span class="line">var store = createStore(rootReducer);</span><br><span class="line"></span><br><span class="line">import React from &apos;react&apos;</span><br><span class="line">import &#123; render &#125; from &apos;react-dom&apos;</span><br><span class="line">import App from &apos;./App&apos;</span><br><span class="line"></span><br><span class="line">var unsubscribe = store.subscribe(() =&gt; &#123;</span><br><span class="line">  console.log(store.getState())</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">console.log(&apos;Initial:&apos;, store.getState());</span><br><span class="line"></span><br><span class="line">store.dispatch(addTodo(&apos;Hello, Redux&apos;));</span><br><span class="line"></span><br><span class="line">render(</span><br><span class="line">  &lt;App todos=&#123;[&apos;A&apos;, &apos;B&apos;]&#125; /&gt;,</span><br><span class="line">  document.getElementById(&apos;root&apos;)</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<h3 id="將-component-與-store-連線"><a href="#將-component-與-store-連線" class="headerlink" title="將 component 與 store 連線"></a>將 component 與 store 連線</h3><p>store 和我們的 component 並不會無緣無故自訂就關聯起來，可以見得的是我們需要一個介面或一個做法來將他們倆關聯起來，而要將 store 與我們的 component 連線我們就需要 <code>react-redux</code>。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&gt; npm install react-redux -S</span><br></pre></td></tr></table></figure>
+<p>接著在 <code>src/index.js</code> 完成程式碼如下</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">/* file: src/index.js */</span><br><span class="line"></span><br><span class="line">import React from &apos;react&apos;</span><br><span class="line">import &#123; render &#125; from &apos;react-dom&apos;</span><br><span class="line">import &#123; addTodo &#125; from &apos;./actions&apos;</span><br><span class="line">import &#123; createStore &#125; from &apos;redux&apos;</span><br><span class="line">import App from &apos;./App&apos;</span><br><span class="line">import rootReducer from &apos;./reducers&apos;</span><br><span class="line">// 匯入 Provider</span><br><span class="line">import &#123; Provider &#125; from &apos;react-redux&apos;</span><br><span class="line"></span><br><span class="line">var store = createStore(rootReducer);</span><br><span class="line"></span><br><span class="line">var unsubscribe = store.subscribe(() =&gt; &#123;</span><br><span class="line">  console.log(store.getState())</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">console.log(&apos;Initial:&apos;, store.getState());</span><br><span class="line"></span><br><span class="line">store.dispatch(addTodo(&apos;Hello, Redux&apos;));</span><br><span class="line"></span><br><span class="line">render(</span><br><span class="line">  &lt;Provider store=&#123;store&#125;&gt;</span><br><span class="line">    &lt;App /&gt;</span><br><span class="line">  &lt;/Provider&gt;,</span><br><span class="line">  document.getElementById(&apos;root&apos;)</span><br><span class="line">)</span><br></pre></td></tr></table></figure>
+<p>看看上面的程式碼是不是很容易聯想到我們以前從資料庫取資料的流程，我們會需要針對特定的資料庫例如 MySQL, PostgreSQL 的 provider 函式庫，而在 redux 我們則是透過 <code>Provider</code> 這個方式提供一個介面讓我們的 component 能夠和 store 連線上，而實際上該如何使用還是得靠元件內部來實作。</p>
+<h3 id="最後實作-App-內部"><a href="#最後實作-App-內部" class="headerlink" title="最後實作 App 內部"></a>最後實作 App 內部</h3><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">/* file: src/App.js */</span><br><span class="line"></span><br><span class="line">import React, &#123; Component &#125; from &apos;react&apos;</span><br><span class="line">import &#123;connect&#125; from &apos;react-redux&apos;</span><br><span class="line">import &#123;addTodo&#125; from &apos;./actions&apos;</span><br><span class="line"></span><br><span class="line">class App extends Component &#123;</span><br><span class="line">  render() &#123;</span><br><span class="line">    var &#123;dispatch, todos &#125; = this.props;</span><br><span class="line">    return (</span><br><span class="line">      &lt;div&gt;</span><br><span class="line">        &lt;input type=&apos;text&apos; ref=&apos;input&apos;/&gt;</span><br><span class="line">        &lt;button onClick=&#123;(e) =&gt; dispatch(addTodo(this.refs.input.value))&#125;&gt;</span><br><span class="line">          Add</span><br><span class="line">        &lt;/button&gt;</span><br><span class="line">        &lt;ul&gt;</span><br><span class="line">        &#123;</span><br><span class="line">          todos.map((todo, index) =&gt; &lt;li key=&#123;index&#125;&gt;&#123;todo&#125;&lt;/li&gt;)</span><br><span class="line">        &#125;</span><br><span class="line">        &lt;/ul&gt;</span><br><span class="line">      &lt;/div&gt;</span><br><span class="line">    );</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">function select (state) &#123;</span><br><span class="line">  return state;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">export default connect(select)(App);</span><br></pre></td></tr></table></figure>
+<h3 id="select-和-connect-是什麼？"><a href="#select-和-connect-是什麼？" class="headerlink" title="select 和 connect 是什麼？"></a>select 和 connect 是什麼？</h3><p>connect 的用途概念上比較容易理解，我們已經有 <code>Provider</code> 了，但我們還是需要主動去連線。而 select 如果你用資料庫的概念來想也就非常清楚了，雖然我有一個資料庫但我並不總是要全部的資料，透過 select 可以讓我們選取我們要的部分就好。但是在上面的範例我們是全取。</p>
+<h1 id="總結"><a href="#總結" class="headerlink" title="總結"></a>總結</h1><p>如此我們已經走完了一遍最基礎的部分，也對各角色有了概念上的理解，這和實際原理其實有些落差。不過在學習的過程中我希望提供另一個角度的看法。當然小弟很清楚這篇文章還有很多有缺失的地方，所以才會建議當你對 redux 的掌握度有些許的進步之後一定要回頭看看官方的教學。</p>
+<ol>
+<li>針對 App 的功能操作列出需要的 action type</li>
+<li>根據 action type 實作 <code>action creator</code> 與定義回傳的 action，記住 reducer 需要的資料只能從這來</li>
+<li>先構思完整的 state 結構，盡可能保持一階的結構類似資料庫正規劃</li>
+<li>針對資料的處理 root reducer 和 reducer</li>
+<li>透過 <code>combineReducers()</code> 組合 state 與對應的 reducer，概念上類似於資料庫的 Table 列表</li>
+<li>一個 reducer 純函式 <code>(state, action) =&gt; newState</code> 是針對 state 撰寫處理狀態修改的邏輯</li>
+<li>每一個 reducer 都需要針對未知的<code>動作類型</code>(action.type)做處理，無論如何都要傳回 state</li>
+<li>透過 <code>createStore(reducer)</code> 建立一個 store。</li>
+<li>透過 <code>react-redux</code> 的 <code>Provider</code> 來把 store 與 component 關聯起來</li>
+<li>component 內部透過 <code>connect</code> 連線並取得資料，搭配 select (只是一個 filter 的 function)</li>
+</ol>
+<h1 id="資源"><a href="#資源" class="headerlink" title="資源"></a>資源</h1><ul>
+<li><a href="http://redux.js.org/index.html" target="_blank" rel="noopener">官方教學</a></li>
+<li><a href="http://chentsulin.github.io/redux/index.html" target="_blank" rel="noopener">繁體中文版</a></li>
+<li><a href="https://code-cartoons.com/a-cartoon-intro-to-redux-3afb775501a6#.u08wcg6kk" target="_blank" rel="noopener">介紹 Redux 卡通版</a></li>
+</ul>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+
+</div>
+
+    <a data-url="//andyyou.github.io/2016/01/04/redux/" data-id="cknx2z2bb00at3m72kso7vhk5" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        // Prevent duplicate binding
+        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
+            __SHARE_BUTTON_BINDED__ = true;
+        } else {
+            return;
+        }
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+            
+    
+
+        </footer>
+    </div>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2016/01/28/chrome-dev-tool/" id="article-nav-newer" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">上一篇</strong>
+            <div class="article-nav-title">
+                
+                    Chrome Dev tool 筆記
+                
+            </div>
+        </a>
+    
+    
+        <a href="/2015/12/17/nodejs-path/" id="article-nav-older" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">下一篇</strong>
+            <div class="article-nav-title">NodeJS path</div>
+        </a>
+    
+</nav>
+
+
+    
+</article>
+
+
+    
+    <section id="comments">
+    
+    </section>
+
+</section>
+            
+                <aside id="sidebar">
+   
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">分類</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Cloud/">Cloud</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Database/">Database</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Fun/">Fun</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Mobile/">Mobile</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Program/">Program</a><span class="category-list-count">132</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/System/">System</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Tools/">Tools</a><span class="category-list-count">17</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">歸檔</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/04/">四月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/03/">三月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/10/">十月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">五月 2019</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">六月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">十二月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">十一月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">九月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">十月 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">九月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">六月 2016</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">十二月 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">十一月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">十月 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">九月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">八月 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">七月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">五月 2015</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">四月 2015</a><span class="archive-list-count">19</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">十二月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/11/">十一月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/10/">十月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">九月 2014</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/08/">八月 2014</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/02/">二月 2014</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/01/">一月 2014</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">十一月 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">十月 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">九月 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">八月 2013</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/03/">三月 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">三月 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">一月 2012</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2011/11/">十一月 2011</a><span class="archive-list-count">3</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">標籤</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/net-mvc/">.net mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RoR/">RoR</a><span class="tag-list-count">15</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/api/">api</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aws/">aws</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/azure/">azure</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bot/">bot</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bundler/">bundler</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cache/">cache</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/carrier-wave/">carrier wave</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/centos/">centos</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/chrome/">chrome</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cloudflare/">cloudflare</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/compass/">compass</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/devise/">devise</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dnd/">dnd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/e-invoice/">e-invoice</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/entity-framework/">entity framework</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/es6/">es6</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/facebook/">facebook</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flux/">flux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/framework/">framework</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gcp/">gcp</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/grunt/">grunt</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gulp/">gulp</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/heroku/">heroku</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/html/">html</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/iisexpress/">iisexpress</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ios/">ios</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">70</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript-express-passport/">javascript express passport</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript-nodejs/">javascript nodejs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jekyll/">jekyll</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jetstream/">jetstream</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jspm/">jspm</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jwt/">jwt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/laravel/">laravel</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/letsencrypt/">letsencrypt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mechanism/">mechanism</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongodb/">mongodb</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/node/">node</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nodejs/">nodejs</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/oocss/">oocss</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/osx/">osx</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package-manager/">package manager</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/php/">php</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/postgres/">postgres</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/postgresql/">postgresql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/queue/">queue</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rabbitmq/">rabbitmq</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rack-server/">rack server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails/">rails</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails-webpack-stimulus-javascript-bootstrap/">rails webpack stimulus javascript bootstrap</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/raspberry-pi/">raspberry-pi</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react/">react</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react-native/">react native</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/reactjs/">reactjs</a><span class="tag-list-count">32</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redux/">redux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sass/">sass</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/selenium/">selenium</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/slim/">slim</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssh/">ssh</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssl/">ssl</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/stimulus/">stimulus</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/svg-javascript/">svg javascript</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/task-runner/">task runner</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tmux/">tmux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tools/">tools</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vm/">vm</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/">vue</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vuejs/">vuejs</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/webpack/">webpack</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/windows/">windows</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/xml/">xml</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">標籤雲</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/net-mvc/" style="font-size: 10px;">.net mvc</a> <a href="/tags/RoR/" style="font-size: 16.67px;">RoR</a> <a href="/tags/api/" style="font-size: 10px;">api</a> <a href="/tags/aws/" style="font-size: 12.5px;">aws</a> <a href="/tags/azure/" style="font-size: 10.83px;">azure</a> <a href="/tags/bot/" style="font-size: 10px;">bot</a> <a href="/tags/bundler/" style="font-size: 10.83px;">bundler</a> <a href="/tags/cache/" style="font-size: 10px;">cache</a> <a href="/tags/carrier-wave/" style="font-size: 10.83px;">carrier wave</a> <a href="/tags/centos/" style="font-size: 10px;">centos</a> <a href="/tags/chrome/" style="font-size: 10px;">chrome</a> <a href="/tags/cloudflare/" style="font-size: 10px;">cloudflare</a> <a href="/tags/compass/" style="font-size: 10px;">compass</a> <a href="/tags/css/" style="font-size: 17.5px;">css</a> <a href="/tags/devise/" style="font-size: 10px;">devise</a> <a href="/tags/dnd/" style="font-size: 10px;">dnd</a> <a href="/tags/docker/" style="font-size: 10.83px;">docker</a> <a href="/tags/e-invoice/" style="font-size: 10px;">e-invoice</a> <a href="/tags/entity-framework/" style="font-size: 10px;">entity framework</a> <a href="/tags/es6/" style="font-size: 11.67px;">es6</a> <a href="/tags/facebook/" style="font-size: 10px;">facebook</a> <a href="/tags/flux/" style="font-size: 10px;">flux</a> <a href="/tags/framework/" style="font-size: 10.83px;">framework</a> <a href="/tags/gcp/" style="font-size: 10.83px;">gcp</a> <a href="/tags/go/" style="font-size: 10px;">go</a> <a href="/tags/grunt/" style="font-size: 12.5px;">grunt</a> <a href="/tags/gulp/" style="font-size: 11.67px;">gulp</a> <a href="/tags/heroku/" style="font-size: 14.17px;">heroku</a> <a href="/tags/html/" style="font-size: 10.83px;">html</a> <a href="/tags/iisexpress/" style="font-size: 10px;">iisexpress</a> <a href="/tags/ios/" style="font-size: 11.67px;">ios</a> <a href="/tags/javascript/" style="font-size: 20px;">javascript</a> <a href="/tags/javascript-express-passport/" style="font-size: 10px;">javascript express passport</a> <a href="/tags/javascript-nodejs/" style="font-size: 10px;">javascript nodejs</a> <a href="/tags/jekyll/" style="font-size: 10.83px;">jekyll</a> <a href="/tags/jetstream/" style="font-size: 10px;">jetstream</a> <a href="/tags/jspm/" style="font-size: 10px;">jspm</a> <a href="/tags/jwt/" style="font-size: 10px;">jwt</a> <a href="/tags/laravel/" style="font-size: 11.67px;">laravel</a> <a href="/tags/letsencrypt/" style="font-size: 10px;">letsencrypt</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/mechanism/" style="font-size: 10px;">mechanism</a> <a href="/tags/mongodb/" style="font-size: 10.83px;">mongodb</a> <a href="/tags/node/" style="font-size: 10px;">node</a> <a href="/tags/nodejs/" style="font-size: 15px;">nodejs</a> <a href="/tags/oocss/" style="font-size: 10px;">oocss</a> <a href="/tags/osx/" style="font-size: 14.17px;">osx</a> <a href="/tags/package-manager/" style="font-size: 14.17px;">package manager</a> <a href="/tags/php/" style="font-size: 10.83px;">php</a> <a href="/tags/postgres/" style="font-size: 10px;">postgres</a> <a href="/tags/postgresql/" style="font-size: 10.83px;">postgresql</a> <a href="/tags/queue/" style="font-size: 10.83px;">queue</a> <a href="/tags/rabbitmq/" style="font-size: 10.83px;">rabbitmq</a> <a href="/tags/rack-server/" style="font-size: 10px;">rack server</a> <a href="/tags/rails/" style="font-size: 14.17px;">rails</a> <a href="/tags/rails-webpack-stimulus-javascript-bootstrap/" style="font-size: 10px;">rails webpack stimulus javascript bootstrap</a> <a href="/tags/raspberry-pi/" style="font-size: 10px;">raspberry-pi</a> <a href="/tags/react/" style="font-size: 15.83px;">react</a> <a href="/tags/react-native/" style="font-size: 10px;">react native</a> <a href="/tags/reactjs/" style="font-size: 19.17px;">reactjs</a> <a href="/tags/redux/" style="font-size: 10px;">redux</a> <a href="/tags/ruby/" style="font-size: 18.33px;">ruby</a> <a href="/tags/sass/" style="font-size: 10.83px;">sass</a> <a href="/tags/selenium/" style="font-size: 10px;">selenium</a> <a href="/tags/slim/" style="font-size: 10px;">slim</a> <a href="/tags/ssh/" style="font-size: 10px;">ssh</a> <a href="/tags/ssl/" style="font-size: 10.83px;">ssl</a> <a href="/tags/stimulus/" style="font-size: 10px;">stimulus</a> <a href="/tags/svg-javascript/" style="font-size: 11.67px;">svg javascript</a> <a href="/tags/task-runner/" style="font-size: 11.67px;">task runner</a> <a href="/tags/tmux/" style="font-size: 10px;">tmux</a> <a href="/tags/tools/" style="font-size: 10px;">tools</a> <a href="/tags/ubuntu/" style="font-size: 10.83px;">ubuntu</a> <a href="/tags/vm/" style="font-size: 10px;">vm</a> <a href="/tags/vue/" style="font-size: 10px;">vue</a> <a href="/tags/vuejs/" style="font-size: 13.33px;">vuejs</a> <a href="/tags/webpack/" style="font-size: 12.5px;">webpack</a> <a href="/tags/windows/" style="font-size: 10px;">windows</a> <a href="/tags/xml/" style="font-size: 10px;">xml</a>
+        </div>
+    </div>
+
+    
+    <div id="toTop" class="fa fa-angle-up"></div>
+</aside>
+            
+        </div>
+        <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2021 andyyou(You,ZongYan)
+        </div>
+    </div>
+</footer>
+
+        
+
+    
+        <script src="/lib/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-share.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-video.min.js"></script>
+    
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+</body>
+</html>

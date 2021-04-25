@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    
+    <title>ES6 Generators 基礎 | DEVLOG of andyyou</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <!-- Google Tag Manager -->
+    <script>(function (w, d, s, l, i) {
+        w[l] = w[l] || []; w[l].push({
+          'gtm.start':
+            new Date().getTime(), event: 'gtm.js'
+        }); var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+            'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+      })(window, document, 'script', 'dataLayer', 'GTM-57LT2GG');</script>
+    <!-- End Google Tag Manager -->
+    <meta name="description" content="在 Javascript ES6 的新功能中，有一個新品種的 function 稱為 generator 這個名字有點奇怪，不過它的行為在第一次看到的時候似乎更加奇怪。這篇筆記目的在解釋關於 generator 基本的運作原理。">
+<meta name="keywords" content="javascript,es6">
+<meta property="og:type" content="article">
+<meta property="og:title" content="ES6 Generators 基礎">
+<meta property="og:url" content="//andyyou.github.io/2015/05/20/es6-generators/index.html">
+<meta property="og:site_name" content="DEVLOG of andyyou">
+<meta property="og:description" content="在 Javascript ES6 的新功能中，有一個新品種的 function 稱為 generator 這個名字有點奇怪，不過它的行為在第一次看到的時候似乎更加奇怪。這篇筆記目的在解釋關於 generator 基本的運作原理。">
+<meta property="og:locale" content="zh-TW">
+<meta property="og:updated_time" content="2016-12-19T02:31:59.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ES6 Generators 基礎">
+<meta name="twitter:description" content="在 Javascript ES6 的新功能中，有一個新品種的 function 稱為 generator 這個名字有點奇怪，不過它的行為在第一次看到的時候似乎更加奇怪。這篇筆記目的在解釋關於 generator 基本的運作原理。">
+    
+
+    
+
+    
+        <link rel="icon" href="/images/favicon.png">
+    
+
+    <link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/lib/open-sans/styles.css">
+    <link rel="stylesheet" href="/lib/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/lib/jquery/2.1.3/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/lib/lightgallery/css/lightgallery.min.css">
+    
+    
+    
+        <script type="text/javascript">
+(function(i,s,o,g,r,a,m) {i['GoogleAnalyticsObject']=r;i[r]=i[r]||function() {
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-39208536-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+    
+    
+    
+
+
+</head>
+</html>
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-57LT2GG" height="0" width="0"
+        style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    <div id="container">
+        <header id="header">
+    <div id="header-main" class="header-inner">
+        <div class="outer">
+            <a href="/" id="logo">
+                <i class="logo"></i>
+                <span class="site-title">DEVLOG of andyyou</span>
+            </a>
+            <nav id="main-nav">
+                
+                    <a class="main-nav-link" href="/.">Home</a>
+                
+                    <a class="main-nav-link" href="/archives">Archives</a>
+                
+                    <a class="main-nav-link" href="/categories">Categories</a>
+                
+                    <a class="main-nav-link" href="/tags">Tags</a>
+                
+            </nav>
+            
+                
+                <nav id="sub-nav">
+                    <div class="profile" id="profile-nav">
+                        <a id="profile-anchor" href="javascript:;">
+                            <img class="avatar" src="https://avatars2.githubusercontent.com/u/665690?v=3&amp;s=466">
+                            <i class="fa fa-caret-down"></i>
+                        </a>
+                    </div>
+                </nav>
+            
+            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜尋">
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="Type something...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: 'Pages',
+            CATEGORIES: '分類',
+            TAGS: '標籤',
+            UNTITLED: '(Untitled)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+        </div>
+    </div>
+    <div id="main-nav-mobile" class="header-sub header-inner">
+        <table class="menu outer">
+            <tr>
+                
+                    <td><a class="main-nav-link" href="/.">Home</a></td>
+                
+                    <td><a class="main-nav-link" href="/archives">Archives</a></td>
+                
+                    <td><a class="main-nav-link" href="/categories">Categories</a></td>
+                
+                    <td><a class="main-nav-link" href="/tags">Tags</a></td>
+                
+                <td>
+                    
+    <div class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜尋">
+    </div>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+</header>
+
+        <div class="outer">
+            
+                
+
+<aside id="profile">
+    <div class="inner profile-inner">
+        <div class="base-info profile-block">
+            <img id="avatar" src="https://avatars2.githubusercontent.com/u/665690?v=3&amp;s=466">
+            <h2 id="name">andyyou</h2>
+            <h3 id="title">Web Developer</h3>
+            <span id="location"><i class="fa fa-map-marker"></i>Taipei, Taiwan</span>
+            <a id="follow" target="_blank" href="https://github.com/andyyou">關注我</a>
+        </div>
+        <div class="article-info profile-block">
+            <div class="article-info-block">
+                185
+                <span>文章</span>
+            </div>
+            <div class="article-info-block">
+                79
+                <span>標籤</span>
+            </div>
+        </div>
+        
+        <div class="profile-block social-links">
+            <table>
+                <tr>
+                    
+                    
+                    <td>
+                        <a href="https://github.com/andyyou" target="_blank" title="github" class="tooltip">
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="https://www.linkedin.com/pub/zongyan-you/2a/493/16" target="_blank" title="linkedin" class="tooltip">
+                            <i class="fa fa-linkedin"></i>
+                        </a>
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
+        
+    </div>
+</aside>
+
+            
+            <section id="main"><article id="post-es6-generators" class="article article-type-post" itemscope="" itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+            ES6 Generators 基礎
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2015/05/20/es6-generators/">
+            <time datetime="2015-05-19T21:30:00.000Z" itemprop="datePublished">2015-05-20</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/Program/">Program</a>
+    </div>
+
+                        
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/es6/">es6</a>, <a class="tag-link" href="/tags/javascript/">javascript</a>
+    </div>
+
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <p>在 Javascript ES6 的新功能中，有一個新品種的 function 稱為 <code>generator</code> 這個名字有點奇怪，不過它的行為在第一次看到的時候似乎更加奇怪。這篇筆記目的在解釋關於 generator 基本的運作原理。<br><a id="more"></a></p>
+<h1 id="執行到完成"><a href="#執行到完成" class="headerlink" title="執行到完成"></a>執行到完成</h1><p>在我們談論關於 generator 時，第一件事情是對於標題下的 <code>執行到完成</code>， generator 是如何不同於普通函式。</p>
+<p>不過您是否看懂上面這一小段，您一直都對於 function 有一個相當基本的認知那就是一旦函式開始執行，它就會一直執行到完成為止。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">setTimeout(<span class="function"><span class="keyword">function</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">"Settimeout excuted"</span>);</span><br><span class="line">&#125;, <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">foo</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">for</span>(<span class="keyword">var</span> i=<span class="number">0</span>; i&lt;<span class="number">1000</span>; i++) &#123;</span><br><span class="line">    <span class="built_in">console</span>.log(i);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">foo();</span><br><span class="line"><span class="comment">// 1 - 1000</span></span><br><span class="line"><span class="comment">// Settimeout excuted</span></span><br><span class="line"><span class="comment">// 即使只差 1ms 還是要等 foo 跑完。</span></span><br></pre></td></tr></table></figure>
+<p>這邊 <code>for</code> 迴圈如果數字再大一點那就需要點時間，至少大於 1ms，然後您就發現 <code>setTimeout</code> 明明說好是 1ms 後發動卻無法中斷 <code>foo</code> 所以 <code>setTimeout</code> 就被卡在 <code>event-loop</code> 等待直到輪到它為止。</p>
+<p>那如果 <code>foo()</code> 可以被中斷呢? 不會破壞我們的程式嗎?<br>那的確是個挑戰，當我們採取多執行緒來寫程式的時候，不過好佳在我們用 Javascript 所以我們不需要擔心那些，因為 Javascript 永遠是單執行緒，意思是在一個時間點永遠只有一個 function 或指令在執行。</p>
+<p>注意: <code>Web Worker</code> 是讓你可以啟動另一個完全分離的執行緒，給一部分的 JS 在其中執行的機制，跟您主要的執行緒是平行的。<br>不在我們的程式使用多執行並發是因為兩個執行緒只能透過非同步事件來互相溝通。雖然是兩個平行的執行緒一旦要溝通還是要遵守 <code>event-loop</code> 的規則，一次只有一個動作，且還是一旦執行就要執行到完成。</p>
+<h1 id="執行-暫停-執行"><a href="#執行-暫停-執行" class="headerlink" title="執行 - 暫停 - 執行"></a>執行 - 暫停 - 執行</h1><p>透過 ES6 generator 我們可以有不同的函式，它可以在執行到一半<code>暫停</code>，然後再<code>回復</code>執行。讓其他程式可以在暫停這段期間先跑。</p>
+<p>如果您曾經得讀過關於並發或者執行緒程式設計的文章，您也許看過 <code>cooperative</code> 這個術語，其基本的意思是一個進程(process)，在我們 JS 的範例是 function 會自己決定何時應該允許中斷暫停。因此可以和其他的程式碼協同合作。這個觀念的對比是 <code>preemptive</code> 指出一個進程可能會違反原本的設計而中斷。</p>
+<p>ES6 generator function 在其並發行為裡是可以協同合作的。在 generator function 裡面您可以使用新的關鍵字 <code>yield</code> 來從內部暫停。沒有東西可以從外部暫停一個 generator ，必須要透過 yield 從內部暫停。</p>
+<p>然而一旦 generator 用 yield 暫停了自己，它就<code>不能靠自己回復</code>。必須要有個外部的控制行為來使其回復執行。稍後會解釋該如何做。</p>
+<p>所以基本上，一個 generator 函式可以被暫停，重啟，隨您高興開開關關幾次。<br>事實上您可以用一個無限迴圈來搭配 generator ，在一般 JS 程式中出現無限迴圈通常是寫錯了，不過搭配 generator 卻是合理的而且有時候您的確就是想要這麼做。</p>
+<p>更重要的是，這個<code>暫停</code>和<code>重啟</code>不只單單是控制 generator 的執行流程，而且還提供了兩種方式在執行過程中傳遞輸入和輸出的訊息</p>
+<p>在一般函式中您可以傳入參數(Parameters)然後 <code>return</code> 一個結果。在 generator 您可以透過 yield 把資料丟出來，然後傳回其他資料再回復執行。</p>
+<h1 id="怎麼寫？"><a href="#怎麼寫？" class="headerlink" title="怎麼寫？"></a>怎麼寫？</h1><p>這一小段讓我們來開始介紹關於這些新功能的語法(syntax)</p>
+<p>首先是這個新的 <code>generator function</code> 的宣告</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> *<span class="title">foo</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意到 <code>*</code> 了嗎? 這個新語法看起來有點奇怪，在其他語言(C, Object-C)中看起來像是函式要回傳一個指標。不過不要搞混，這只是一個符號用來判斷這是一個特殊的函式 generator。</p>
+<p>您可能看過其他文章使用 <code>function* foo(){}</code> 而不是 <code>function *foo(){}</code>，兩種宣告都正確。</p>
+<p>generator function 大概就是一個普通的 function ，只是在內部多了一些新的語法可以使用。</p>
+<p>而最主要的新玩具就是我們上面提到的 <code>yield</code>，直接來看點範例</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> *<span class="title">foo</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">var</span> a = <span class="number">1</span> + (<span class="keyword">yield</span> <span class="string">"fooo"</span>);</span><br><span class="line">  <span class="built_in">console</span>.log(x);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>當 generator 執行到 <code>yield</code> 時會暫停，這個時候會把右邊的 expression 把就是 <code>fooo</code> 字串送出來，當 generator 再次啟動的時候無論資料有沒有送進去 generator 就會取得另外一個 <code>yield expression</code>，把 1 + <code>yield expression</code> 計算的結果。</p>
+<blockquote>
+<p><code>yield</code> 的意思我喜歡用<code>佔位</code>的概念來形容，有點像 <code>hook</code> 的觀念。</p>
+</blockquote>
+<p>剛剛我說的有點讓你混淆，讓我們再來釐清一次 <code>yield</code> 第一個功能是<code>暫停</code>，當函式走到 <code>yield</code> 的時候會先停止，然後把右邊的 expression 丟到外面。<br>停一下！這個 expression 跟待會要接回來的資料沒有關係。把 yield 想成<code>佔位符</code>，意思是停在這邊等別人把值丟進來，同時在我停下來的時候也可以丟個東西出去。<br>有點類似 HTTP 的運作概念，執行到 yield 的時候對外部發送個 request 然後等待外部把資料送回來。再停一下！什麼外部？就是 generator 的實體物件。<br>他會負責把資料再丟回來。丟回來的時候記住就不會再被那個 “fooo” 混淆了， “fooo” 丟出去後就沒有他的事了。</p>
+<p>這個例子太難懂? 讓我們看點更完整的基本用法</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> *<span class="title">gen</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">'start'</span>);</span><br><span class="line">  <span class="keyword">var</span> o = <span class="keyword">yield</span> <span class="string">"called"</span>;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">"I am back and bring "</span> + o);</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">var</span> a = gen();          <span class="comment">// 第一次呼叫時是返回一個 generator 物件</span></span><br><span class="line"><span class="keyword">var</span> b = a.next();       <span class="comment">// 開始執行，到 yield 時會暫停執行並返回，返回值是一個物件</span></span><br><span class="line"><span class="built_in">console</span>.log(b.value);   <span class="comment">// 他的 value 屬性是 yield 右側的 expression 的執行結果</span></span><br><span class="line"><span class="built_in">console</span>.log(b.done);    <span class="comment">// 是否完成</span></span><br><span class="line"><span class="keyword">var</span> c = a.next(<span class="string">"something from outside"</span>); <span class="comment">// 帶個值回去</span></span><br><span class="line"><span class="built_in">console</span>.log(c.done);    <span class="comment">// 完成</span></span><br><span class="line">a.next(); <span class="comment">// 如果再呼叫 next()，就會拋出例外</span></span><br></pre></td></tr></table></figure>
+<p>現在您應該看懂了兩種溝通方式了吧</p>
+<p>您可以在任何 expression 的位置單純使用 <code>yield</code>，將其置放在 expression/statement 之中，然後輸出的部分就會是 undefined。</p>
+<blockquote>
+<p>一個片段程式碼產生一個值稱之為 expression，expression 類似語言中的片語，一個短句。<br>  statement 則是一句完整的句子，在 JS 中用 <code>;</code> 結束當作一個句子。<br>  通常一個 statement 是獨立的，只會完成某項任務，不過如果它影響了整個程式例如: 異動了機器內部的狀態，或者影響後面的 statement，這些造成的改變我們就稱為 side effect (副作用)</p>
+</blockquote>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">foo</span>(<span class="params">x</span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">"x: "</span> + x);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> *<span class="title">bar</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">yield</span>; <span class="comment">// 只會暫停</span></span><br><span class="line">  foo(<span class="keyword">yield</span>); <span class="comment">// 暫停並等待傳入參數到 foo()</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h1 id="Generator-Iterator"><a href="#Generator-Iterator" class="headerlink" title="Generator Iterator"></a>Generator Iterator</h1><p>Iterator 迭代器實際上是一種特殊的行為，也可以表示一個設計模式。這個行為指的是讓我們可以透過呼叫 <code>next()</code><br>在一個排序的集合中，特定時間點下一次只取得一個值。舉例來說我們在<code>[1, 2, 3, 4, 5]</code>這個陣列上使用 iterator。<br>第一次呼叫 <code>next()</code> 時我們會取得 <code>1</code>，第二次 <code>2</code> 以此類推<br>當所有元素值都被回傳過後，<code>next()</code> 將會回傳 <code>null</code>, <code>false</code> 或者其他通知我們已經跑完所有元素的訊號。</p>
+<p>剛剛提到我們在外部用來控制 generator function 的那個實體物件就是 <code>generator iterator</code> ，聽起來好像挺複雜的不過讓我們來看看實際上的例子</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 假設我們有一個 generator function</span></span><br><span class="line"><span class="function"><span class="keyword">function</span> *<span class="title">foo</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">yield</span> <span class="number">1</span>;</span><br><span class="line">  <span class="keyword">yield</span> <span class="number">2</span>;</span><br><span class="line">  <span class="keyword">yield</span> <span class="number">3</span>;</span><br><span class="line">  <span class="keyword">yield</span> <span class="number">4</span>;</span><br><span class="line">  <span class="keyword">yield</span> <span class="number">5</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>為了逐步從 <code>*foo</code> 這個 generator function 中取得 yield 傳出來的資料我們需要一個迭代器</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> it = foo(); <span class="comment">// 再次強調，第一次呼叫 function 傳回一個迭代器</span></span><br></pre></td></tr></table></figure>
+<p>所以！！第一次像我們平常一樣呼叫 function 的時候並不會真的執行。</p>
+<p>在我們的觀念裡這的確有點陌生。您可能也會好奇想知道為什麼不是用 <code>var it = new foo()</code> 因為剛剛不是說回傳一個 iterator 實體物件嗎? 好吧我真的不知道，等我知道了在告訴你。這邊暫時先不討論這個問題 XD</p>
+<p>接著讓我們開始來使用 iterator</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> message = it.next();</span><br><span class="line"><span class="built_in">console</span>.log(message); <span class="comment">// #=&gt; &#123;value: 1, done: false&#125;</span></span><br></pre></td></tr></table></figure>
+<p>第一次迭代之後我們會拿到 <code>yield</code> 傳出來的資料。再次強調一遍不要把 yield 的觀念當作是 function ，把它分成兩次一次負責輸出，取得資料之後您可以修改操作然後再把您的值丟回去。留在 function yield 右邊的那個 expression 丟出來後就沒用了。不要被它干擾。</p>
+<p>每一次我們呼叫 <code>next()</code> 都會取得一個物件這個物件有 <code>value</code> 和 <code>done</code> 兩個屬性。<code>done</code> 用來判斷迭代器是否執行完畢。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">console</span>.log( it.next() ); <span class="comment">// &#123; value:2, done:false &#125;</span></span><br><span class="line"><span class="built_in">console</span>.log( it.next() ); <span class="comment">// &#123; value:3, done:false &#125;</span></span><br><span class="line"><span class="built_in">console</span>.log( it.next() ); <span class="comment">// &#123; value:4, done:false &#125;</span></span><br><span class="line"><span class="built_in">console</span>.log( it.next() ); <span class="comment">// &#123; value:5, done:false &#125;</span></span><br></pre></td></tr></table></figure>
+<p>執行到第五次我們發現 <code>done</code> 還是 <code>false</code> 那是因為技術上來說 generator 還沒有執行完成。<code>yield</code> 傳出資料了還在等待你傳回去繼續執行。所以我們仍然要呼叫最後一次。<br>所以最後一次如下：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">console</span>.log( it.next() ); <span class="comment">// &#123; value:undefined, done:true &#125;</span></span><br></pre></td></tr></table></figure>
+<p>現在我們執行完全部的流程了但是我們最後一次並沒有拿到任何資料<br>因為我們已經用盡了 <code>yield ____</code></p>
+<p>在這個關鍵點，您也許想知道我可以從 generator 回傳值嗎？並且如果我這麼做那這個值會在 <code>{value: , done: true}</code> 這個物件的 <code>value</code> 嗎?</p>
+<p>答案是 Yes 可以</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> *<span class="title">foo</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">yield</span> <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">2</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> it = foo();</span><br><span class="line"><span class="built_in">console</span>.log( it.next() ); <span class="comment">// &#123; value:1, done:false &#125;</span></span><br><span class="line"><span class="built_in">console</span>.log( it.next() ); <span class="comment">// &#123; value:2, done:true &#125;</span></span><br></pre></td></tr></table></figure>
+<p>等等…但也不可以</p>
+<p>依賴 <code>return</code> 恐怕不是個好主意，因為當我們使用 <code>for..of</code> 的時候最後一個回傳的值會被捨棄</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> *<span class="title">foo</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">yield</span> <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">yield</span> <span class="number">2</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">3</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> it = foo();</span><br><span class="line"><span class="keyword">for</span>(<span class="keyword">var</span> i <span class="keyword">of</span> it) &#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">"使用 for of "</span> + i);</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 使用 for of 1</span></span><br><span class="line"><span class="comment">// 使用 for of 2</span></span><br></pre></td></tr></table></figure>
+<p>為了完整起見讓我們來看看完整的輸入和輸出是如何操作的</p>
+<blockquote>
+<p>現在我要來回答您怎麼丟資料回去呢? 就是每個 <code>next()</code> 帶入的參數</p>
+</blockquote>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> *<span class="title">foo</span>(<span class="params">x</span>) </span>&#123;</span><br><span class="line">  <span class="comment">// you can use this to inspect</span></span><br><span class="line">  <span class="comment">// console.log(`x: $&#123;x&#125;, y: $&#123;y&#125;, z: $&#123;z&#125;`);</span></span><br><span class="line"></span><br><span class="line">  <span class="keyword">var</span> y = <span class="number">2</span> * (<span class="keyword">yield</span> (x + <span class="number">1</span>));</span><br><span class="line">  <span class="keyword">var</span> z = <span class="keyword">yield</span> (y / <span class="number">3</span>);;</span><br><span class="line">  <span class="keyword">return</span> (x + y + z);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">var</span> it = foo(<span class="number">5</span>); <span class="comment">// 取得 iterator 物件，並不執行</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log( it.next() ); <span class="comment">// &#123; value:6, done:false &#125;</span></span><br><span class="line"><span class="comment">// 第一次呼叫 x: 5, y: undefined, z: undefined</span></span><br><span class="line"><span class="comment">// 執行到 var y 那邊停住，傳出 yield(x+1) = 6</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log( it.next( <span class="number">12</span> ) );   <span class="comment">// &#123; value:8, done:false &#125;</span></span><br><span class="line"><span class="comment">// 送 12 進去所以 y = 2 * 12 = 24，第二次呼叫 x:5, y: 24, z: undefined</span></span><br><span class="line"><span class="comment">// 到 var z 那邊停住，輸出 8 等待輸入...</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log( it.next( <span class="number">13</span> ) );   <span class="comment">// &#123; value:42, done:true &#125;</span></span><br><span class="line"><span class="comment">// 送 13 進去所以 z = 13 所以第三次呼叫 x: 5, y: 24, z: 13</span></span><br><span class="line"><span class="comment">// 第三次完成並取得 return value 42</span></span><br></pre></td></tr></table></figure>
+<p>你可以看到我們仍然可以透過參數來初始化 x，第一次初始化並建立 iterator 順便讓 x 等於 5。</p>
+<p>第一次 <code>next()</code> 我們沒有傳入任何值因為第一次還沒有任何 <code>yield</code> 在等你傳值進去。那如果我們傳值了呢? 沒什麼不行，因為這個值會被丟掉。ES6 表示 generator function 會忽略用不到的值。不過有些還沒完全實作 ES6 的瀏覽器可能會出錯。</p>
+<p><code>yield (x + 1)</code> 先往外丟出 6 ，然後<code>等</code>你第二次呼叫 <code>next(12)</code> 所以 y 會是 <code>2 * 12 = 24</code> 接著 <code>yield (y / 3)</code> 就是 <code>yield (24 / 3)</code> 丟出 8 一樣等你把 13 丟進去所以 z = 13</p>
+<p>最後 <code>return (x + y + z)</code> 等於 <code>42</code>，看這邊可能會頭暈。多看幾次。</p>
+<h1 id="for-of"><a href="#for-of" class="headerlink" title="for..of"></a>for..of</h1><p>ES6 也提供一種方便的迭代語法，<code>for...of</code></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> *<span class="title">foo</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">yield</span> <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">yield</span> <span class="number">2</span>;</span><br><span class="line">    <span class="keyword">yield</span> <span class="number">3</span>;</span><br><span class="line">    <span class="keyword">yield</span> <span class="number">4</span>;</span><br><span class="line">    <span class="keyword">yield</span> <span class="number">5</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">6</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">var</span> v <span class="keyword">of</span> foo()) &#123;</span><br><span class="line">    <span class="built_in">console</span>.log( v );</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">// 1 2 3 4 5</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">console</span>.log( v ); <span class="comment">// still `5`, not `6` :(</span></span><br></pre></td></tr></table></figure>
+<p>如您所見，<code>foo()</code> 會先建立迭代器且 <code>for..of</code> 會自動去擷取它然後為您自動迭代取出每一個 yield express 吐回來的值。直到 <code>done:true</code> 出現。當 <code>done</code> 為 <code>false</code> 的時候他會自動擷取 <code>value</code> 屬性，注意不是物件。一旦 <code>done: true</code> 迴圈就停止，而且不會包含最後的 return 的值。</p>
+<p>注意上面您可以看到 <code>for..of</code> 迴圈會忽略丟掉 <code>return 6</code>，而且因為沒有 <code>next()</code> 可以使用所以在這種情況下你就不能用 <code>for..of</code> 必須要自己操作。</p>
+<h1 id="結論"><a href="#結論" class="headerlink" title="結論"></a>結論</h1><p>OK! 現在您已經懂了 generator 的基本用法了。別擔心如果你現在有點混亂是正常的，我第一次看也是。<br>很自然的您會想知道，這個新玩具可以在實際專案中做些什麼?</p>
+<p>在您熟悉玩過上面這些範例程式碼之後您可能會問</p>
+<ol>
+<li>如何把它用在錯誤處理方面?</li>
+<li>Generator 可以呼叫其他 Generator 嗎?</li>
+<li>如何使用非同步的方式操作 Generator?</li>
+</ol>
+<p>如果我有時間我會繼續翻譯<a href="http://davidwalsh.name/es6-generators" target="_blank" rel="noopener">系列文章</a></p>
+<h1 id="資源"><a href="#資源" class="headerlink" title="資源"></a>資源</h1><p>參考翻譯自<a href="http://davidwalsh.name/es6-generators" target="_blank" rel="noopener">The Basics Of ES6 Generators</a></p>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+
+</div>
+
+    <a data-url="//andyyou.github.io/2015/05/20/es6-generators/" data-id="cknx2z2at009k3m72lxzsl22x" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        // Prevent duplicate binding
+        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
+            __SHARE_BUTTON_BINDED__ = true;
+        } else {
+            return;
+        }
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+            
+    
+
+        </footer>
+    </div>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2015/05/21/js-unicode-issue/" id="article-nav-newer" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">上一篇</strong>
+            <div class="article-nav-title">
+                
+                    Javascript Unicode
+                
+            </div>
+        </a>
+    
+    
+        <a href="/2015/05/14/iisexpress-use-ip/" id="article-nav-older" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">下一篇</strong>
+            <div class="article-nav-title">IISExpress 使用 IP 連線</div>
+        </a>
+    
+</nav>
+
+
+    
+</article>
+
+
+    
+    <section id="comments">
+    
+    </section>
+
+</section>
+            
+                <aside id="sidebar">
+   
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">分類</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Cloud/">Cloud</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Database/">Database</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Fun/">Fun</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Mobile/">Mobile</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Program/">Program</a><span class="category-list-count">132</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/System/">System</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Tools/">Tools</a><span class="category-list-count">17</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">歸檔</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/04/">四月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/03/">三月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/10/">十月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">五月 2019</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">六月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">十二月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">十一月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">九月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">十月 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">九月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">六月 2016</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">十二月 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">十一月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">十月 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">九月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">八月 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">七月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">五月 2015</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">四月 2015</a><span class="archive-list-count">19</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">十二月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/11/">十一月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/10/">十月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">九月 2014</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/08/">八月 2014</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/02/">二月 2014</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/01/">一月 2014</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">十一月 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">十月 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">九月 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">八月 2013</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/03/">三月 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">三月 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">一月 2012</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2011/11/">十一月 2011</a><span class="archive-list-count">3</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">標籤</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/net-mvc/">.net mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RoR/">RoR</a><span class="tag-list-count">15</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/api/">api</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aws/">aws</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/azure/">azure</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bot/">bot</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bundler/">bundler</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cache/">cache</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/carrier-wave/">carrier wave</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/centos/">centos</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/chrome/">chrome</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cloudflare/">cloudflare</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/compass/">compass</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/devise/">devise</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dnd/">dnd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/e-invoice/">e-invoice</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/entity-framework/">entity framework</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/es6/">es6</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/facebook/">facebook</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flux/">flux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/framework/">framework</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gcp/">gcp</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/grunt/">grunt</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gulp/">gulp</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/heroku/">heroku</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/html/">html</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/iisexpress/">iisexpress</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ios/">ios</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">70</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript-express-passport/">javascript express passport</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript-nodejs/">javascript nodejs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jekyll/">jekyll</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jetstream/">jetstream</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jspm/">jspm</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jwt/">jwt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/laravel/">laravel</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/letsencrypt/">letsencrypt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mechanism/">mechanism</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongodb/">mongodb</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/node/">node</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nodejs/">nodejs</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/oocss/">oocss</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/osx/">osx</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package-manager/">package manager</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/php/">php</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/postgres/">postgres</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/postgresql/">postgresql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/queue/">queue</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rabbitmq/">rabbitmq</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rack-server/">rack server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails/">rails</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails-webpack-stimulus-javascript-bootstrap/">rails webpack stimulus javascript bootstrap</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/raspberry-pi/">raspberry-pi</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react/">react</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react-native/">react native</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/reactjs/">reactjs</a><span class="tag-list-count">32</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redux/">redux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sass/">sass</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/selenium/">selenium</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/slim/">slim</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssh/">ssh</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssl/">ssl</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/stimulus/">stimulus</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/svg-javascript/">svg javascript</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/task-runner/">task runner</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tmux/">tmux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tools/">tools</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vm/">vm</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/">vue</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vuejs/">vuejs</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/webpack/">webpack</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/windows/">windows</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/xml/">xml</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">標籤雲</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/net-mvc/" style="font-size: 10px;">.net mvc</a> <a href="/tags/RoR/" style="font-size: 16.67px;">RoR</a> <a href="/tags/api/" style="font-size: 10px;">api</a> <a href="/tags/aws/" style="font-size: 12.5px;">aws</a> <a href="/tags/azure/" style="font-size: 10.83px;">azure</a> <a href="/tags/bot/" style="font-size: 10px;">bot</a> <a href="/tags/bundler/" style="font-size: 10.83px;">bundler</a> <a href="/tags/cache/" style="font-size: 10px;">cache</a> <a href="/tags/carrier-wave/" style="font-size: 10.83px;">carrier wave</a> <a href="/tags/centos/" style="font-size: 10px;">centos</a> <a href="/tags/chrome/" style="font-size: 10px;">chrome</a> <a href="/tags/cloudflare/" style="font-size: 10px;">cloudflare</a> <a href="/tags/compass/" style="font-size: 10px;">compass</a> <a href="/tags/css/" style="font-size: 17.5px;">css</a> <a href="/tags/devise/" style="font-size: 10px;">devise</a> <a href="/tags/dnd/" style="font-size: 10px;">dnd</a> <a href="/tags/docker/" style="font-size: 10.83px;">docker</a> <a href="/tags/e-invoice/" style="font-size: 10px;">e-invoice</a> <a href="/tags/entity-framework/" style="font-size: 10px;">entity framework</a> <a href="/tags/es6/" style="font-size: 11.67px;">es6</a> <a href="/tags/facebook/" style="font-size: 10px;">facebook</a> <a href="/tags/flux/" style="font-size: 10px;">flux</a> <a href="/tags/framework/" style="font-size: 10.83px;">framework</a> <a href="/tags/gcp/" style="font-size: 10.83px;">gcp</a> <a href="/tags/go/" style="font-size: 10px;">go</a> <a href="/tags/grunt/" style="font-size: 12.5px;">grunt</a> <a href="/tags/gulp/" style="font-size: 11.67px;">gulp</a> <a href="/tags/heroku/" style="font-size: 14.17px;">heroku</a> <a href="/tags/html/" style="font-size: 10.83px;">html</a> <a href="/tags/iisexpress/" style="font-size: 10px;">iisexpress</a> <a href="/tags/ios/" style="font-size: 11.67px;">ios</a> <a href="/tags/javascript/" style="font-size: 20px;">javascript</a> <a href="/tags/javascript-express-passport/" style="font-size: 10px;">javascript express passport</a> <a href="/tags/javascript-nodejs/" style="font-size: 10px;">javascript nodejs</a> <a href="/tags/jekyll/" style="font-size: 10.83px;">jekyll</a> <a href="/tags/jetstream/" style="font-size: 10px;">jetstream</a> <a href="/tags/jspm/" style="font-size: 10px;">jspm</a> <a href="/tags/jwt/" style="font-size: 10px;">jwt</a> <a href="/tags/laravel/" style="font-size: 11.67px;">laravel</a> <a href="/tags/letsencrypt/" style="font-size: 10px;">letsencrypt</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/mechanism/" style="font-size: 10px;">mechanism</a> <a href="/tags/mongodb/" style="font-size: 10.83px;">mongodb</a> <a href="/tags/node/" style="font-size: 10px;">node</a> <a href="/tags/nodejs/" style="font-size: 15px;">nodejs</a> <a href="/tags/oocss/" style="font-size: 10px;">oocss</a> <a href="/tags/osx/" style="font-size: 14.17px;">osx</a> <a href="/tags/package-manager/" style="font-size: 14.17px;">package manager</a> <a href="/tags/php/" style="font-size: 10.83px;">php</a> <a href="/tags/postgres/" style="font-size: 10px;">postgres</a> <a href="/tags/postgresql/" style="font-size: 10.83px;">postgresql</a> <a href="/tags/queue/" style="font-size: 10.83px;">queue</a> <a href="/tags/rabbitmq/" style="font-size: 10.83px;">rabbitmq</a> <a href="/tags/rack-server/" style="font-size: 10px;">rack server</a> <a href="/tags/rails/" style="font-size: 14.17px;">rails</a> <a href="/tags/rails-webpack-stimulus-javascript-bootstrap/" style="font-size: 10px;">rails webpack stimulus javascript bootstrap</a> <a href="/tags/raspberry-pi/" style="font-size: 10px;">raspberry-pi</a> <a href="/tags/react/" style="font-size: 15.83px;">react</a> <a href="/tags/react-native/" style="font-size: 10px;">react native</a> <a href="/tags/reactjs/" style="font-size: 19.17px;">reactjs</a> <a href="/tags/redux/" style="font-size: 10px;">redux</a> <a href="/tags/ruby/" style="font-size: 18.33px;">ruby</a> <a href="/tags/sass/" style="font-size: 10.83px;">sass</a> <a href="/tags/selenium/" style="font-size: 10px;">selenium</a> <a href="/tags/slim/" style="font-size: 10px;">slim</a> <a href="/tags/ssh/" style="font-size: 10px;">ssh</a> <a href="/tags/ssl/" style="font-size: 10.83px;">ssl</a> <a href="/tags/stimulus/" style="font-size: 10px;">stimulus</a> <a href="/tags/svg-javascript/" style="font-size: 11.67px;">svg javascript</a> <a href="/tags/task-runner/" style="font-size: 11.67px;">task runner</a> <a href="/tags/tmux/" style="font-size: 10px;">tmux</a> <a href="/tags/tools/" style="font-size: 10px;">tools</a> <a href="/tags/ubuntu/" style="font-size: 10.83px;">ubuntu</a> <a href="/tags/vm/" style="font-size: 10px;">vm</a> <a href="/tags/vue/" style="font-size: 10px;">vue</a> <a href="/tags/vuejs/" style="font-size: 13.33px;">vuejs</a> <a href="/tags/webpack/" style="font-size: 12.5px;">webpack</a> <a href="/tags/windows/" style="font-size: 10px;">windows</a> <a href="/tags/xml/" style="font-size: 10px;">xml</a>
+        </div>
+    </div>
+
+    
+    <div id="toTop" class="fa fa-angle-up"></div>
+</aside>
+            
+        </div>
+        <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2021 andyyou(You,ZongYan)
+        </div>
+    </div>
+</footer>
+
+        
+
+    
+        <script src="/lib/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-share.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-video.min.js"></script>
+    
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+</body>
+</html>

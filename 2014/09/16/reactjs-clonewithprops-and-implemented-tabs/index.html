@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    
+    <title>React cloneWithProps 與實作 Tabs | DEVLOG of andyyou</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <!-- Google Tag Manager -->
+    <script>(function (w, d, s, l, i) {
+        w[l] = w[l] || []; w[l].push({
+          'gtm.start':
+            new Date().getTime(), event: 'gtm.js'
+        }); var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+            'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+      })(window, document, 'script', 'dataLayer', 'GTM-57LT2GG');</script>
+    <!-- End Google Tag Manager -->
+    <meta name="description" content="實作一個 Tabs 元件複合式(組合)元件在 React 中任何東西都是元件，就像樂高一樣，你可以用小片的積木組成大塊的，再組合出您想到的東西。同樣的道理您也可以用許多的小元件(小功能模組)來組合出您的應用程式。所謂的複合式元件或稱作組合元件，他其實就是由多個元件去組成一個多功能的大元件。">
+<meta name="keywords" content="reactjs">
+<meta property="og:type" content="article">
+<meta property="og:title" content="React cloneWithProps 與實作 Tabs">
+<meta property="og:url" content="//andyyou.github.io/2014/09/16/reactjs-clonewithprops-and-implemented-tabs/index.html">
+<meta property="og:site_name" content="DEVLOG of andyyou">
+<meta property="og:description" content="實作一個 Tabs 元件複合式(組合)元件在 React 中任何東西都是元件，就像樂高一樣，你可以用小片的積木組成大塊的，再組合出您想到的東西。同樣的道理您也可以用許多的小元件(小功能模組)來組合出您的應用程式。所謂的複合式元件或稱作組合元件，他其實就是由多個元件去組成一個多功能的大元件。">
+<meta property="og:locale" content="zh-TW">
+<meta property="og:updated_time" content="2016-12-19T02:31:59.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="React cloneWithProps 與實作 Tabs">
+<meta name="twitter:description" content="實作一個 Tabs 元件複合式(組合)元件在 React 中任何東西都是元件，就像樂高一樣，你可以用小片的積木組成大塊的，再組合出您想到的東西。同樣的道理您也可以用許多的小元件(小功能模組)來組合出您的應用程式。所謂的複合式元件或稱作組合元件，他其實就是由多個元件去組成一個多功能的大元件。">
+    
+
+    
+
+    
+        <link rel="icon" href="/images/favicon.png">
+    
+
+    <link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/lib/open-sans/styles.css">
+    <link rel="stylesheet" href="/lib/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/lib/jquery/2.1.3/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/lib/lightgallery/css/lightgallery.min.css">
+    
+    
+    
+        <script type="text/javascript">
+(function(i,s,o,g,r,a,m) {i['GoogleAnalyticsObject']=r;i[r]=i[r]||function() {
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-39208536-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+    
+    
+    
+
+
+</head>
+</html>
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-57LT2GG" height="0" width="0"
+        style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    <div id="container">
+        <header id="header">
+    <div id="header-main" class="header-inner">
+        <div class="outer">
+            <a href="/" id="logo">
+                <i class="logo"></i>
+                <span class="site-title">DEVLOG of andyyou</span>
+            </a>
+            <nav id="main-nav">
+                
+                    <a class="main-nav-link" href="/.">Home</a>
+                
+                    <a class="main-nav-link" href="/archives">Archives</a>
+                
+                    <a class="main-nav-link" href="/categories">Categories</a>
+                
+                    <a class="main-nav-link" href="/tags">Tags</a>
+                
+            </nav>
+            
+                
+                <nav id="sub-nav">
+                    <div class="profile" id="profile-nav">
+                        <a id="profile-anchor" href="javascript:;">
+                            <img class="avatar" src="https://avatars2.githubusercontent.com/u/665690?v=3&amp;s=466">
+                            <i class="fa fa-caret-down"></i>
+                        </a>
+                    </div>
+                </nav>
+            
+            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜尋">
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="Type something...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: 'Pages',
+            CATEGORIES: '分類',
+            TAGS: '標籤',
+            UNTITLED: '(Untitled)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+        </div>
+    </div>
+    <div id="main-nav-mobile" class="header-sub header-inner">
+        <table class="menu outer">
+            <tr>
+                
+                    <td><a class="main-nav-link" href="/.">Home</a></td>
+                
+                    <td><a class="main-nav-link" href="/archives">Archives</a></td>
+                
+                    <td><a class="main-nav-link" href="/categories">Categories</a></td>
+                
+                    <td><a class="main-nav-link" href="/tags">Tags</a></td>
+                
+                <td>
+                    
+    <div class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜尋">
+    </div>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+</header>
+
+        <div class="outer">
+            
+                
+
+<aside id="profile">
+    <div class="inner profile-inner">
+        <div class="base-info profile-block">
+            <img id="avatar" src="https://avatars2.githubusercontent.com/u/665690?v=3&amp;s=466">
+            <h2 id="name">andyyou</h2>
+            <h3 id="title">Web Developer</h3>
+            <span id="location"><i class="fa fa-map-marker"></i>Taipei, Taiwan</span>
+            <a id="follow" target="_blank" href="https://github.com/andyyou">關注我</a>
+        </div>
+        <div class="article-info profile-block">
+            <div class="article-info-block">
+                185
+                <span>文章</span>
+            </div>
+            <div class="article-info-block">
+                79
+                <span>標籤</span>
+            </div>
+        </div>
+        
+        <div class="profile-block social-links">
+            <table>
+                <tr>
+                    
+                    
+                    <td>
+                        <a href="https://github.com/andyyou" target="_blank" title="github" class="tooltip">
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="https://www.linkedin.com/pub/zongyan-you/2a/493/16" target="_blank" title="linkedin" class="tooltip">
+                            <i class="fa fa-linkedin"></i>
+                        </a>
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
+        
+    </div>
+</aside>
+
+            
+            <section id="main"><article id="post-reactjs-clonewithprops-and-implemented-tabs" class="article article-type-post" itemscope="" itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+            React cloneWithProps 與實作 Tabs
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2014/09/16/reactjs-clonewithprops-and-implemented-tabs/">
+            <time datetime="2014-09-16T08:16:00.000Z" itemprop="datePublished">2014-09-16</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/Program/">Program</a>
+    </div>
+
+                        
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/reactjs/">reactjs</a>
+    </div>
+
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <h1 id="實作一個-Tabs-元件"><a href="#實作一個-Tabs-元件" class="headerlink" title="實作一個 Tabs 元件"></a>實作一個 Tabs 元件</h1><h2 id="複合式-組合-元件"><a href="#複合式-組合-元件" class="headerlink" title="複合式(組合)元件"></a>複合式(組合)元件</h2><p>在 React 中任何東西都是元件，就像樂高一樣，你可以用小片的積木組成大塊的，再組合出您想到的東西。<br>同樣的道理您也可以用許多的小元件(小功能模組)來組合出您的應用程式。所謂的複合式元件或稱作組合元件，<br>他其實就是由多個元件去組成一個多功能的大元件。</p>
+<a id="more"></a>
+<p>在這篇文章我們要來建立一個 <code>tabs</code> 標簽切換功能的元件，為了達成這個功能我們需要 4 個不同的元件:<br><code>&lt;Tabs /&gt;</code>, <code>&lt;TabList /&gt;</code>, <code>&lt;Tab /&gt;</code> 和 <code>&lt;TabPanel /&gt;</code> 分別用來呈現整個 <code>tabs</code> ， 列出<br> 標簽列，標簽列的按鈕，以及顯示的內容。結構如下:</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">Tabs</span>&gt;</span></span><br><span class="line"> <span class="tag">&lt;<span class="name">TabList</span>&gt;</span></span><br><span class="line">   <span class="tag">&lt;<span class="name">Tab</span>&gt;</span>Iron man<span class="tag">&lt;/<span class="name">Tab</span>&gt;</span></span><br><span class="line">   <span class="tag">&lt;<span class="name">Tab</span>&gt;</span>Superman<span class="tag">&lt;/<span class="name">Tab</span>&gt;</span></span><br><span class="line">   <span class="tag">&lt;<span class="name">Tab</span>&gt;</span>Lucy<span class="tag">&lt;/<span class="name">Tab</span>&gt;</span></span><br><span class="line"> <span class="tag">&lt;/<span class="name">TabList</span>&gt;</span></span><br><span class="line"> <span class="tag">&lt;<span class="name">TabPanel</span>&gt;</span></span><br><span class="line">   鋼鐵人介紹</span><br><span class="line"> <span class="tag">&lt;/<span class="name">TabPanel</span>&gt;</span></span><br><span class="line"></span><br><span class="line"> <span class="tag">&lt;<span class="name">TabPanel</span>&gt;</span></span><br><span class="line">   超人介紹</span><br><span class="line"> <span class="tag">&lt;/<span class="name">TabPanel</span>&gt;</span></span><br><span class="line"></span><br><span class="line"> <span class="tag">&lt;<span class="name">TabPanel</span>&gt;</span></span><br><span class="line">   鹿茸介紹</span><br><span class="line"> <span class="tag">&lt;/<span class="name">TabPanel</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">Tabs</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>首先是 <code>&lt;Tabs/&gt;</code> 的行為，它被用來當做一個容器，其角色有點像是一個 <code>controller</code> ，因為它必須要掌管所有 DOM 的事件(點擊 Tab 切換至該內容，被選取到的 index)<br>同時也需要管理 <code>state</code> 看看哪個 <code>&lt;Tab/&gt;</code> 目前正被選取到，所以我們會稱 <code>&lt;Tabs /&gt;</code> 為擁有者元件(owner component)。</p>
+<p>我們遭遇到的第一個挑戰是: 元件之間該如何溝通。每一個元件都有一個 <code>state</code> 。每當 <code>state</code> 發生變動，React 就會更新並重新渲染元件以使其跟 <code>state</code> 一致。<br>當我們選了某個索引後，<code>&lt;Tabs/&gt;</code> 元件就要去更新 <code>&lt;Tab/&gt;</code> 和 <code>&lt;TabPanel/&gt;</code> 的 <code>state</code>。</p>
+<h2 id="典範轉移"><a href="#典範轉移" class="headerlink" title="典範轉移"></a><a href="http://cguim99.blogspot.tw/2013/03/paradigm-shift_24.html" target="_blank" rel="noopener">典範轉移</a></h2><p>首先我們為每一個元件建立一個 API，透過建立一個方法來變更 <code>state</code>。在 React 中一個元件可以透過 <code>this.props.children</code> 去存取子元件。<br>所以一開始我們理論上只要使用 <code>handleSelected</code> 去設定適當該顯示的子元件如下:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> tabs = <span class="keyword">this</span>.props.children[<span class="number">0</span>].props.children,</span><br><span class="line">    panels = <span class="keyword">this</span>.props.children.slice(<span class="number">1</span>),</span><br><span class="line">    index = <span class="keyword">this</span>.state.selectedIndex;</span><br><span class="line">tabs[index].handleSelected(<span class="literal">true</span>);</span><br><span class="line">panels[index].handleSelected(<span class="literal">true</span>);</span><br></pre></td></tr></table></figure>
+<p>這樣的做法在 v0.10.0 以前的版本是可以運作的，概略的實作如下:</p>
+<p><div data-height="268" data-theme-id="8540" data-slug-hash="oitzv" data-default-tab="js" data-user="AndyYou" class="codepen"><pre><code>/**</code></pre></div></p>
+<ul>
+<li>@jsx React.DOM<br>*/</li>
+</ul>
+<p>var Tab = React.createClass({<br>  getInitialState: function () {<br>    return {selected: false}<br>  },<br>  handleSelected: function (status) {<br>    this.setState({selected: status});<br>  },<br>  render: function () {<br>    var cx = React.addons.classSet;<br>    var classes = cx({<br>      &#x27;react-tab&#x27;: true,<br>      &#x27;active&#x27;: this.state.selected<br>    });<br>    return (<br>      &lt;li className={classes}&gt;<br>        &lt;a href=&#x27;#&#x27; data-index={this.props.index}&gt;{this.props.children}&lt;/a&gt;<br>      &lt;/li&gt;<br>    );<br>  }<br>});</p>
+<p>var TabList = React.createClass({<br>  render: function () {<br>    return (<br>      &lt;ul className=&#x27;react-tab-list&#x27;&gt;<br>        {this.props.children}<br>      &lt;/ul&gt;<br>    );<br>  }<br>});</p>
+<p>var Tabs = React.createClass({<br>  getInitialState: function () {<br>    return {selectedIndex: 0}<br>  },<br>  componentDidMount: function () {<br>    var tabs = this.props.children[0].props.children,<br>        panels = this.props.children.slice(1),<br>        index = this.state.selectedIndex;<br>    for (i in tabs) {<br>      if (i == index) {<br>        tabs[i].handleSelected(true);<br>        panels[i].handleSelected(true);<br>      } else {<br>        tabs[i].handleSelected(false);<br>        panels[i].handleSelected(false);<br>      }<br>    }<br>  },<br>  handleClick: function (e) {<br>    var index = parseInt(e.target.getAttribute(&#x27;data-index&#x27;));<br>    var tabs = this.props.children[0].props.children,<br>        panels = this.props.children.slice(1);<br>    for (i in tabs) {<br>      if (i == index) {<br>        tabs[i].handleSelected(true);<br>        panels[i].handleSelected(true);<br>      } else {<br>        tabs[i].handleSelected(false);<br>        panels[i].handleSelected(false);<br>      }<br>    }</p>
+<p>  },<br>  render: function () {<br>    return (<br>      &lt;div className=&#x27;react-tabs&#x27; onClick={this.handleClick}&gt;<br>        {this.props.children}<br>      &lt;/div&gt;<br>    );<br>  }<br>});</p>
+<p>var TabPanel = React.createClass({<br>  getInitialState: function () {<br>    return {selected: false}<br>  },<br>  handleSelected: function (status) {<br>    console.log(this.props.name + &#x27; selected: &#x27; + status);<br>    this.setState({selected: status});<br>  },<br>  render: function () {<br>    var cx = React.addons.classSet;<br>    var classes = cx({<br>      &#x27;react-tab-panel&#x27;: true,<br>      &#x27;active&#x27;: this.state.selected<br>    });<br>    return (<br>      &lt;div className={classes}&gt;<br>        {this.props.children}<br>      &lt;/div&gt;<br>    )<br>  }<br>});</p>
+<p>var App = React.createClass({<br>  render: function () {<br>    return (<br>      &lt;div className=&#x27;container&#x27;&gt;<br>        &lt;Tabs&gt;<br>          &lt;TabList&gt;<br>            &lt;Tab name=&#x27;ironman&#x27; index={0}&gt;Iron man&lt;/Tab&gt;<br>            &lt;Tab name=&#x27;superman&#x27; index={1}&gt;Superman&lt;/Tab&gt;<br>            &lt;Tab name=&#x27;lucy&#x27; index={2}&gt;Lucy&lt;/Tab&gt;<br>          &lt;/TabList&gt;</p>
+<pre><code>      &amp;lt;TabPanel name=&amp;#x27;panel-ironman&amp;#x27;&amp;gt;
+      鋼鐵人
+      &amp;lt;/TabPanel&amp;gt;
+
+      &amp;lt;TabPanel name=&amp;#x27;panel-superman&amp;#x27;&amp;gt;
+      超人再起
+      &amp;lt;/TabPanel&amp;gt;
+
+      &amp;lt;TabPanel name=&amp;#x27;panel-lucy&amp;#x27;&amp;gt;
+      露西
+      &amp;lt;/TabPanel&amp;gt;
+    &amp;lt;/Tabs&amp;gt;
+  &amp;lt;/div&amp;gt;
+);
+</code></pre><p>  }<br>});</p>
+<p>React.renderComponent(<br>  &lt;App /&gt;,<br>  document.getElementById(&#x27;example&#x27;)<br>);</p>
+<p></p><p>See the Pen <a href="http://codepen.io/AndyYou/pen/oitzv/" target="_blank" rel="noopener">oitzv</a> by AndyYou (<a href="http://codepen.io/AndyYou" target="_blank" rel="noopener">@AndyYou</a>) on <a href="http://codepen.io" target="_blank" rel="noopener">CodePen</a>.</p><br><script async src="//codepen.io/assets/embed/ei.js"></script><p></p>
+<p>不過到了 React v0.10.0 版本的時候這樣做會出現警告:</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Invalid access to component property <span class="string">"setSelected"</span></span><br></pre></td></tr></table></figure>
+<p>到了 v0.11.0 的時候更慘您已經無法直接存取子元件的方法，因為是新版的 React <code>this.props.children</code> 回傳的物件只是描述物件(discriptors)。不再是對應元件的參考物件，且官方建議您不應該直接存取子元件的實際物件。</p>
+<h2 id="Component-Refs"><a href="#Component-Refs" class="headerlink" title="Component Refs"></a>Component Refs</h2><p>React 提供一種機制給你取得實際元件的物件，就是使用 <code>refs</code></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> App = React.createClass(&#123;</span><br><span class="line">  handleClick: <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    alert(<span class="keyword">this</span>.refs.myInput.getDOMNode().value);</span><br><span class="line">  &#125;,</span><br><span class="line"></span><br><span class="line">  render: <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> (</span><br><span class="line">      &lt;div&gt;</span><br><span class="line">          &lt;input ref=<span class="string">"myInput"</span>/&gt;</span><br><span class="line">          &lt;button</span><br><span class="line">              onClick=&#123;<span class="keyword">this</span>.handleClick&#125;&gt;</span><br><span class="line">              Submit</span><br><span class="line">          &lt;<span class="regexp">/button&gt;</span></span><br><span class="line"><span class="regexp">      &lt;/</span>div&gt;</span><br><span class="line">    );</span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>透過 <code>refs</code> 屬性您就可以取得該子元件的參考</p>
+<h3 id="動態的子元件"><a href="#動態的子元件" class="headerlink" title="動態的子元件"></a>動態的子元件</h3><p>典型的 <code>refs</code> 使用方式是父元件已經知道子元件的情況，所以可以直接在 <code>tag</code> 中指定 <code>ref</code> 如上面的範例。<br>不過這次我們希望我們的 Tabs 元件可以動態的放入 <code>&lt;Tab/&gt;</code> 和 <code>&lt;TabPanel/&gt;</code><br>例如:</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> App = React.createClass(&#123;</span><br><span class="line">  render: <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> (</span><br><span class="line">      &lt;div className=<span class="string">'container'</span>&gt;</span><br><span class="line">        &lt;Tabs&gt;</span><br><span class="line">          &lt;TabList&gt;</span><br><span class="line">            &lt;Tab name=<span class="string">'ironman'</span> &gt;Iron man&lt;<span class="regexp">/Tab&gt;</span></span><br><span class="line"><span class="regexp">            &lt;Tab name='superman' &gt;Superman&lt;/</span>Tab&gt;</span><br><span class="line">            &lt;Tab name=<span class="string">'lucy'</span> &gt;Lucy&lt;<span class="regexp">/Tab&gt;</span></span><br><span class="line"><span class="regexp">          &lt;/</span>TabList&gt;</span><br><span class="line"></span><br><span class="line">          &lt;TabPanel name=<span class="string">'panel-ironman'</span>&gt;</span><br><span class="line">          鋼鐵人</span><br><span class="line">          &lt;<span class="regexp">/TabPanel&gt;</span></span><br><span class="line"><span class="regexp"></span></span><br><span class="line"><span class="regexp">          &lt;TabPanel name='panel-superman'&gt;</span></span><br><span class="line"><span class="regexp">          超人再起</span></span><br><span class="line"><span class="regexp">          &lt;/</span>TabPanel&gt;</span><br><span class="line"></span><br><span class="line">          &lt;TabPanel name=<span class="string">'panel-lucy'</span>&gt;</span><br><span class="line">          露西</span><br><span class="line">          &lt;<span class="regexp">/TabPanel&gt;</span></span><br><span class="line"><span class="regexp">        &lt;/</span>Tabs&gt;</span><br><span class="line">      &lt;<span class="regexp">/div&gt;</span></span><br><span class="line"><span class="regexp">    );</span></span><br><span class="line"><span class="regexp">  &#125;</span></span><br><span class="line"><span class="regexp">&#125;);</span></span><br></pre></td></tr></table></figure>
+<p>而 Tabs 只是動態地把開發者加入的任意結構輸出</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> Tabs = React.createClass(&#123;</span><br><span class="line">  render: <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> (</span><br><span class="line">      &lt;div className=<span class="string">'react-tabs'</span>&gt;</span><br><span class="line">        &#123;<span class="keyword">this</span>.props.children&#125;</span><br><span class="line">      &lt;<span class="regexp">/div&gt;</span></span><br><span class="line"><span class="regexp">    );</span></span><br><span class="line"><span class="regexp">  &#125;</span></span><br><span class="line"><span class="regexp">&#125;);</span></span><br></pre></td></tr></table></figure>
+<p>因此我們需要一些動態指定 <code>refs</code> 的方法，而這個方法就是透過 <code>cloneWithProps</code></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> App = React.createClass(&#123;</span><br><span class="line">  render: <span class="function"><span class="keyword">function</span> (<span class="params"></span>) </span>&#123;</span><br><span class="line">    <span class="keyword">var</span> index = <span class="number">0</span>,</span><br><span class="line">        children = React.Children.map(<span class="keyword">this</span>.props.children, <span class="function"><span class="keyword">function</span> (<span class="params">child</span>) </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> React.addons.cloneWithProps(child, &#123;</span><br><span class="line">            ref: <span class="string">'child-'</span> + (index++)</span><br><span class="line">        &#125;);</span><br><span class="line">    &#125;);</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> (</span><br><span class="line">        &lt;div&gt;</span><br><span class="line">            &#123;children&#125;</span><br><span class="line">        &lt;<span class="regexp">/div&gt;</span></span><br><span class="line"><span class="regexp">    );</span></span><br><span class="line"><span class="regexp">  &#125;</span></span><br><span class="line"><span class="regexp">&#125;);</span></span><br></pre></td></tr></table></figure>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+
+</div>
+
+    <a data-url="//andyyou.github.io/2014/09/16/reactjs-clonewithprops-and-implemented-tabs/" data-id="cknx2z29h006p3m7232e4x9i0" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        // Prevent duplicate binding
+        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
+            __SHARE_BUTTON_BINDED__ = true;
+        } else {
+            return;
+        }
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+            
+    
+
+        </footer>
+    </div>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2014/09/18/reactjs-the-invariance-of-the-auxiliary-function/" id="article-nav-newer" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">上一篇</strong>
+            <div class="article-nav-title">
+                
+                    React 不變性的輔助函式
+                
+            </div>
+        </a>
+    
+    
+        <a href="/2014/09/16/reactjs-used-in-the-codepen-react/" id="article-nav-older" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">下一篇</strong>
+            <div class="article-nav-title">在 CodePen 中使用 React</div>
+        </a>
+    
+</nav>
+
+
+    
+</article>
+
+
+    
+    <section id="comments">
+    
+    </section>
+
+</section>
+            
+                <aside id="sidebar">
+   
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">分類</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Cloud/">Cloud</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Database/">Database</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Fun/">Fun</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Mobile/">Mobile</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Program/">Program</a><span class="category-list-count">132</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/System/">System</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Tools/">Tools</a><span class="category-list-count">17</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">歸檔</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/04/">四月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/03/">三月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/10/">十月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">五月 2019</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">六月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">十二月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">十一月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">九月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">十月 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">九月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">六月 2016</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">十二月 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">十一月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">十月 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">九月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">八月 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">七月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">五月 2015</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">四月 2015</a><span class="archive-list-count">19</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">十二月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/11/">十一月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/10/">十月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">九月 2014</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/08/">八月 2014</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/02/">二月 2014</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/01/">一月 2014</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">十一月 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">十月 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">九月 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">八月 2013</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/03/">三月 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">三月 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">一月 2012</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2011/11/">十一月 2011</a><span class="archive-list-count">3</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">標籤</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/net-mvc/">.net mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RoR/">RoR</a><span class="tag-list-count">15</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/api/">api</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aws/">aws</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/azure/">azure</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bot/">bot</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bundler/">bundler</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cache/">cache</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/carrier-wave/">carrier wave</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/centos/">centos</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/chrome/">chrome</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cloudflare/">cloudflare</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/compass/">compass</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/devise/">devise</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dnd/">dnd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/e-invoice/">e-invoice</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/entity-framework/">entity framework</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/es6/">es6</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/facebook/">facebook</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flux/">flux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/framework/">framework</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gcp/">gcp</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/grunt/">grunt</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gulp/">gulp</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/heroku/">heroku</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/html/">html</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/iisexpress/">iisexpress</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ios/">ios</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">70</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript-express-passport/">javascript express passport</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript-nodejs/">javascript nodejs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jekyll/">jekyll</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jetstream/">jetstream</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jspm/">jspm</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jwt/">jwt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/laravel/">laravel</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/letsencrypt/">letsencrypt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mechanism/">mechanism</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongodb/">mongodb</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/node/">node</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nodejs/">nodejs</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/oocss/">oocss</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/osx/">osx</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package-manager/">package manager</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/php/">php</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/postgres/">postgres</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/postgresql/">postgresql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/queue/">queue</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rabbitmq/">rabbitmq</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rack-server/">rack server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails/">rails</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails-webpack-stimulus-javascript-bootstrap/">rails webpack stimulus javascript bootstrap</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/raspberry-pi/">raspberry-pi</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react/">react</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react-native/">react native</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/reactjs/">reactjs</a><span class="tag-list-count">32</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redux/">redux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sass/">sass</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/selenium/">selenium</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/slim/">slim</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssh/">ssh</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssl/">ssl</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/stimulus/">stimulus</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/svg-javascript/">svg javascript</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/task-runner/">task runner</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tmux/">tmux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tools/">tools</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vm/">vm</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/">vue</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vuejs/">vuejs</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/webpack/">webpack</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/windows/">windows</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/xml/">xml</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">標籤雲</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/net-mvc/" style="font-size: 10px;">.net mvc</a> <a href="/tags/RoR/" style="font-size: 16.67px;">RoR</a> <a href="/tags/api/" style="font-size: 10px;">api</a> <a href="/tags/aws/" style="font-size: 12.5px;">aws</a> <a href="/tags/azure/" style="font-size: 10.83px;">azure</a> <a href="/tags/bot/" style="font-size: 10px;">bot</a> <a href="/tags/bundler/" style="font-size: 10.83px;">bundler</a> <a href="/tags/cache/" style="font-size: 10px;">cache</a> <a href="/tags/carrier-wave/" style="font-size: 10.83px;">carrier wave</a> <a href="/tags/centos/" style="font-size: 10px;">centos</a> <a href="/tags/chrome/" style="font-size: 10px;">chrome</a> <a href="/tags/cloudflare/" style="font-size: 10px;">cloudflare</a> <a href="/tags/compass/" style="font-size: 10px;">compass</a> <a href="/tags/css/" style="font-size: 17.5px;">css</a> <a href="/tags/devise/" style="font-size: 10px;">devise</a> <a href="/tags/dnd/" style="font-size: 10px;">dnd</a> <a href="/tags/docker/" style="font-size: 10.83px;">docker</a> <a href="/tags/e-invoice/" style="font-size: 10px;">e-invoice</a> <a href="/tags/entity-framework/" style="font-size: 10px;">entity framework</a> <a href="/tags/es6/" style="font-size: 11.67px;">es6</a> <a href="/tags/facebook/" style="font-size: 10px;">facebook</a> <a href="/tags/flux/" style="font-size: 10px;">flux</a> <a href="/tags/framework/" style="font-size: 10.83px;">framework</a> <a href="/tags/gcp/" style="font-size: 10.83px;">gcp</a> <a href="/tags/go/" style="font-size: 10px;">go</a> <a href="/tags/grunt/" style="font-size: 12.5px;">grunt</a> <a href="/tags/gulp/" style="font-size: 11.67px;">gulp</a> <a href="/tags/heroku/" style="font-size: 14.17px;">heroku</a> <a href="/tags/html/" style="font-size: 10.83px;">html</a> <a href="/tags/iisexpress/" style="font-size: 10px;">iisexpress</a> <a href="/tags/ios/" style="font-size: 11.67px;">ios</a> <a href="/tags/javascript/" style="font-size: 20px;">javascript</a> <a href="/tags/javascript-express-passport/" style="font-size: 10px;">javascript express passport</a> <a href="/tags/javascript-nodejs/" style="font-size: 10px;">javascript nodejs</a> <a href="/tags/jekyll/" style="font-size: 10.83px;">jekyll</a> <a href="/tags/jetstream/" style="font-size: 10px;">jetstream</a> <a href="/tags/jspm/" style="font-size: 10px;">jspm</a> <a href="/tags/jwt/" style="font-size: 10px;">jwt</a> <a href="/tags/laravel/" style="font-size: 11.67px;">laravel</a> <a href="/tags/letsencrypt/" style="font-size: 10px;">letsencrypt</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/mechanism/" style="font-size: 10px;">mechanism</a> <a href="/tags/mongodb/" style="font-size: 10.83px;">mongodb</a> <a href="/tags/node/" style="font-size: 10px;">node</a> <a href="/tags/nodejs/" style="font-size: 15px;">nodejs</a> <a href="/tags/oocss/" style="font-size: 10px;">oocss</a> <a href="/tags/osx/" style="font-size: 14.17px;">osx</a> <a href="/tags/package-manager/" style="font-size: 14.17px;">package manager</a> <a href="/tags/php/" style="font-size: 10.83px;">php</a> <a href="/tags/postgres/" style="font-size: 10px;">postgres</a> <a href="/tags/postgresql/" style="font-size: 10.83px;">postgresql</a> <a href="/tags/queue/" style="font-size: 10.83px;">queue</a> <a href="/tags/rabbitmq/" style="font-size: 10.83px;">rabbitmq</a> <a href="/tags/rack-server/" style="font-size: 10px;">rack server</a> <a href="/tags/rails/" style="font-size: 14.17px;">rails</a> <a href="/tags/rails-webpack-stimulus-javascript-bootstrap/" style="font-size: 10px;">rails webpack stimulus javascript bootstrap</a> <a href="/tags/raspberry-pi/" style="font-size: 10px;">raspberry-pi</a> <a href="/tags/react/" style="font-size: 15.83px;">react</a> <a href="/tags/react-native/" style="font-size: 10px;">react native</a> <a href="/tags/reactjs/" style="font-size: 19.17px;">reactjs</a> <a href="/tags/redux/" style="font-size: 10px;">redux</a> <a href="/tags/ruby/" style="font-size: 18.33px;">ruby</a> <a href="/tags/sass/" style="font-size: 10.83px;">sass</a> <a href="/tags/selenium/" style="font-size: 10px;">selenium</a> <a href="/tags/slim/" style="font-size: 10px;">slim</a> <a href="/tags/ssh/" style="font-size: 10px;">ssh</a> <a href="/tags/ssl/" style="font-size: 10.83px;">ssl</a> <a href="/tags/stimulus/" style="font-size: 10px;">stimulus</a> <a href="/tags/svg-javascript/" style="font-size: 11.67px;">svg javascript</a> <a href="/tags/task-runner/" style="font-size: 11.67px;">task runner</a> <a href="/tags/tmux/" style="font-size: 10px;">tmux</a> <a href="/tags/tools/" style="font-size: 10px;">tools</a> <a href="/tags/ubuntu/" style="font-size: 10.83px;">ubuntu</a> <a href="/tags/vm/" style="font-size: 10px;">vm</a> <a href="/tags/vue/" style="font-size: 10px;">vue</a> <a href="/tags/vuejs/" style="font-size: 13.33px;">vuejs</a> <a href="/tags/webpack/" style="font-size: 12.5px;">webpack</a> <a href="/tags/windows/" style="font-size: 10px;">windows</a> <a href="/tags/xml/" style="font-size: 10px;">xml</a>
+        </div>
+    </div>
+
+    
+    <div id="toTop" class="fa fa-angle-up"></div>
+</aside>
+            
+        </div>
+        <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2021 andyyou(You,ZongYan)
+        </div>
+    </div>
+</footer>
+
+        
+
+    
+        <script src="/lib/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-share.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-video.min.js"></script>
+    
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+</body>
+</html>

@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    
+    <title>[譯] 詳解 React 渲染 | DEVLOG of andyyou</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <!-- Google Tag Manager -->
+    <script>(function (w, d, s, l, i) {
+        w[l] = w[l] || []; w[l].push({
+          'gtm.start':
+            new Date().getTime(), event: 'gtm.js'
+        }); var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+            'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+      })(window, document, 'script', 'dataLayer', 'GTM-57LT2GG');</script>
+    <!-- End Google Tag Manager -->
+    <meta name="description" content="原文出處 本文主旨於介紹 React 渲染的行為，包含使用 Context 和 React-Redux 之後的渲染行為。 我已經見了太多關於渲染的問題並且這些問題仍然持續出現 - 什麼時候，為什麼 React 會重新渲染元件，如果使用了 Context 或 React-Redux 會如何影響重新渲染的範圍和觸發的時機。經歷了多次的解釋，似乎有這個必要將這些回答彙整成一個較完整的介紹。 注意：這些資">
+<meta name="keywords" content="react">
+<meta property="og:type" content="article">
+<meta property="og:title" content="[譯] 詳解 React 渲染">
+<meta property="og:url" content="//andyyou.github.io/2020/05/31/understand-react-rendering-in-deep/index.html">
+<meta property="og:site_name" content="DEVLOG of andyyou">
+<meta property="og:description" content="原文出處 本文主旨於介紹 React 渲染的行為，包含使用 Context 和 React-Redux 之後的渲染行為。 我已經見了太多關於渲染的問題並且這些問題仍然持續出現 - 什麼時候，為什麼 React 會重新渲染元件，如果使用了 Context 或 React-Redux 會如何影響重新渲染的範圍和觸發的時機。經歷了多次的解釋，似乎有這個必要將這些回答彙整成一個較完整的介紹。 注意：這些資">
+<meta property="og:locale" content="zh-TW">
+<meta property="og:updated_time" content="2020-05-31T12:29:07.670Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="[譯] 詳解 React 渲染">
+<meta name="twitter:description" content="原文出處 本文主旨於介紹 React 渲染的行為，包含使用 Context 和 React-Redux 之後的渲染行為。 我已經見了太多關於渲染的問題並且這些問題仍然持續出現 - 什麼時候，為什麼 React 會重新渲染元件，如果使用了 Context 或 React-Redux 會如何影響重新渲染的範圍和觸發的時機。經歷了多次的解釋，似乎有這個必要將這些回答彙整成一個較完整的介紹。 注意：這些資">
+    
+
+    
+
+    
+        <link rel="icon" href="/images/favicon.png">
+    
+
+    <link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/lib/open-sans/styles.css">
+    <link rel="stylesheet" href="/lib/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/lib/jquery/2.1.3/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/lib/lightgallery/css/lightgallery.min.css">
+    
+    
+    
+        <script type="text/javascript">
+(function(i,s,o,g,r,a,m) {i['GoogleAnalyticsObject']=r;i[r]=i[r]||function() {
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-39208536-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+    
+    
+    
+
+
+</head>
+</html>
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-57LT2GG" height="0" width="0"
+        style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    <div id="container">
+        <header id="header">
+    <div id="header-main" class="header-inner">
+        <div class="outer">
+            <a href="/" id="logo">
+                <i class="logo"></i>
+                <span class="site-title">DEVLOG of andyyou</span>
+            </a>
+            <nav id="main-nav">
+                
+                    <a class="main-nav-link" href="/.">Home</a>
+                
+                    <a class="main-nav-link" href="/archives">Archives</a>
+                
+                    <a class="main-nav-link" href="/categories">Categories</a>
+                
+                    <a class="main-nav-link" href="/tags">Tags</a>
+                
+            </nav>
+            
+                
+                <nav id="sub-nav">
+                    <div class="profile" id="profile-nav">
+                        <a id="profile-anchor" href="javascript:;">
+                            <img class="avatar" src="https://avatars2.githubusercontent.com/u/665690?v=3&amp;s=466">
+                            <i class="fa fa-caret-down"></i>
+                        </a>
+                    </div>
+                </nav>
+            
+            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜尋">
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="Type something...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: 'Pages',
+            CATEGORIES: '分類',
+            TAGS: '標籤',
+            UNTITLED: '(Untitled)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+        </div>
+    </div>
+    <div id="main-nav-mobile" class="header-sub header-inner">
+        <table class="menu outer">
+            <tr>
+                
+                    <td><a class="main-nav-link" href="/.">Home</a></td>
+                
+                    <td><a class="main-nav-link" href="/archives">Archives</a></td>
+                
+                    <td><a class="main-nav-link" href="/categories">Categories</a></td>
+                
+                    <td><a class="main-nav-link" href="/tags">Tags</a></td>
+                
+                <td>
+                    
+    <div class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜尋">
+    </div>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+</header>
+
+        <div class="outer">
+            
+                
+
+<aside id="profile">
+    <div class="inner profile-inner">
+        <div class="base-info profile-block">
+            <img id="avatar" src="https://avatars2.githubusercontent.com/u/665690?v=3&amp;s=466">
+            <h2 id="name">andyyou</h2>
+            <h3 id="title">Web Developer</h3>
+            <span id="location"><i class="fa fa-map-marker"></i>Taipei, Taiwan</span>
+            <a id="follow" target="_blank" href="https://github.com/andyyou">關注我</a>
+        </div>
+        <div class="article-info profile-block">
+            <div class="article-info-block">
+                185
+                <span>文章</span>
+            </div>
+            <div class="article-info-block">
+                79
+                <span>標籤</span>
+            </div>
+        </div>
+        
+        <div class="profile-block social-links">
+            <table>
+                <tr>
+                    
+                    
+                    <td>
+                        <a href="https://github.com/andyyou" target="_blank" title="github" class="tooltip">
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="https://www.linkedin.com/pub/zongyan-you/2a/493/16" target="_blank" title="linkedin" class="tooltip">
+                            <i class="fa fa-linkedin"></i>
+                        </a>
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
+        
+    </div>
+</aside>
+
+            
+            <section id="main"><article id="post-understand-react-rendering-in-deep" class="article article-type-post" itemscope="" itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+            [譯] 詳解 React 渲染
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2020/05/31/understand-react-rendering-in-deep/">
+            <time datetime="2020-05-31T12:24:34.000Z" itemprop="datePublished">2020-05-31</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/Program/">Program</a>
+    </div>
+
+                        
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/react/">react</a>
+    </div>
+
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <p><a href="https://blog.isquaredsoftware.com/2020/05/blogged-answers-a-mostly-complete-guide-to-react-rendering-behavior/?utm_campaign=React%2BNewsletter&amp;utm_medium=email&amp;utm_source=React_Newsletter_213#component-render-optimization-techniques" target="_blank" rel="noopener">原文出處</a></p>
+<p>本文主旨於介紹 React 渲染的行為，包含使用 Context 和 React-Redux 之後的渲染行為。</p>
+<p>我已經見了太多關於渲染的問題並且這些問題仍然持續出現 - 什麼時候，為什麼 React 會重新渲染元件，如果使用了 Context 或 React-Redux 會如何影響重新渲染的範圍和觸發的時機。經歷了多次的解釋，似乎有這個必要將這些回答彙整成一個較完整的介紹。</p>
+<p>注意：這些資訊網路上都已經有了，而且很多人都解釋過了，但人們似乎還是蠻困擾因為資訊散落而不容易有個比較完整的了解，所以這篇文章試著將這些問題整理說明清楚，希望能對您有些幫助。</p>
+<a id="more"></a>
+<h2 id="何謂渲染（Rendering）？"><a href="#何謂渲染（Rendering）？" class="headerlink" title="何謂渲染（Rendering）？"></a>何謂渲染（Rendering）？</h2><p>渲染是 React 取得元件“定義您想呈現的介面”並整合當下的 <code>props</code> 和 <code>state</code> 資訊的流程。</p>
+<h3 id="渲染流程"><a href="#渲染流程" class="headerlink" title="渲染流程"></a>渲染流程</h3><p>渲染流程中，React 會從元件樹狀結構的根開始往下逐一檢查被標記需要渲染的元件。然後被標記的元件 React 會執行 <code>classComponentInstance.render()</code> 或 <code>FunctionComponent()</code> 最後取得回傳的結果。</p>
+<p>元件通常使用 JSX 撰寫，然後會被編譯成純 JavaScript 例如 <code>React.createElement()</code> ，<code>createElement</code> 會回傳 React elements 它們是純 JavaScript 物件，用來描述 UI 的結構</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// JSX</span></span><br><span class="line"><span class="keyword">return</span> <span class="xml"><span class="tag">&lt;<span class="name">Component</span> <span class="attr">a</span>=<span class="string">&#123;42&#125;</span> <span class="attr">b</span>=<span class="string">"string"</span>&gt;</span>Text<span class="tag">&lt;/<span class="name">Component</span>&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">// 編譯為 JS</span></span><br><span class="line"><span class="keyword">return</span> React.createElement(Component, &#123;<span class="attr">a</span>: <span class="number">42</span>, <span class="attr">b</span>: <span class="string">'string'</span>&#125;, <span class="string">'Text'</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// 最後回傳 React element</span></span><br><span class="line">&#123;<span class="attr">type</span>: Component, <span class="attr">props</span>: &#123;<span class="attr">a</span>: <span class="number">42</span>, <span class="attr">b</span>: <span class="string">'string'</span>&#125;, <span class="attr">children</span>: [<span class="string">'Text'</span>]&#125;</span><br></pre></td></tr></table></figure>
+<p>在從元件取得結果之後，React 會比對這個新物件並收集需要對 DOM 產生變更的資訊。這個比對和計算的流程稱為 <a href="https://reactjs.org/docs/reconciliation.html" target="_blank" rel="noopener">Reconciliation</a>。</p>
+<p>最後 React 會把計算結果同步套用到 DOM 上。</p>
+<h3 id="Render-和-Commit-階段"><a href="#Render-和-Commit-階段" class="headerlink" title="Render 和 Commit 階段"></a>Render 和 Commit 階段</h3><p>概念上整個渲染流程被官方團隊區分為兩個階段：</p>
+<ul>
+<li>Render 包含解析元件計算差異</li>
+<li>Commit 則是真實變更 DOM 的流程</li>
+</ul>
+<p>在 Commit 結束之後會同步執行 <code>componentDidMount</code> ， <code>componentDidUpdate</code> ， <code>useLayoutEffect</code> 。接著 React 會設定一個很短的 timeout 來執行 <code>useEffect</code> 。</p>
+<p>您可以從<a href="https://projects.wojtekmaj.pl/react-lifecycle-methods-diagram/" target="_blank" rel="noopener">示意圖</a>看到 class 元件的生命週期不過它沒有包含 Hook 執行的時間點。</p>
+<p>處於實驗階段的新功能 Concurrent Mode，它的功能是它能夠在 Render 階段允許瀏覽器處理事件。React 後續可以恢復繼續執行或中斷，又或者重新計算。一旦完成計算 React 會繼續執行 Commit 流程</p>
+<p>關鍵是要理解所謂的渲染不完全等於更新 DOM ，而且元件有可能執行渲染但不對畫面產生任何變化。當 React 渲染元件時：</p>
+<ul>
+<li>元件有可能回傳相同的結果，所以 React 並不需要變更介面</li>
+<li>在 Concurrent Mode，React 可能渲染元件很多次，但是拋棄不用直到結果符合為止</li>
+</ul>
+<h2 id="React-是如何處理渲染流程？"><a href="#React-是如何處理渲染流程？" class="headerlink" title="React 是如何處理渲染流程？"></a>React 是如何處理渲染流程？</h2><h3 id="渲染佇列"><a href="#渲染佇列" class="headerlink" title="渲染佇列"></a>渲染佇列</h3><p>初始化渲染完成之後，有幾種方式可以觸發 React 重新渲染</p>
+<ul>
+<li>Class 元件<ul>
+<li><code>this.setState()</code></li>
+<li><code>this.forceUpdate()</code></li>
+</ul>
+</li>
+<li>Function 元件<ul>
+<li><code>useState</code> 的 setter</li>
+<li><code>useReducer</code> 的 dispatch</li>
+</ul>
+</li>
+<li>其他<ul>
+<li><code>ReactDOM.render</code></li>
+</ul>
+</li>
+</ul>
+<h3 id="標準流程"><a href="#標準流程" class="headerlink" title="標準流程"></a>標準流程</h3><p>值得注意的是 React 預設，當上層元件被渲染時，React 會遞迴的渲染所有內部的子元件！</p>
+<p>舉例來說：我們有 <code>A &gt; B &gt; C &gt; D</code> 元件結構，然後這些元件都已經呈現在介面上了。如果使用者點擊了一個在 <code>B</code> 裡面的按鈕變更了一個計數器 <code>counter</code> 的狀態：</p>
+<ul>
+<li>在 <code>B</code> 中執行了 <code>this.setState()</code> ，會將重新渲染 <code>B</code> 的任務加入渲染佇列</li>
+<li>React 開始渲染流程</li>
+<li>因為 <code>A</code> 沒有被標記需要渲染所以跳過</li>
+<li><code>B</code> 被標記需要渲染，所以會重新渲染，然後 <code>B</code> 和之前一樣回傳了 <code>&lt;C /&gt;</code></li>
+<li><code>C</code> 原本沒有被標記需要渲染，但因為 <code>B</code> 重新渲染，React 現在也需要渲染 <code>C</code> 以此類推 <code>D</code> 也是</li>
+</ul>
+<p>渲染元件會造成所有子元件重新渲染！</p>
+<p>另外，在預設的渲染流程中，React 不會去管 <code>props</code> 有沒有改變，它會無條件的渲染子元件只要上層元件被重新渲染。</p>
+<p>意思是每當您在 <code>&lt;App /&gt;</code> 調用  <code>setState()</code> 的時候，就算沒有任何變更，React 會重新渲染整個元件樹。畢竟 React 本來的賣點就是每次更新都像重新繪製整個畫面。</p>
+<p>現在很可能元件樹中大多數的元件都回傳了跟上次一樣的結果，因此 React 不會變更 DOM，但 React 依舊必須要執行取得元件狀態，比對差異，計算的流程。這些都需要花一些時間。</p>
+<p>記住，渲染不是不好 - 這是 React 得知如何變更 DOM 的方法</p>
+<h2 id="優化渲染效能"><a href="#優化渲染效能" class="headerlink" title="優化渲染效能"></a>優化渲染效能</h2><p>必須得承認的是 - 渲染可能浪費效能也是事實。如果元件渲染之後的結果是不需變更，那麼渲染流程確實是多餘的。</p>
+<p>由於 React 元件渲染的輸出永遠都會基於當下的 <code>props</code> 和 <code>state</code> ，因此如果我們提前得知 <code>props</code> 和 <code>state</code> 沒有變更的話，我們應該也能確定該次渲染的結果應該是一樣，然後我們就可以跳過該次渲染。</p>
+<p>通常我們在優化效能時大概有兩個方向</p>
+<ul>
+<li>更快的完成相同的任務</li>
+<li>減少需執行的任務</li>
+</ul>
+<p>優化 React 渲染主要屬於第二種方式。</p>
+<h3 id="優化元件渲染的技巧"><a href="#優化元件渲染的技巧" class="headerlink" title="優化元件渲染的技巧"></a>優化元件渲染的技巧</h3><p>React 提供了一些 API 讓我們可以略過渲染</p>
+<ul>
+<li><code>React.Component.shouldComponentUpdate</code>：class 類型元件中一個可選的生命週期方法，該方法會在 <code>render</code> 之前被調用。如果回傳 <code>false</code> 那麼 React 就會跳過渲染該元件。可以包含任何您想要計算的邏輯，最後回傳一個布林值，大多都是比對上一次的 <code>props</code> 和 <code>state</code> 如果沒有改變就回傳 <code>false</code></li>
+<li><code>React.PureComponent</code>：因為在 <code>shouldComponentUpdate</code> 中比對 <code>props</code> 和 <code>state</code> 是很常見的方式，<code>PureComponent</code> 實作了該行為，可以用來取代 <code>Component</code> + <code>shouldComponentUpdate</code></li>
+<li><code>React.memo()</code> ：內建的高階元件。允許我們傳入一個自己撰寫的元件作為參數，回傳一個新的元件。這個元件預設會檢查 <code>props</code> 是否有變，如果沒有就不再重新渲染。同時支援 class 和 function 類型的元件。另外它可以傳入一個比對的函式作為第二個參數，但你只能比較 <code>props</code> ，所以主要的用途是針對特定欄位。</li>
+</ul>
+<p>上面的方式都是使用淺層比對。意思是簡單比對兩個物件的欄位是不是相同，用程式碼來看就是 <code>obj1.a === obj2.a</code> ， <code>===</code> 比對對 JS 引擎來說非常容易因此上述 3 種方式的比對都等於 <code>const shouldRender = !shallowEqual(newProps, prevProps)</code></p>
+<p>另一個比較少被提起的事：如果 React 元件在 <code>render</code> 回傳了一個和上一次相同參考（Reference）的輸出， React 會跳過渲染該子元素。上述這些技術都屬於略過渲染，也就是 React 會跳過渲染其內部的子元件，如此就可以停止遞迴去渲染而產生計算的行為。</p>
+<h3 id="新建立的-Props-參考是如何影響優化"><a href="#新建立的-Props-參考是如何影響優化" class="headerlink" title="新建立的 Props 參考是如何影響優化"></a>新建立的 Props 參考是如何影響優化</h3><p>我們知道如果該元件被標記需要重新渲染，那麼預設 React 就會重新渲染其內部的元件即使它們的 <code>props</code> 沒有變更。意思是 <code>props</code> 是否有變更根本不是重點。</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">ParentComponent</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">	<span class="comment">// 每次渲染會是新的 Reference</span></span><br><span class="line">	<span class="keyword">const</span> onClick = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">		<span class="built_in">console</span>.log(<span class="string">'clicked'</span>);</span><br><span class="line">	&#125;;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">const</span> data = &#123;<span class="attr">a</span>: <span class="number">1</span>, <span class="attr">b</span>: <span class="number">2</span>&#125;;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">return</span> <span class="xml"><span class="tag">&lt;<span class="name">NormalChildComponent</span> <span class="attr">onClick</span>=<span class="string">&#123;onClick&#125;</span> <span class="attr">data</span>=<span class="string">&#123;data&#125;</span> /&gt;</span></span></span><br><span class="line"><span class="xml">&#125;</span></span><br></pre></td></tr></table></figure>
+<p>每次 <code>ParentComponent</code> 重新渲染的時候就會建立新的 <code>onClick</code> 和 <code>data</code> 參考，然後傳給 <code>NormalChildComponent</code> 不管我們使用箭號函式或傳統的 <code>function</code> 定義 <code>onClick</code> 它都會得到一個新的參考。</p>
+<p>也就是說這種時候使用 <code>React.memo</code> 是沒有意義的。使用 <code>React.memo</code> 要注意傳入 <code>props</code> 的參考</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> MemoizedChildComponent = React.memo(ChildComponent);</span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">ParentComponent</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">	<span class="keyword">const</span> onClick = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">		<span class="built_in">console</span>.log(<span class="string">'clicked'</span>);</span><br><span class="line">	&#125;;</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">const</span> data = &#123;<span class="attr">a</span>: <span class="number">1</span>, <span class="attr">b</span>: <span class="number">2</span>&#125;;</span><br><span class="line">	<span class="keyword">return</span> <span class="xml"><span class="tag">&lt;<span class="name">MemoizedChildComponent</span> <span class="attr">onClick</span>=<span class="string">&#123;onClick&#125;</span> <span class="attr">data</span>=<span class="string">&#123;data&#125;</span> /&gt;</span></span></span><br><span class="line"><span class="xml">&#125;</span></span><br></pre></td></tr></table></figure>
+<p>例如上面的範例 <code>ParentComponent</code> 每次渲染的時候產生新的參考會導致 <code>MemoizedChildComponent</code> 認為 <code>props</code> 改變了然後就會重新渲染。</p>
+<p>意思是：</p>
+<ul>
+<li><code>MemoizedChildComponent</code> 即使我們想要略過渲染但每次都會被重新渲染</li>
+<li>上述情況比對新舊 <code>props</code> 只是浪費效能</li>
+</ul>
+<p>同樣的例如 <code>&lt;MemoizedChildComponent&gt;&lt;OtherComponent /&gt;&lt;/MemoizedChildComponent&gt;</code> 它的子元件也是每次都會每次都會重新渲染，因為 <code>props.children</code> 永遠都是新的參考。</p>
+<p>這個小結的重點在於謹慎正確的使用 React.memo</p>
+<h3 id="優化-Props-參考"><a href="#優化-Props-參考" class="headerlink" title="優化 Props 參考"></a>優化 Props 參考</h3><p>class 類型的元件不太需要擔心為 callback 函式建立新參考的問題，因為他們可以使用物件實例方法，如此一來參考都會是一樣的。然而它們還是可能會需要為列表的項目（子元件）建立獨立的 callback 或者在匿名函式中取得一個值然後傳遞給子元件。這些都會造成產生新的參考。對於這種情況 React 並沒有任何內建的方式優化。</p>
+<p>而 function 元件，React 提供了兩個 hook 協助重複使用相同的參考：<code>useMemo</code> 可以使用在任何資料，物件（建議使用在複雜計算情境）。<code>useCallback</code> 則針對 callback 函式。</p>
+<h3 id="是否該快取所有東西？"><a href="#是否該快取所有東西？" class="headerlink" title="是否該快取所有東西？"></a>是否該快取所有東西？</h3><p>事實上您不需要對每個往下傳遞的函式或物件使用 <code>useMemo</code> 和 <code>useCallback</code> 。具體的範例可以參考補充一節。</p>
+<p>另一個常被提出的問題是為什麼 React 不預設把所有元件使用 <code>React.memo</code> 包起來？</p>
+<p>Dan Abramov 已經指出快取還是會耗費效能在比對 props 上，並且很多情況下快取無法阻止重新渲染。為每個元件都套用 <code>React.memo</code> 可能導致更多問題。</p>
+<h3 id="測量-React-元件渲染效能"><a href="#測量-React-元件渲染效能" class="headerlink" title="測量 React 元件渲染效能"></a>測量 React 元件渲染效能</h3><p>使用 React DevTools Profiler 可以檢查每次 Commit 重新渲染了那些元件。藉此可以找到那些非預期渲染的元件。使用開發工具可以了解為什麼它們重新渲染並且修復問題。</p>
+<h2 id="Context-渲染流程"><a href="#Context-渲染流程" class="headerlink" title="Context 渲染流程"></a>Context 渲染流程</h2><p>React Context API 可以協助子元件取得資料。例如任何在 <code>&lt;MyContext.Provider&gt;</code> 底下的元件都可以讀取它的資料而不需要逐層通過 <code>props</code> 傳遞。</p>
+<p>Context 不是狀態管理工具，您還是要自己管理那些傳給 Context 的資料。</p>
+<h3 id="Context-基礎"><a href="#Context-基礎" class="headerlink" title="Context 基礎"></a>Context 基礎</h3><p>Context 的 Provider 可以傳入一個 <code>value</code> 屬性。例如：<code>&lt;MyContext.Provider value={42}&gt;</code> </p>
+<p>然後內部的子元件就可以使用 Consumer 取得 <code>value</code> 的資料例如：</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;MyContext.Consumer&gt;</span><br><span class="line">	&#123;(value) =&gt; (</span><br><span class="line">		&lt;div&gt;&#123;value&#125;&lt;<span class="regexp">/div&gt;</span></span><br><span class="line"><span class="regexp">	)&#125;</span></span><br><span class="line"><span class="regexp">&lt;/</span>MyContext.Consumer&gt;</span><br></pre></td></tr></table></figure>
+<p>或者使用 <code>useContext</code> 取得值</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> value = useContext(MyContext)</span><br></pre></td></tr></table></figure>
+<h3 id="更新-Context"><a href="#更新-Context" class="headerlink" title="更新 Context"></a>更新 Context</h3><p>React 會觀察 Provider 的 <code>value</code> 是否有更新。如果 Provider 的 <code>value</code> 是新的參考 React 發現值產生變更就會讓有使用 Consumer 的元件更新</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">GrandChildComponent</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">	<span class="keyword">const</span> value = useContext(MyContext);</span><br><span class="line">	<span class="keyword">return</span> (</span><br><span class="line">		&lt;div&gt;&#123;value&#125;&lt;<span class="regexp">/div&gt;</span></span><br><span class="line"><span class="regexp">	);</span></span><br><span class="line"><span class="regexp">&#125;</span></span><br><span class="line"><span class="regexp"></span></span><br><span class="line"><span class="regexp">function ChildComponent() &#123;</span></span><br><span class="line"><span class="regexp">	return &lt;GrandChildComponent /</span>&gt;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">ParentComponent</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">	<span class="keyword">const</span> [a, setA] = useState(<span class="number">0</span>);</span><br><span class="line">	<span class="keyword">const</span> [b, setB] = useState(<span class="string">'text'</span>);</span><br><span class="line">	<span class="keyword">const</span> value = &#123;</span><br><span class="line">		a,</span><br><span class="line">		b,</span><br><span class="line">	&#125;;</span><br><span class="line">	<span class="keyword">return</span> (</span><br><span class="line">		&lt;MyContext.Provider value=&#123;value&#125;&gt;</span><br><span class="line">			&lt;ChildComponent /&gt;</span><br><span class="line">		&lt;<span class="regexp">/MyContext.Provider&gt;</span></span><br><span class="line"><span class="regexp">	);</span></span><br><span class="line"><span class="regexp">&#125;</span></span><br></pre></td></tr></table></figure>
+<p>上面範例每次 <code>ParentComponent</code> 渲染的時候，React 會註記 <code>MyContext.Provider</code> 得到新的 <code>value</code> 然後會找到那些有使用 <code>MyContext</code> 取值的元件並強制更新。</p>
+<p>每個 Context 只有一個 <code>value</code> 不管它是物件，陣列或其他格式的資料。目前使用 Context 取值的元件並沒有辦法跳過由 Context 造成的重新渲染。</p>
+<h3 id="State，Context-和重新渲染"><a href="#State，Context-和重新渲染" class="headerlink" title="State，Context 和重新渲染"></a>State，Context 和重新渲染</h3><p>現在我們來整理上面學習到的東西</p>
+<ul>
+<li>調用 <code>setState()</code> 會把一次元件重新渲染的任務加入佇列</li>
+<li>React 預設會遞迴的渲染內部元件</li>
+<li>Context Provider 會由使用它的元件來給定 <code>value</code></li>
+<li>通常 Context Provider 的 <code>value</code> 來自上層元件的 <code>state</code></li>
+</ul>
+<p>根據我們一開始提到 React 的預設行為會渲染所有子元件（沒有優化的情況下），意思是一旦上層元件的 <code>state</code> 變更那麼所有子元件都會被更新。</p>
+<p>回到上面 <code>Parent/Child/GrandChild</code> 的範例，注意！ <code>GrandChildComponent</code> 會重新渲染是因為 <code>ChildComponent</code> 重新渲染了，而不是上面因為使用了 <code>MyContext</code> 會強制更新。</p>
+<h3 id="更新-Context-和優化渲染"><a href="#更新-Context-和優化渲染" class="headerlink" title="更新 Context 和優化渲染"></a>更新 Context 和優化渲染</h3><p>讓我們修改一下上面的範例</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">GreatGrandChildComponent</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">	<span class="keyword">return</span> (<span class="xml"><span class="tag">&lt;<span class="name">div</span>&gt;</span>Hi<span class="tag">&lt;/<span class="name">div</span>&gt;</span></span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">GrandChildComponent</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">	<span class="keyword">const</span> value = useContext(MyContext);</span><br><span class="line">	<span class="keyword">return</span> (</span><br><span class="line">		&lt;div&gt;</span><br><span class="line">			&#123;value.a&#125;</span><br><span class="line">			&lt;GreatGrandChildComponent /&gt;</span><br><span class="line">		&lt;<span class="regexp">/div&gt;</span></span><br><span class="line"><span class="regexp">	);</span></span><br><span class="line"><span class="regexp">&#125;</span></span><br><span class="line"><span class="regexp"></span></span><br><span class="line"><span class="regexp">function ChildComponent() &#123;</span></span><br><span class="line"><span class="regexp">	return &lt;GrandChildComponent /</span>&gt;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> MemoizedChildComponent = React.memo(ChildComponent);</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">ParentComponent</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">	<span class="keyword">const</span> [a, setA] = useState(<span class="number">0</span>);</span><br><span class="line">	<span class="keyword">const</span> [b, setB] = useState(<span class="string">'text'</span>);</span><br><span class="line">	<span class="keyword">const</span> value = &#123;a,b&#125;;</span><br><span class="line">	<span class="keyword">return</span> (</span><br><span class="line">    &lt;MyContext.Provider value=&#123;value&#125;&gt;</span><br><span class="line">      &lt;MemoizedChildComponent /&gt;</span><br><span class="line">    &lt;<span class="regexp">/MyContext.Provider&gt;</span></span><br><span class="line"><span class="regexp">  );</span></span><br><span class="line"><span class="regexp">&#125;</span></span><br></pre></td></tr></table></figure>
+<p>現在如果我們執行了 <code>setA(42)</code></p>
+<ul>
+<li><code>ParentComponent</code> 會重新渲染</li>
+<li>新的 Context <code>value</code> 參考產生</li>
+<li>React 發現 <code>MyContext.Provider</code> 有了新的 <code>value</code> 因此任何使用 <code>MyContext</code> 的元件都要更新</li>
+<li>React 會嘗試要重新渲染 <code>MemorizedChildComponent</code> 不過因為它使用了 <code>React.memo</code> 並且沒有 <code>props</code> 的變動，所以跳過重新渲染</li>
+<li>然而因為 <code>MyContext.Provider</code> 更新了，也許深層還有元件需要更新</li>
+<li>React 繼續往下檢查，直到 <code>GrandChildComponent</code> 它發現有使用 <code>MyContext</code> 因此 <code>GrandChildComponent</code> 需要被重新渲染</li>
+<li>接著因為 <code>GrandChildComponent</code> 重新渲染了所以 <code>GreatGrandChildComponent</code> 也要被重新渲染。</li>
+</ul>
+<p>位於 Context Provider 的元件大概都可能需要使用 React.memo - Sophie Alpert</p>
+<p>通過這種方式上層元件重新渲染的時候就不用強制渲染所有元件了。或者您也可以利用傳遞相同 <code>props.children</code> 參考的方式</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">&lt;MyContext.Provider&gt;</span><br><span class="line">	&#123;props.children&#125;</span><br><span class="line">&lt;<span class="regexp">/MyContext.Provider&gt;</span></span><br></pre></td></tr></table></figure>
+<p>來避免重新渲染子元件。</p>
+<h2 id="React-Redux-渲染流程"><a href="#React-Redux-渲染流程" class="headerlink" title="React-Redux 渲染流程"></a>React-Redux 渲染流程</h2><p>前陣子最常見的問題大概是各種 Context v.s Redux。這個問題一開始就是錯誤的二分法，因為 Redux 和 Context 處理的是不同的問題。</p>
+<p>其中人們最常提到 React-Redux 只會讓需要的元件重新渲染，所以比 Context 好。</p>
+<p>這種說法部分是正確的，但答案不僅如此。</p>
+<h3 id="React-Redux-訂閱機制"><a href="#React-Redux-訂閱機制" class="headerlink" title="React-Redux 訂閱機制"></a>React-Redux 訂閱機制</h3><p>很多人提到 React-Redux 內部也是使用 Context，技術上來說 - 沒錯，但 React-Redux 使用 Context 是用來傳遞 Store 物件實例，而不是狀態。意思是傳遞給 <code>&lt;ReactReduxContext.Provider&gt;</code> 的 <code>value</code> 都是一樣的 <code>store</code> 參考。</p>
+<p>還記得 Redux Store 會在我們 <code>dispatch</code> <code>action</code> 的時候執行註冊的 callback 函式（加入 subscribe 的函式）。<a href="https://blog.isquaredsoftware.com/2018/11/react-redux-history-implementation/" target="_blank" rel="noopener">介面必須訂閱 <code>store</code> 然後自行讀取最新的狀態進而觸發重新渲染</a> 。整個訂閱機制的流程並不屬於 React 內部的機制，只有在 React-Redux 得知特定元件需要的資料發生異動的時候 React 才會加入流程。React-Redux 主要就是基於 <code>mapState</code> 或 <code>useSelector</code> 來判斷狀態是否發生變更。</p>
+<p>這直接導致和 Context  相較之下在效能表現上的差異。觸發重新渲染的元件看起來會比較少。不過當 <code>store</code> 的狀態變更時， React-Redux 必須要為整個元件結構執行 <code>mapState</code> 或 <code>useSelector</code> 函式。雖然大部分情況執行 <code>mapState</code> 或 <code>useSelector</code> 比起渲染流程耗費的效能比較小，不過如果這些函式需要做一些複雜的轉換或者多餘的更新也是會降低效能。</p>
+<h3 id="connect-和-useSelector-的差異"><a href="#connect-和-useSelector-的差異" class="headerlink" title="connect 和 useSelector 的差異"></a><code>connect</code> 和 <code>useSelector</code> 的差異</h3><p><code>connect</code> 是一個高階元件。您可以把您的元件作為參數傳入然後它會回傳一個新的元件。這個新元件添加的功能就是訂閱 <code>store</code> ，執行 <code>mapState</code> 和 <code>mapDispatch</code> ，最後把狀態通過 <code>props</code> 交給您的元件。</p>
+<p><code>connect</code> 產生的元件基本上行為和 <code>PureComponent</code> <code>React.memo</code> 一樣，不過有些微的差異： <code>connect</code> 只有在整合的 <code>props</code> 發生變化的時候才會渲染您的元件。</p>
+<p>通常最終整合的 <code>props</code> 包含 <code>{...ownProps, ...stateProps, ...dispatchProps}</code>，所以任何從上層產生 <code>props</code> 的新參考都會造成重新渲染，<code>mapState</code> 也會，也就是影響重新渲染的範圍變大了。</p>
+<p> <code>useSelector</code> 是給函式元件使用的 Hook，因為是在元件內部使用所以不像 <code>connect</code> 可以比對阻止上層元件造成的重新渲染。</p>
+<p>這就是 <code>connect</code> 和 <code>useSelector</code> 最大的差異，使用 <code>connect</code> 的話元件基本上等於 <code>PureComponent</code> 可以停止因為上層重新渲染導致必須要跟著重新渲染的問題。由於大部分的 React-Redux 應用程式會大量使用 <code>connect</code> ，意味著其實它們已經降低了渲染次數。</p>
+<p>React-Redux 會根據資料的更新來觸發 <code>connect</code> 產出的元件進行更新，當然內部的元件可能也會被渲染不過檢查到另外一個 <code>connect</code> 元件是不需要渲染的時候就會停止往下影響。</p>
+<p>此外，大量使用 <code>connect</code> 意味著每個元件可能只關注小部分的資料，因此每次狀態變更，造成重新渲染的機會也會降低。</p>
+<p>如果您只使用函式元件和 <code>useSelector</code> 。那麼每當 <code>store</code> 變更時，比起 <code>connect</code> 的方式，很大的機會會重新渲染整個元件樹。</p>
+<p>如果因為這樣而產生效能的問題，那麼解決辦法就是使用 <code>React.memo</code> 來防止因為上層元件造成多餘的重新渲染</p>
+<h2 id="總結"><a href="#總結" class="headerlink" title="總結"></a>總結</h2><ul>
+<li>React 預設重新渲染時會遞迴式的影響子元件，所以上層元件重新渲染，內部子元件也會重新渲染</li>
+<li>渲染機制是 React 得知該如何調整 DOM 的方法</li>
+<li>渲染是需要耗費時間，如果介面沒改變卻產生了多餘的渲染是會累積的</li>
+<li>大部分情況傳入 <code>props</code> 的函式或物件產生新的參考不會產生問題</li>
+<li>如果 <code>props</code> 沒有變動，<code>React.memo</code> 可以避免不必要的渲染</li>
+<li>如果每次渲染都產生新的參考並傳入 <code>props</code> ，那麼 <code>React.memo</code> 也沒用，這種情況下就要將傳入的東西暫存起來，例如 <code>useMemo</code></li>
+<li>Context 主要是讓深層的元件可以存取資料，而避免逐層傳遞 <code>props</code> 的問題</li>
+<li><code>Context.Provider</code> 的 <code>value</code> 比對是基於參考來判斷是否需要更新</li>
+<li>一旦 <code>value</code> 發生異動，底下有讀取 Context 資料的元件會強制重新渲染</li>
+<li>但大部分的情況造成重新渲染的其實是預設行為，就是上層元件更新導致的</li>
+<li>所以您應該將 <code>Context.Provider</code> 內部的子元件使用 <code>React.memo</code> 包起來或使用 <code>{props.children}</code> 固定參考的方式，才不會在 Context <code>value</code> 更新時造成多餘的渲染</li>
+<li>子元件如果有讀取 Context <code>value</code> ，React 會確保其正確的執行渲染</li>
+<li>React-Redux 通過訂閱 <code>store</code> 的方式來判斷是否需要更新，而不是將 <code>state</code> 存在 Context</li>
+<li>訂閱機制會在每次 <code>store</code> 更新時運作</li>
+<li>React-Redux 確保了只有在元件使用的資料發生變化才會重新渲染元件</li>
+<li><code>connect</code> 的行為跟 <code>React.memo</code> 很接近，因此大量使用 <code>connect</code> 可以最小化渲染次數</li>
+<li><code>useSelector</code> 無法阻止因上層元件造成的渲染，所以偏好使用函式元件的開發者應更注意 <code>React.memo</code> 的時候時機</li>
+</ul>
+<h2 id="心得"><a href="#心得" class="headerlink" title="心得"></a>心得</h2><p>顯然情況是很複雜的不能單純說 - Context 會造成所有東西重新渲染，Redux 不會，所以應該使用 Redux。雖然我希望大家使用 Redux 但我同時也希望大家可以清楚的明白這些運作機制，然後自己判斷該使用什麼。</p>
+<p>由於大家老是在問“什麼時候我該使用 Context？什麼使用我該使用 Redux？那就讓我們進一步彙整一些建議</p>
+<ul>
+<li>使用 Context<ul>
+<li>您只是簡單要傳遞資料並且這些資料不會頻繁的變動</li>
+<li>如果有些狀態或函式可能貫穿整個應用程式，而且深層的元件也需要存取</li>
+<li>您只想使用內建的功能</li>
+</ul>
+</li>
+<li>使用 Redux<ul>
+<li>應用程式有大量的狀態需要處理</li>
+<li>狀態很頻繁的變更</li>
+<li>狀態變更的邏輯很複雜</li>
+<li>多人維護的專案，專案屬於中大型有大量的程式碼</li>
+</ul>
+</li>
+</ul>
+<p>請注意上面提到的都不是硬性的規則，只是簡單的建議。請花點時間根據遭遇的問題，環境自行思考選擇。希望這篇說明可以幫助您對於 React 渲染的行為有更全面的理解</p>
+<h2 id="參考資源"><a href="#參考資源" class="headerlink" title="參考資源"></a>參考資源</h2><ul>
+<li><a href="https://blog.isquaredsoftware.com/2020/05/blogged-answers-a-mostly-complete-guide-to-react-rendering-behavior/?utm_campaign=React%2BNewsletter&amp;utm_medium=email&amp;utm_source=React_Newsletter_213#component-render-optimization-techniques" target="_blank" rel="noopener">A (Mostly) Complete Guide to React Rendering Behavior</a></li>
+<li><a href="https://blog.logrocket.com/rethinking-hooks-memoization/?from=singlemessage&amp;isappinstalled=0" target="_blank" rel="noopener">You’re overusing useMemo: Rethinking Hooks memoization</a></li>
+</ul>
+<h2 id="補充-正確使用-useMemo"><a href="#補充-正確使用-useMemo" class="headerlink" title="補充 - 正確使用 useMemo"></a>補充 - 正確使用 useMemo</h2><h3 id="維持相同參考的問題"><a href="#維持相同參考的問題" class="headerlink" title="維持相同參考的問題"></a>維持相同參考的問題</h3><figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 範例想避免 value 的參考變化導致 ExpensiveComponent 重新渲染</span></span><br><span class="line"><span class="keyword">const</span> MyComponent = <span class="function">(<span class="params">&#123; page, type &#125;</span>) =&gt;</span> &#123;</span><br><span class="line">	<span class="keyword">const</span> value = useMemo(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">		<span class="keyword">return</span> getValue(page, type);</span><br><span class="line">	&#125;, [page, type]);</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">return</span> <span class="xml"><span class="tag">&lt;<span class="name">ExpensiveComponent</span> <span class="attr">value</span>=<span class="string">&#123;value&#125;</span> /&gt;</span></span></span><br><span class="line"><span class="xml">&#125;</span></span><br></pre></td></tr></table></figure>
+<p>根據上面範例，使用 <code>useMemo</code> 前請先問自己：</p>
+<ul>
+<li><code>getValue</code> 屬於複雜計算耗費效能嗎？如果不是請不要濫用 <code>useMemo</code></li>
+<li>不同的參數例如 <code>page</code> 和 <code>type</code> 會造成 <code>value</code> 的參考不同嗎？如果是 <code>string</code> <code>number</code> <code>boolean</code> <code>null</code> <code>undefined</code> <code>symbol</code> 這些參考都不會變動因此 <code>&lt;ExpensiveComponent&gt;</code> 也不會重新渲染，也就不需要使用 <code>useMemo</code></li>
+</ul>
+<h3 id="基於各種理由快取預設狀態"><a href="#基於各種理由快取預設狀態" class="headerlink" title="基於各種理由快取預設狀態"></a>基於各種理由快取預設狀態</h3><figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> MyComponent = <span class="function">(<span class="params">&#123;page, type&#125;</span>) =&gt;</span> &#123;</span><br><span class="line">	<span class="keyword">const</span> defaultState = useMemo(<span class="function"><span class="params">()</span> =&gt;</span> (&#123;</span><br><span class="line">		fetched: operation(),</span><br><span class="line">		type,</span><br><span class="line">	&#125;), [type]);</span><br><span class="line">	<span class="keyword">const</span> [state, setState] = useState(defaultState);</span><br><span class="line">	<span class="keyword">return</span> <span class="xml"><span class="tag">&lt;<span class="name">ExpensiveComponent</span> /&gt;</span></span></span><br><span class="line"><span class="xml">&#125;</span></span><br></pre></td></tr></table></figure>
+<p>看似沒有什麼問題的範例，但 <code>useMemo</code> 根本不重要。首先我們理解一下範例的意圖，當 <code>type</code> 改變時 <code>defaultState</code> 可以跟著更新，也可以在每次渲染的時候省去一些計算。</p>
+<p>看似合理的想法，但這個方法是錯的並且違反 <code>useState</code> 的原則。<code>useState</code> 在第一次掛載初始化之後就不會在使用預設狀態。</p>
+<p>雖然<code>type</code> 改變會得到新的  <code>defaultState</code> 但 <code>useState</code> 會直接忽略。</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 比較好的方式</span></span><br><span class="line"><span class="keyword">const</span> MyComponent = <span class="function">(<span class="params">&#123;page, type&#125;</span>) =&gt;</span> &#123;</span><br><span class="line">	<span class="keyword">const</span> defaultState = <span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">    <span class="comment">// 複雜計算</span></span><br><span class="line">    <span class="built_in">console</span>.log(<span class="string">"default state exec"</span>);</span><br><span class="line">    <span class="keyword">return</span> &#123;</span><br><span class="line">      name: <span class="string">"andyyou"</span></span><br><span class="line">    &#125;;</span><br><span class="line">  &#125;;</span><br><span class="line">	<span class="keyword">const</span> [state, setState] = useState(defaultState);</span><br><span class="line">	<span class="keyword">return</span> <span class="xml"><span class="tag">&lt;<span class="name">ExpensiveComponent</span> /&gt;</span></span></span><br><span class="line"><span class="xml">&#125;</span></span><br></pre></td></tr></table></figure>
+<p>上面這種方式 <code>defaultState</code> 只會在第一次掛載的時候被執行一次。</p>
+<h3 id="處理-ESLint-Hook-警告"><a href="#處理-ESLint-Hook-警告" class="headerlink" title="處理 ESLint Hook 警告"></a>處理 ESLint Hook 警告</h3><p>沒有經過完整理解只為了解決 ESLint 的警告而照著說明調整反而可能產生 Bug </p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">Example</span>(<span class="params">&#123; tracker, a, b, c &#125;</span>) </span>&#123;</span><br><span class="line">	useEffect(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">		tracker(a, b, c)</span><br><span class="line">	&#125;, []);</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">return</span> <span class="xml"><span class="tag">&lt;<span class="name">MyComponent</span> <span class="attr">a</span>=<span class="string">&#123;a&#125;</span> <span class="attr">b</span>=<span class="string">&#123;b&#125;</span> <span class="attr">c</span>=<span class="string">&#123;c&#125;</span> /&gt;</span></span></span><br><span class="line"><span class="xml">&#125;</span></span><br></pre></td></tr></table></figure>
+<p>上面的範例您不在意  <code>props</code> 是否改變，您只想在第一次初始化的時候追蹤 <code>props</code> 。而此時 ESLint 會出現一些警告 <code>React Hook useEffect has missing dependencies: &#39;tracker&#39;, &#39;a&#39;, &#39;b&#39;, and &#39;c&#39;. Either include them or remove the dependency array.</code></p>
+<p>這個時候您可以關閉警告</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// eslint-disable-next-line react-hooks/exhaustive-deps</span></span><br></pre></td></tr></table></figure>
+<p>但不是最好的解法，這裡建議您可以使用 <code>useRef</code></p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> initialTrackingValues = useRef(&#123;</span><br><span class="line">	tracker,</span><br><span class="line">	params: &#123;</span><br><span class="line">		a,</span><br><span class="line">		b,</span><br><span class="line">		c</span><br><span class="line">	&#125;</span><br><span class="line">&#125;);</span><br><span class="line">useEffect(<span class="function"><span class="params">()</span> =&gt;</span> &#123;</span><br><span class="line">	<span class="keyword">const</span> &#123; tracker, params &#125; = initialTrackingValues.current;</span><br><span class="line">	tracker(params)</span><br><span class="line">&#125;, []);</span><br></pre></td></tr></table></figure>
+<p>注意只有 <code>useRef</code> 可以解除這個警告，不要使用 <code>useMemo</code> 來處理這個問題，完全是錯的。</p>
+<h3 id="使用-useMemo-處理參考（Reference）的問題"><a href="#使用-useMemo-處理參考（Reference）的問題" class="headerlink" title="使用 useMemo 處理參考（Reference）的問題"></a>使用 <code>useMemo</code> 處理參考（Reference）的問題</h3><p>大多人使用 <code>useMemo</code> 來快取減少複雜計算和維持參考的問題。第一點減少耗費效能的計算沒有問題。但第二點使用 <code>useMemo</code> 維持參考的一致則並不正確。請不要使用 <code>useMemo</code> 就只為了讓參考一致。</p>
+<p>為什麼不要使用 <code>useMemo</code> 維持一致的參考？</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">Bla</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">	<span class="keyword">const</span> baz = useMemo(<span class="function"><span class="params">()</span> =&gt;</span> [<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>], []);</span><br><span class="line">	<span class="keyword">return</span> <span class="xml"><span class="tag">&lt;<span class="name">Foo</span> <span class="attr">baz</span>=<span class="string">&#123;baz&#125;</span> /&gt;</span></span></span><br><span class="line"><span class="xml">&#125;</span></span><br></pre></td></tr></table></figure>
+<p>上面範例 <code>Bla</code> 的值 <code>baz</code> 被快取不是因為 <code>[1, 2, 3]</code> 是耗費效能的計算，只是因為 <code>baz</code> 每次渲染的參考都會改變。</p>
+<p>範例看起來沒什麼問題，但 <code>useMemo</code> 並不是處理這種情況最佳的 Hook。</p>
+<p>上面我們在 <code>useMemo</code> 的第二個參數傳入空陣列，也就是 <code>[1, 2, 3]</code> 在元件掛載之後就不會改變。結論就是我們快取了一個不會耗費效能的值，這個值在掛載之後就不變了。</p>
+<p>如果您發現您遇到類似的情境，請您在好好思考一下是否該使用 <code>useMemo</code> 。</p>
+<p>那該怎麼做？</p>
+<p>首先必須回到我們希望在這裡完成什麼？我們並不是想要快取資料，我們想要的是在每次重新渲染的時候維持一致的參考。畢竟我們使用了 <code>[]</code> 作為第二個參數那麼這個變數掛載之後就不會變了。</p>
+<p>此時使用 <code>useRef</code> 是比較合理的。</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">funtion Bla() &#123;</span><br><span class="line">	<span class="keyword">const</span> &#123; <span class="attr">current</span>: baz &#125; = useRef([<span class="number">1</span>, <span class="number">2</span>, <span class="number">3</span>]);</span><br><span class="line">	<span class="keyword">return</span> <span class="xml"><span class="tag">&lt;<span class="name">Foo</span> <span class="attr">baz</span>=<span class="string">&#123;baz&#125;</span> /&gt;</span></span></span><br><span class="line"><span class="xml">&#125;</span></span><br></pre></td></tr></table></figure>
+<p>事實上您還可以使用 <code>useRef</code> 去保存一個耗費效能的函式計算只要該函式不需要因為 <code>props</code> 的改變而需要重新計。</p>
+<p>記住，上面的情境是您需要維持一致的參考，但如果您需要保存的是值且會根據 <code>props</code> 等改變那您應該使用 <code>useMemo</code></p>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+
+</div>
+
+    <a data-url="//andyyou.github.io/2020/05/31/understand-react-rendering-in-deep/" data-id="cknx2z2he00nz3m72bygnlepc" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        // Prevent duplicate binding
+        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
+            __SHARE_BUTTON_BINDED__ = true;
+        } else {
+            return;
+        }
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+            
+    
+
+        </footer>
+    </div>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2020/07/10/sanctum-with-react/" id="article-nav-newer" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">上一篇</strong>
+            <div class="article-nav-title">
+                
+                    使用 Sancutm 實作 React SPA 認證
+                
+            </div>
+        </a>
+    
+    
+        <a href="/2019/08/22/deploy-react-app-to-s3-step-by-step/" id="article-nav-older" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">下一篇</strong>
+            <div class="article-nav-title">手把手實戰部署 ReactJS 至 Amazon S3</div>
+        </a>
+    
+</nav>
+
+
+    
+</article>
+
+
+    
+    <section id="comments">
+    
+    </section>
+
+</section>
+            
+                <aside id="sidebar">
+   
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">分類</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Cloud/">Cloud</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Database/">Database</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Fun/">Fun</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Mobile/">Mobile</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Program/">Program</a><span class="category-list-count">132</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/System/">System</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Tools/">Tools</a><span class="category-list-count">17</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">歸檔</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/04/">四月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/03/">三月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/10/">十月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">五月 2019</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">六月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">十二月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">十一月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">九月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">十月 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">九月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">六月 2016</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">十二月 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">十一月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">十月 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">九月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">八月 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">七月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">五月 2015</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">四月 2015</a><span class="archive-list-count">19</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">十二月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/11/">十一月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/10/">十月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">九月 2014</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/08/">八月 2014</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/02/">二月 2014</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/01/">一月 2014</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">十一月 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">十月 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">九月 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">八月 2013</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/03/">三月 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">三月 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">一月 2012</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2011/11/">十一月 2011</a><span class="archive-list-count">3</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">標籤</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/net-mvc/">.net mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RoR/">RoR</a><span class="tag-list-count">15</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/api/">api</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aws/">aws</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/azure/">azure</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bot/">bot</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bundler/">bundler</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cache/">cache</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/carrier-wave/">carrier wave</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/centos/">centos</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/chrome/">chrome</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cloudflare/">cloudflare</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/compass/">compass</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/devise/">devise</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dnd/">dnd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/e-invoice/">e-invoice</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/entity-framework/">entity framework</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/es6/">es6</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/facebook/">facebook</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flux/">flux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/framework/">framework</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gcp/">gcp</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/grunt/">grunt</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gulp/">gulp</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/heroku/">heroku</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/html/">html</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/iisexpress/">iisexpress</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ios/">ios</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">70</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript-express-passport/">javascript express passport</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript-nodejs/">javascript nodejs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jekyll/">jekyll</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jetstream/">jetstream</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jspm/">jspm</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jwt/">jwt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/laravel/">laravel</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/letsencrypt/">letsencrypt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mechanism/">mechanism</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongodb/">mongodb</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/node/">node</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nodejs/">nodejs</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/oocss/">oocss</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/osx/">osx</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package-manager/">package manager</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/php/">php</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/postgres/">postgres</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/postgresql/">postgresql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/queue/">queue</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rabbitmq/">rabbitmq</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rack-server/">rack server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails/">rails</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails-webpack-stimulus-javascript-bootstrap/">rails webpack stimulus javascript bootstrap</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/raspberry-pi/">raspberry-pi</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react/">react</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react-native/">react native</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/reactjs/">reactjs</a><span class="tag-list-count">32</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redux/">redux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sass/">sass</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/selenium/">selenium</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/slim/">slim</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssh/">ssh</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssl/">ssl</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/stimulus/">stimulus</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/svg-javascript/">svg javascript</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/task-runner/">task runner</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tmux/">tmux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tools/">tools</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vm/">vm</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/">vue</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vuejs/">vuejs</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/webpack/">webpack</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/windows/">windows</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/xml/">xml</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">標籤雲</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/net-mvc/" style="font-size: 10px;">.net mvc</a> <a href="/tags/RoR/" style="font-size: 16.67px;">RoR</a> <a href="/tags/api/" style="font-size: 10px;">api</a> <a href="/tags/aws/" style="font-size: 12.5px;">aws</a> <a href="/tags/azure/" style="font-size: 10.83px;">azure</a> <a href="/tags/bot/" style="font-size: 10px;">bot</a> <a href="/tags/bundler/" style="font-size: 10.83px;">bundler</a> <a href="/tags/cache/" style="font-size: 10px;">cache</a> <a href="/tags/carrier-wave/" style="font-size: 10.83px;">carrier wave</a> <a href="/tags/centos/" style="font-size: 10px;">centos</a> <a href="/tags/chrome/" style="font-size: 10px;">chrome</a> <a href="/tags/cloudflare/" style="font-size: 10px;">cloudflare</a> <a href="/tags/compass/" style="font-size: 10px;">compass</a> <a href="/tags/css/" style="font-size: 17.5px;">css</a> <a href="/tags/devise/" style="font-size: 10px;">devise</a> <a href="/tags/dnd/" style="font-size: 10px;">dnd</a> <a href="/tags/docker/" style="font-size: 10.83px;">docker</a> <a href="/tags/e-invoice/" style="font-size: 10px;">e-invoice</a> <a href="/tags/entity-framework/" style="font-size: 10px;">entity framework</a> <a href="/tags/es6/" style="font-size: 11.67px;">es6</a> <a href="/tags/facebook/" style="font-size: 10px;">facebook</a> <a href="/tags/flux/" style="font-size: 10px;">flux</a> <a href="/tags/framework/" style="font-size: 10.83px;">framework</a> <a href="/tags/gcp/" style="font-size: 10.83px;">gcp</a> <a href="/tags/go/" style="font-size: 10px;">go</a> <a href="/tags/grunt/" style="font-size: 12.5px;">grunt</a> <a href="/tags/gulp/" style="font-size: 11.67px;">gulp</a> <a href="/tags/heroku/" style="font-size: 14.17px;">heroku</a> <a href="/tags/html/" style="font-size: 10.83px;">html</a> <a href="/tags/iisexpress/" style="font-size: 10px;">iisexpress</a> <a href="/tags/ios/" style="font-size: 11.67px;">ios</a> <a href="/tags/javascript/" style="font-size: 20px;">javascript</a> <a href="/tags/javascript-express-passport/" style="font-size: 10px;">javascript express passport</a> <a href="/tags/javascript-nodejs/" style="font-size: 10px;">javascript nodejs</a> <a href="/tags/jekyll/" style="font-size: 10.83px;">jekyll</a> <a href="/tags/jetstream/" style="font-size: 10px;">jetstream</a> <a href="/tags/jspm/" style="font-size: 10px;">jspm</a> <a href="/tags/jwt/" style="font-size: 10px;">jwt</a> <a href="/tags/laravel/" style="font-size: 11.67px;">laravel</a> <a href="/tags/letsencrypt/" style="font-size: 10px;">letsencrypt</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/mechanism/" style="font-size: 10px;">mechanism</a> <a href="/tags/mongodb/" style="font-size: 10.83px;">mongodb</a> <a href="/tags/node/" style="font-size: 10px;">node</a> <a href="/tags/nodejs/" style="font-size: 15px;">nodejs</a> <a href="/tags/oocss/" style="font-size: 10px;">oocss</a> <a href="/tags/osx/" style="font-size: 14.17px;">osx</a> <a href="/tags/package-manager/" style="font-size: 14.17px;">package manager</a> <a href="/tags/php/" style="font-size: 10.83px;">php</a> <a href="/tags/postgres/" style="font-size: 10px;">postgres</a> <a href="/tags/postgresql/" style="font-size: 10.83px;">postgresql</a> <a href="/tags/queue/" style="font-size: 10.83px;">queue</a> <a href="/tags/rabbitmq/" style="font-size: 10.83px;">rabbitmq</a> <a href="/tags/rack-server/" style="font-size: 10px;">rack server</a> <a href="/tags/rails/" style="font-size: 14.17px;">rails</a> <a href="/tags/rails-webpack-stimulus-javascript-bootstrap/" style="font-size: 10px;">rails webpack stimulus javascript bootstrap</a> <a href="/tags/raspberry-pi/" style="font-size: 10px;">raspberry-pi</a> <a href="/tags/react/" style="font-size: 15.83px;">react</a> <a href="/tags/react-native/" style="font-size: 10px;">react native</a> <a href="/tags/reactjs/" style="font-size: 19.17px;">reactjs</a> <a href="/tags/redux/" style="font-size: 10px;">redux</a> <a href="/tags/ruby/" style="font-size: 18.33px;">ruby</a> <a href="/tags/sass/" style="font-size: 10.83px;">sass</a> <a href="/tags/selenium/" style="font-size: 10px;">selenium</a> <a href="/tags/slim/" style="font-size: 10px;">slim</a> <a href="/tags/ssh/" style="font-size: 10px;">ssh</a> <a href="/tags/ssl/" style="font-size: 10.83px;">ssl</a> <a href="/tags/stimulus/" style="font-size: 10px;">stimulus</a> <a href="/tags/svg-javascript/" style="font-size: 11.67px;">svg javascript</a> <a href="/tags/task-runner/" style="font-size: 11.67px;">task runner</a> <a href="/tags/tmux/" style="font-size: 10px;">tmux</a> <a href="/tags/tools/" style="font-size: 10px;">tools</a> <a href="/tags/ubuntu/" style="font-size: 10.83px;">ubuntu</a> <a href="/tags/vm/" style="font-size: 10px;">vm</a> <a href="/tags/vue/" style="font-size: 10px;">vue</a> <a href="/tags/vuejs/" style="font-size: 13.33px;">vuejs</a> <a href="/tags/webpack/" style="font-size: 12.5px;">webpack</a> <a href="/tags/windows/" style="font-size: 10px;">windows</a> <a href="/tags/xml/" style="font-size: 10px;">xml</a>
+        </div>
+    </div>
+
+    
+    <div id="toTop" class="fa fa-angle-up"></div>
+</aside>
+            
+        </div>
+        <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2021 andyyou(You,ZongYan)
+        </div>
+    </div>
+</footer>
+
+        
+
+    
+        <script src="/lib/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-share.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-video.min.js"></script>
+    
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+</body>
+</html>

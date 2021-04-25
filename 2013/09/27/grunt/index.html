@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    
+    <title>Grunt 系列(1) 基礎教學 | DEVLOG of andyyou</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <!-- Google Tag Manager -->
+    <script>(function (w, d, s, l, i) {
+        w[l] = w[l] || []; w[l].push({
+          'gtm.start':
+            new Date().getTime(), event: 'gtm.js'
+        }); var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+            'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+      })(window, document, 'script', 'dataLayer', 'GTM-57LT2GG');</script>
+    <!-- End Google Tag Manager -->
+    <meta name="description" content="Grunt 入門Grunt 和 Grunt 擴充套件 都是透過 npm 來安裝和管理。Grunt 這個工具大概就等於 Ruby 中的 rake ，它可以透過一些設定讓你輕鬆完成一些例行性的任務，例如壓縮檔案，編譯 coffee less，搬移到目標目錄，單元測試等等。之後就可以透過一個指令，就把所有的事情做好。 安裝為了能夠使用 Grunt 你必須安裝 grunt-cli 就是 Grunt 的 C">
+<meta name="keywords" content="javascript,package manager,grunt">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Grunt 系列(1) 基礎教學">
+<meta property="og:url" content="//andyyou.github.io/2013/09/27/grunt/index.html">
+<meta property="og:site_name" content="DEVLOG of andyyou">
+<meta property="og:description" content="Grunt 入門Grunt 和 Grunt 擴充套件 都是透過 npm 來安裝和管理。Grunt 這個工具大概就等於 Ruby 中的 rake ，它可以透過一些設定讓你輕鬆完成一些例行性的任務，例如壓縮檔案，編譯 coffee less，搬移到目標目錄，單元測試等等。之後就可以透過一個指令，就把所有的事情做好。 安裝為了能夠使用 Grunt 你必須安裝 grunt-cli 就是 Grunt 的 C">
+<meta property="og:locale" content="zh-TW">
+<meta property="og:image" content="http://i.imgur.com/rqcDrQ3.png">
+<meta property="og:image" content="http://i.imgur.com/dM6f4cX.png">
+<meta property="og:updated_time" content="2016-12-19T02:31:56.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Grunt 系列(1) 基礎教學">
+<meta name="twitter:description" content="Grunt 入門Grunt 和 Grunt 擴充套件 都是透過 npm 來安裝和管理。Grunt 這個工具大概就等於 Ruby 中的 rake ，它可以透過一些設定讓你輕鬆完成一些例行性的任務，例如壓縮檔案，編譯 coffee less，搬移到目標目錄，單元測試等等。之後就可以透過一個指令，就把所有的事情做好。 安裝為了能夠使用 Grunt 你必須安裝 grunt-cli 就是 Grunt 的 C">
+<meta name="twitter:image" content="http://i.imgur.com/rqcDrQ3.png">
+    
+
+    
+
+    
+        <link rel="icon" href="/images/favicon.png">
+    
+
+    <link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/lib/open-sans/styles.css">
+    <link rel="stylesheet" href="/lib/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/lib/jquery/2.1.3/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/lib/lightgallery/css/lightgallery.min.css">
+    
+    
+    
+        <script type="text/javascript">
+(function(i,s,o,g,r,a,m) {i['GoogleAnalyticsObject']=r;i[r]=i[r]||function() {
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-39208536-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+    
+    
+    
+
+
+</head>
+</html>
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-57LT2GG" height="0" width="0"
+        style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    <div id="container">
+        <header id="header">
+    <div id="header-main" class="header-inner">
+        <div class="outer">
+            <a href="/" id="logo">
+                <i class="logo"></i>
+                <span class="site-title">DEVLOG of andyyou</span>
+            </a>
+            <nav id="main-nav">
+                
+                    <a class="main-nav-link" href="/.">Home</a>
+                
+                    <a class="main-nav-link" href="/archives">Archives</a>
+                
+                    <a class="main-nav-link" href="/categories">Categories</a>
+                
+                    <a class="main-nav-link" href="/tags">Tags</a>
+                
+            </nav>
+            
+                
+                <nav id="sub-nav">
+                    <div class="profile" id="profile-nav">
+                        <a id="profile-anchor" href="javascript:;">
+                            <img class="avatar" src="https://avatars2.githubusercontent.com/u/665690?v=3&amp;s=466">
+                            <i class="fa fa-caret-down"></i>
+                        </a>
+                    </div>
+                </nav>
+            
+            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜尋">
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="Type something...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: 'Pages',
+            CATEGORIES: '分類',
+            TAGS: '標籤',
+            UNTITLED: '(Untitled)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+        </div>
+    </div>
+    <div id="main-nav-mobile" class="header-sub header-inner">
+        <table class="menu outer">
+            <tr>
+                
+                    <td><a class="main-nav-link" href="/.">Home</a></td>
+                
+                    <td><a class="main-nav-link" href="/archives">Archives</a></td>
+                
+                    <td><a class="main-nav-link" href="/categories">Categories</a></td>
+                
+                    <td><a class="main-nav-link" href="/tags">Tags</a></td>
+                
+                <td>
+                    
+    <div class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜尋">
+    </div>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+</header>
+
+        <div class="outer">
+            
+                
+
+<aside id="profile">
+    <div class="inner profile-inner">
+        <div class="base-info profile-block">
+            <img id="avatar" src="https://avatars2.githubusercontent.com/u/665690?v=3&amp;s=466">
+            <h2 id="name">andyyou</h2>
+            <h3 id="title">Web Developer</h3>
+            <span id="location"><i class="fa fa-map-marker"></i>Taipei, Taiwan</span>
+            <a id="follow" target="_blank" href="https://github.com/andyyou">關注我</a>
+        </div>
+        <div class="article-info profile-block">
+            <div class="article-info-block">
+                185
+                <span>文章</span>
+            </div>
+            <div class="article-info-block">
+                79
+                <span>標籤</span>
+            </div>
+        </div>
+        
+        <div class="profile-block social-links">
+            <table>
+                <tr>
+                    
+                    
+                    <td>
+                        <a href="https://github.com/andyyou" target="_blank" title="github" class="tooltip">
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="https://www.linkedin.com/pub/zongyan-you/2a/493/16" target="_blank" title="linkedin" class="tooltip">
+                            <i class="fa fa-linkedin"></i>
+                        </a>
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
+        
+    </div>
+</aside>
+
+            
+            <section id="main"><article id="post-grunt" class="article article-type-post" itemscope="" itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+            Grunt 系列(1) 基礎教學
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2013/09/27/grunt/">
+            <time datetime="2013-09-27T00:50:00.000Z" itemprop="datePublished">2013-09-27</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/Tools/">Tools</a>
+    </div>
+
+                        
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/grunt/">grunt</a>, <a class="tag-link" href="/tags/javascript/">javascript</a>, <a class="tag-link" href="/tags/package-manager/">package manager</a>
+    </div>
+
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <h1 id="Grunt-入門"><a href="#Grunt-入門" class="headerlink" title="Grunt 入門"></a>Grunt 入門</h1><p><code>Grunt</code> 和 <code>Grunt 擴充套件</code> 都是透過 <code>npm</code> 來安裝和管理。<code>Grunt</code> 這個工具大概就等於 <code>Ruby</code> 中的 <code>rake</code> ，它可以透過一些設定讓你輕鬆完成一些例行性的任務，例如壓縮檔案，編譯 coffee less，搬移到目標目錄，單元測試等等。之後就可以透過一個指令，就把所有的事情做好。</p>
+<h1 id="安裝"><a href="#安裝" class="headerlink" title="安裝"></a>安裝</h1><p>為了能夠使用 <code>Grunt</code> 你必須安裝 <code>grunt-cli</code> 就是 Grunt 的 Command Line Interface 到您的系統。<br>安裝過程可能會需要 sudo 或這在 windows 底下使用管理者身份執行。</p>
+<a id="more"></a>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ npm install -g grunt-cli</span><br></pre></td></tr></table></figure>
+<p>在 <code>npm</code> 使用 -g 就會把該套件裝至系統路徑，這樣您就可以在任何目錄使用 <code>grunt-cli</code><br>注意：安裝了 <code>grunt-cli</code> 並不是安裝 <code>Grunt task runner</code>。 <code>grunt-cli</code> 本身的任務非常單純，他就只是使用你已經安裝的 Grunt 版本去執行 <code>Gruntfile.js</code>。這樣你就可以在同一台機器，運行不同版本的 grunt 了。</p>
+<h1 id="CLI如何運作"><a href="#CLI如何運作" class="headerlink" title="CLI如何運作"></a>CLI如何運作</h1><p>每一次執行 <code>grunt</code>，他會用<code>require()</code>去引入本地的 <code>grunt</code>，注意不是 <code>cli</code>。也因次你可以在不同專案目錄底下運行不同版本的 <code>grunt</code>。<br>一旦 <code>grunt</code> 被載入了，接著就會載入 <code>Gruntfile</code> 然後根據裡面的設定去運行任務。<br>如果你想理解原理可以閱讀程式碼 <a href="https://github.com/gruntjs/grunt-cli/blob/master/bin/grunt" target="_blank" rel="noopener">https://github.com/gruntjs/grunt-cli/blob/master/bin/grunt</a></p>
+<h3 id="如何使用已經存在的-Grunt-專案"><a href="#如何使用已經存在的-Grunt-專案" class="headerlink" title="如何使用已經存在的 Grunt 專案"></a>如何使用已經存在的 Grunt 專案</h3><p>假如您的 <code>cli</code> 已經安裝了，並且有一個專案也已經設定好 <code>package.json</code> 和 <code>Gruntfile.js</code>。那你可以非常輕鬆地就開始使用 <code>grunt</code></p>
+<ol>
+<li>切換到專案的根目錄</li>
+<li>使用 <code>npm install</code> 安裝相依的套件。</li>
+<li>執行 <code>grunt</code> 就可以開始跑了。</li>
+</ol>
+<p>如果你想瞭解更多關於 <code>grunt</code> 的命令，你可以使用 <code>grunt --help</code> 會列出例如：<code>clean</code>, <code>coffee</code>。這些都是靠 Grunfile 定義的。<br>預設是空的沒有任何任務<br><img src="http://i.imgur.com/rqcDrQ3.png" alt=""><br>Sails 建立的 Gruntfile<br><img src="http://i.imgur.com/dM6f4cX.png" alt=""></p>
+<h1 id="建立一個新的-Grunt-專案"><a href="#建立一個新的-Grunt-專案" class="headerlink" title="建立一個新的 Grunt 專案"></a>建立一個新的 Grunt 專案</h1><p>要建立一個 <code>Grunt</code> 專案涉及到最重要的兩個檔案的建立 <code>package.json</code> 和 <code>Gruntfile.js</code>。</p>
+<ul>
+<li><p><code>package.json</code>  : 這是 <code>npm</code> 用來儲存 matadata 的檔案，簡單說就是 npm 對於這個專案相關的設定擋。包含相依的套件，一旦在這邊設定，您就可以透過 <code>npm install</code> 來安裝相依的套件。一般在使用時，我們也會用 <code>npm install --save</code> 在安裝後順便把設定加到 <code>package.json</code>。你也會在這個檔案設定 grunt 和 grunt 套件相依的一些函式庫或元件。通常會像下面程式碼片段，指的是開發階段使用的套件。</p>
+<pre><code>&quot;devDependencies&quot;: {
+ &quot;mocha&quot;: &quot;*&quot;,
+ &quot;request&quot;: &quot;*&quot;,
+ &quot;wrench&quot;: &quot;~1.5.1&quot;
+ }
+</code></pre></li>
+<li><p><code>Gruntfile</code> : 這個檔案通常會是 <code>Gruntfile.js</code> 或者 <code>Gruntfile.coffee</code> 他被用來設定任務，載入外掛。</p>
+</li>
+</ul>
+<h1 id="package-json"><a href="#package-json" class="headerlink" title="package.json"></a>package.json</h1><p><code>package.json</code> 通常和 <code>Gruntfile</code> 都在專案的根目錄。而且必須和你的專案一起被送交。在根目錄下 <code>npm install</code>  就會根據 <code>package.json</code> 去安裝相依的套件。而且還能指定版本。下面提供一些簡單的方式快速建立 <code>package.json</code></p>
+<ul>
+<li><p>大部份的 <a href="http://gruntjs.com/project-scaffolding" target="_blank" rel="noopener">grunt-init</a> 模版都會自動建立 package.json。而 grunt-init 這個指令是需要在安裝的。</p>
+</li>
+<li><p><code>npm init</code> 直接執行 npm init 就會一步一步詢問你相關的參數，協助您建立 package.json</p>
+</li>
+<li><p>手動建立</p>
+<pre><code>{
+  &quot;name&quot;: &quot;my-project-name&quot;,
+  &quot;version&quot;: &quot;0.1.0&quot;,
+  &quot;devDependencies&quot;: {
+    &quot;grunt&quot;: &quot;~0.4.1&quot;,
+    &quot;grunt-contrib-jshint&quot;: &quot;~0.6.3&quot;,
+    &quot;grunt-contrib-nodeunit&quot;: &quot;~0.2.0&quot;,
+    &quot;grunt-contrib-uglify&quot;: &quot;~0.2.2&quot;
+  }
+}
+</code></pre></li>
+</ul>
+<h1 id="安裝-Grunt-和-Grunt-套件"><a href="#安裝-Grunt-和-Grunt-套件" class="headerlink" title="安裝 Grunt 和 Grunt 套件"></a>安裝 Grunt 和 Grunt 套件</h1><p>安裝 Grunt 和 Grunt 套件並且加入 package.json 最簡單的方式就是執行 <code>npm install &lt;module&gt; --save-dev</code><br>它不只會安裝該套件模組還會新增或更新 package.json 。<br>範例：</p>
+<blockquote>
+<p>npm install grunt –save-dev<br>/<em> 測試透過 npm 安裝同一個套件，不同版本</em>/<br>npm install <a href="mailto:jquery@1.7.2" target="_blank" rel="noopener">jquery@1.7.2</a> –save-dev<br>npm install <a href="mailto:jquery@1.8.3" target="_blank" rel="noopener">jquery@1.8.3</a> –save-dev</p>
+</blockquote>
+<h1 id="Gruntfile"><a href="#Gruntfile" class="headerlink" title="Gruntfile"></a>Gruntfile</h1><p><code>Gruntfile.js</code> 或 <code>Gruntfile.coffee</code> 都必須是合法正確的 javascript 或 coffee 。他們通常放在專案的根目錄下。跟 <code>package.json</code> 同一層，也一樣必須要被提交。<br>一個 <code>Gruntfile</code> 包含下面這幾個部分：</p>
+<ul>
+<li>把所有動作包起來的 function</li>
+<li>專案和任務的設定</li>
+<li>載入的 Grunt 套件和任務(別人已經寫好的)</li>
+<li>自訂的任務</li>
+</ul>
+<h1 id="Gruntfile-範例"><a href="#Gruntfile-範例" class="headerlink" title="Gruntfile 範例"></a>Gruntfile 範例</h1><p>在下面的範例中，關於 project 的 metadata 等資料是透過讀取 package.json 取得，並在 grunt 中使用。<br>使用 <a href="https://github.com/gruntjs/grunt-contrib-uglify" target="_blank" rel="noopener">grunt-contrib-uglify</a> 套件的<code>uglify</code>任務是用來設定壓縮檔案並根據專案的 metadata 產生一些註解。當 grunt 開始執行，預設就會執行 <code>uglify</code> 任務</p>
+<pre><code>module.exports = function(grunt) {
+  // Project configuration.
+  grunt.initConfig({
+    pkg: grunt.file.readJSON(&apos;package.json&apos;),
+    uglify: {
+      options: {
+        banner: &apos;/*! &lt;%= pkg.name %&gt; &lt;%= grunt.template.today(&quot;yyyy-mm-dd&quot;) %&gt; */\n&apos;
+      },
+      build: {
+        src: &apos;src/&lt;%= pkg.name %&gt;.js&apos;,
+        dest: &apos;build/&lt;%= pkg.name %&gt;.min.js&apos;
+      }
+      }
+  });
+
+// Load the plugin that provides the &quot;uglify&quot; task.
+grunt.loadNpmTasks(&apos;grunt-contrib-uglify&apos;);
+
+// Default task(s).
+grunt.registerTask(&apos;default&apos;, [&apos;uglify&apos;]);
+
+};
+</code></pre><p> 整個 Gruntfile 大致上就如上面這樣，後續我們將一步一步介紹每個組成部份。</p>
+<h1 id="The-“wrapper”-function-把所有動作包起來的-function"><a href="#The-“wrapper”-function-把所有動作包起來的-function" class="headerlink" title="The “wrapper” function (把所有動作包起來的 function)"></a>The “wrapper” function (把所有動作包起來的 function)</h1><p>每一個 Gruntfile 或者 Grunt 套件都使用這個基本的定義格式，而你所有要讓 Grunt 執行的程式碼都必須被包在這個 function 中。</p>
+<pre><code>module.exports = function(grunt){
+  // Do grunt-related things in here
+}
+</code></pre><h1 id="專案和任務設定"><a href="#專案和任務設定" class="headerlink" title="專案和任務設定"></a>專案和任務設定</h1><p>絕大多數的 Grunt 任務都透過定義一個包含所有設定資料的物件，然後把物件傳給 <a href="http://gruntjs.com/api/grunt#grunt.initconfig" target="_blank" rel="noopener">grunt.initConfig</a> 方法來設定的。<br>在上面的範例中，<code>grunt.file.readJSON(&#39;package.json&#39;)</code> 匯入了一個 JSON 格式的檔案，JSON 讀取至 javascript 中便是一個 object。接著在 Gruntfile 中可以使用 <code>&lt;% %&gt;</code> 這樣的語法，中間可以帶入其他設定的屬性，例如檔案路徑。<br>你可能會隨便存一些資料到設定裡面，只要屬性不要衝突即可，否則會被忽略。這其實也是因為在 Javascript 中，你不能去限制 JSON</p>
+<p>就像大部份的任務，<a href="http://github.com/gruntjs/grunt-contrib-uglify" target="_blank" rel="noopener">grunt-contrib-uglify</a> 的 <code>uglify</code> 任務預計會在同名的屬性中取得設定，在下面的範例中，我們在 <code>options</code> 設定了 <code>banner</code>，然後設定了 <code>build</code> 裡面指定了 src 和 dest 。整段範例的意思就是取得 package.json 中的 name ，接著去 src 目錄中取得 <code>name</code>.js 檔案並且把它壓縮成 <code>name</code>.min.js 。到這邊為止的 code 都只是設定而已。</p>
+<pre><code>// Project configuration.
+grunt.initConfig({
+  pkg: grunt.file.readJSON(&apos;package.json&apos;),
+  uglify: {
+    options: {
+      banner: &apos;/*! &lt;%= pkg.name %&gt; &lt;%= grunt.template.today(&quot;yyyy-mm-dd&quot;) %&gt; */\n&apos;
+    },
+    build: {
+      src: &apos;src/&lt;%= pkg.name %&gt;.js&apos;,
+      dest: &apos;build/&lt;%= pkg.name %&gt;.min.js&apos;
+    }
+  }
+});
+</code></pre><h1 id="載入-Grunt-和-Grunt-套件"><a href="#載入-Grunt-和-Grunt-套件" class="headerlink" title="載入 Grunt 和 Grunt 套件"></a>載入 Grunt 和 Grunt 套件</h1><p>大部份的任務例如串聯檔案，壓縮，都已經有現成的套件可以使用了，只要在 package.json 中設定並安裝，就可以使用。<br>安裝完之後，就是在 Gruntfile 中載入</p>
+<pre><code>// Load the plugin that provides the &quot;uglify&quot; task.
+grunt.loadNpmTasks(&apos;grunt-contrib-uglify&apos;);
+</code></pre><p>載入之後透過 <code>grunt --help</code> 就可以列出目前可以執行的任務，注意：initConfig 是在 grunt 初始化時針對任務做一些設定。於是真正在執行的時候就會去套用設定，例如上面我們載入了 grunt-contrib-uglify，之後我們就可以下達指令：<code>grunt uglify</code>。就會照著我們設定的把一支跟專案名稱一樣的 .js 壓縮成 .min.js。</p>
+<h1 id="自訂任務"><a href="#自訂任務" class="headerlink" title="自訂任務"></a>自訂任務</h1><p>您可以在預設就讓 grunt 執行多個任務，只要透過 <code>default</code> 設定，接著我們執行 <code>grunt</code> 的時候就會照著預設任務去執行。如下範例，我們把 uglify 註冊到 default 。這樣我們就不用特別單獨執行 grunt uglify ，只要執行 <code>grunt</code> 或者 <code>grunt default</code> 就會執行下面壓縮檔案的這個任務。需要指定的任務可以加入下面程式碼 [‘uglify’] 中的這個陣列。它可以執行多個任務。</p>
+<pre><code>// Default task(s).
+grunt.registerTask(&apos;default&apos;, [&apos;uglify&apos;]);
+</code></pre><p>不過如果你想要執行的任務或需求並沒有任何 Grunt 套件，您也可以自訂在 Gruntfile 裡面</p>
+<pre><code>module.exports = function(grunt) {
+
+  // A very basic default task.
+  grunt.registerTask(&apos;default&apos;, &apos;Log some stuff.&apos;, function() {
+    grunt.log.write(&apos;Logging some stuff...&apos;).ok();
+  });
+
+};
+</code></pre><p>以上我們就完成了 Grunt 入門的使用了</p>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+
+</div>
+
+    <a data-url="//andyyou.github.io/2013/09/27/grunt/" data-id="cknx2z28300393m72l2cjfyd4" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        // Prevent duplicate binding
+        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
+            __SHARE_BUTTON_BINDED__ = true;
+        } else {
+            return;
+        }
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+            
+    
+
+        </footer>
+    </div>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2013/09/29/sails-real-1/" id="article-nav-newer" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">上一篇</strong>
+            <div class="article-nav-title">
+                
+                    Sails 實作筆記
+                
+            </div>
+        </a>
+    
+    
+        <a href="/2013/09/18/html-tag/" id="article-nav-older" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">下一篇</strong>
+            <div class="article-nav-title">HTML Tag</div>
+        </a>
+    
+</nav>
+
+
+    
+</article>
+
+
+    
+    <section id="comments">
+    
+    </section>
+
+</section>
+            
+                <aside id="sidebar">
+   
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">分類</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Cloud/">Cloud</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Database/">Database</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Fun/">Fun</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Mobile/">Mobile</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Program/">Program</a><span class="category-list-count">132</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/System/">System</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Tools/">Tools</a><span class="category-list-count">17</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">歸檔</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/04/">四月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/03/">三月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/10/">十月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">五月 2019</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">六月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">十二月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">十一月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">九月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">十月 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">九月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">六月 2016</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">十二月 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">十一月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">十月 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">九月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">八月 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">七月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">五月 2015</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">四月 2015</a><span class="archive-list-count">19</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">十二月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/11/">十一月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/10/">十月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">九月 2014</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/08/">八月 2014</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/02/">二月 2014</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/01/">一月 2014</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">十一月 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">十月 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">九月 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">八月 2013</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/03/">三月 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">三月 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">一月 2012</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2011/11/">十一月 2011</a><span class="archive-list-count">3</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">標籤</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/net-mvc/">.net mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RoR/">RoR</a><span class="tag-list-count">15</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/api/">api</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aws/">aws</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/azure/">azure</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bot/">bot</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bundler/">bundler</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cache/">cache</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/carrier-wave/">carrier wave</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/centos/">centos</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/chrome/">chrome</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cloudflare/">cloudflare</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/compass/">compass</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/devise/">devise</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dnd/">dnd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/e-invoice/">e-invoice</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/entity-framework/">entity framework</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/es6/">es6</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/facebook/">facebook</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flux/">flux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/framework/">framework</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gcp/">gcp</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/grunt/">grunt</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gulp/">gulp</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/heroku/">heroku</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/html/">html</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/iisexpress/">iisexpress</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ios/">ios</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">70</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript-express-passport/">javascript express passport</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript-nodejs/">javascript nodejs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jekyll/">jekyll</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jetstream/">jetstream</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jspm/">jspm</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jwt/">jwt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/laravel/">laravel</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/letsencrypt/">letsencrypt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mechanism/">mechanism</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongodb/">mongodb</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/node/">node</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nodejs/">nodejs</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/oocss/">oocss</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/osx/">osx</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package-manager/">package manager</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/php/">php</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/postgres/">postgres</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/postgresql/">postgresql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/queue/">queue</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rabbitmq/">rabbitmq</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rack-server/">rack server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails/">rails</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails-webpack-stimulus-javascript-bootstrap/">rails webpack stimulus javascript bootstrap</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/raspberry-pi/">raspberry-pi</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react/">react</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react-native/">react native</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/reactjs/">reactjs</a><span class="tag-list-count">32</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redux/">redux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sass/">sass</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/selenium/">selenium</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/slim/">slim</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssh/">ssh</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssl/">ssl</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/stimulus/">stimulus</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/svg-javascript/">svg javascript</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/task-runner/">task runner</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tmux/">tmux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tools/">tools</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vm/">vm</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/">vue</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vuejs/">vuejs</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/webpack/">webpack</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/windows/">windows</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/xml/">xml</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">標籤雲</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/net-mvc/" style="font-size: 10px;">.net mvc</a> <a href="/tags/RoR/" style="font-size: 16.67px;">RoR</a> <a href="/tags/api/" style="font-size: 10px;">api</a> <a href="/tags/aws/" style="font-size: 12.5px;">aws</a> <a href="/tags/azure/" style="font-size: 10.83px;">azure</a> <a href="/tags/bot/" style="font-size: 10px;">bot</a> <a href="/tags/bundler/" style="font-size: 10.83px;">bundler</a> <a href="/tags/cache/" style="font-size: 10px;">cache</a> <a href="/tags/carrier-wave/" style="font-size: 10.83px;">carrier wave</a> <a href="/tags/centos/" style="font-size: 10px;">centos</a> <a href="/tags/chrome/" style="font-size: 10px;">chrome</a> <a href="/tags/cloudflare/" style="font-size: 10px;">cloudflare</a> <a href="/tags/compass/" style="font-size: 10px;">compass</a> <a href="/tags/css/" style="font-size: 17.5px;">css</a> <a href="/tags/devise/" style="font-size: 10px;">devise</a> <a href="/tags/dnd/" style="font-size: 10px;">dnd</a> <a href="/tags/docker/" style="font-size: 10.83px;">docker</a> <a href="/tags/e-invoice/" style="font-size: 10px;">e-invoice</a> <a href="/tags/entity-framework/" style="font-size: 10px;">entity framework</a> <a href="/tags/es6/" style="font-size: 11.67px;">es6</a> <a href="/tags/facebook/" style="font-size: 10px;">facebook</a> <a href="/tags/flux/" style="font-size: 10px;">flux</a> <a href="/tags/framework/" style="font-size: 10.83px;">framework</a> <a href="/tags/gcp/" style="font-size: 10.83px;">gcp</a> <a href="/tags/go/" style="font-size: 10px;">go</a> <a href="/tags/grunt/" style="font-size: 12.5px;">grunt</a> <a href="/tags/gulp/" style="font-size: 11.67px;">gulp</a> <a href="/tags/heroku/" style="font-size: 14.17px;">heroku</a> <a href="/tags/html/" style="font-size: 10.83px;">html</a> <a href="/tags/iisexpress/" style="font-size: 10px;">iisexpress</a> <a href="/tags/ios/" style="font-size: 11.67px;">ios</a> <a href="/tags/javascript/" style="font-size: 20px;">javascript</a> <a href="/tags/javascript-express-passport/" style="font-size: 10px;">javascript express passport</a> <a href="/tags/javascript-nodejs/" style="font-size: 10px;">javascript nodejs</a> <a href="/tags/jekyll/" style="font-size: 10.83px;">jekyll</a> <a href="/tags/jetstream/" style="font-size: 10px;">jetstream</a> <a href="/tags/jspm/" style="font-size: 10px;">jspm</a> <a href="/tags/jwt/" style="font-size: 10px;">jwt</a> <a href="/tags/laravel/" style="font-size: 11.67px;">laravel</a> <a href="/tags/letsencrypt/" style="font-size: 10px;">letsencrypt</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/mechanism/" style="font-size: 10px;">mechanism</a> <a href="/tags/mongodb/" style="font-size: 10.83px;">mongodb</a> <a href="/tags/node/" style="font-size: 10px;">node</a> <a href="/tags/nodejs/" style="font-size: 15px;">nodejs</a> <a href="/tags/oocss/" style="font-size: 10px;">oocss</a> <a href="/tags/osx/" style="font-size: 14.17px;">osx</a> <a href="/tags/package-manager/" style="font-size: 14.17px;">package manager</a> <a href="/tags/php/" style="font-size: 10.83px;">php</a> <a href="/tags/postgres/" style="font-size: 10px;">postgres</a> <a href="/tags/postgresql/" style="font-size: 10.83px;">postgresql</a> <a href="/tags/queue/" style="font-size: 10.83px;">queue</a> <a href="/tags/rabbitmq/" style="font-size: 10.83px;">rabbitmq</a> <a href="/tags/rack-server/" style="font-size: 10px;">rack server</a> <a href="/tags/rails/" style="font-size: 14.17px;">rails</a> <a href="/tags/rails-webpack-stimulus-javascript-bootstrap/" style="font-size: 10px;">rails webpack stimulus javascript bootstrap</a> <a href="/tags/raspberry-pi/" style="font-size: 10px;">raspberry-pi</a> <a href="/tags/react/" style="font-size: 15.83px;">react</a> <a href="/tags/react-native/" style="font-size: 10px;">react native</a> <a href="/tags/reactjs/" style="font-size: 19.17px;">reactjs</a> <a href="/tags/redux/" style="font-size: 10px;">redux</a> <a href="/tags/ruby/" style="font-size: 18.33px;">ruby</a> <a href="/tags/sass/" style="font-size: 10.83px;">sass</a> <a href="/tags/selenium/" style="font-size: 10px;">selenium</a> <a href="/tags/slim/" style="font-size: 10px;">slim</a> <a href="/tags/ssh/" style="font-size: 10px;">ssh</a> <a href="/tags/ssl/" style="font-size: 10.83px;">ssl</a> <a href="/tags/stimulus/" style="font-size: 10px;">stimulus</a> <a href="/tags/svg-javascript/" style="font-size: 11.67px;">svg javascript</a> <a href="/tags/task-runner/" style="font-size: 11.67px;">task runner</a> <a href="/tags/tmux/" style="font-size: 10px;">tmux</a> <a href="/tags/tools/" style="font-size: 10px;">tools</a> <a href="/tags/ubuntu/" style="font-size: 10.83px;">ubuntu</a> <a href="/tags/vm/" style="font-size: 10px;">vm</a> <a href="/tags/vue/" style="font-size: 10px;">vue</a> <a href="/tags/vuejs/" style="font-size: 13.33px;">vuejs</a> <a href="/tags/webpack/" style="font-size: 12.5px;">webpack</a> <a href="/tags/windows/" style="font-size: 10px;">windows</a> <a href="/tags/xml/" style="font-size: 10px;">xml</a>
+        </div>
+    </div>
+
+    
+    <div id="toTop" class="fa fa-angle-up"></div>
+</aside>
+            
+        </div>
+        <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2021 andyyou(You,ZongYan)
+        </div>
+    </div>
+</footer>
+
+        
+
+    
+        <script src="/lib/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-share.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-video.min.js"></script>
+    
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+</body>
+</html>

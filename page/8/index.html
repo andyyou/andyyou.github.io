@@ -266,7 +266,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="//andyyou.github.io/2016/04/15/docker-note/" data-id="cknx2m9ug00duzs72kdgd66m8" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="//andyyou.github.io/2016/04/15/docker-note/" data-id="cknx2z2c800cg3m72nwdrcre4" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -398,7 +398,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="//andyyou.github.io/2016/04/12/self-signed-ssl-and-others/" data-id="cknx2m9uh00dxzs725v27ym4y" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="//andyyou.github.io/2016/04/12/self-signed-ssl-and-others/" data-id="cknx2z2c300c63m72njp5jmzy" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -532,7 +532,145 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="//andyyou.github.io/2016/03/31/introduce-houdini/" data-id="cknx2m9uf00dqzs72hrlc3v5h" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="//andyyou.github.io/2016/03/31/introduce-houdini/" data-id="cknx2z2ca00ck3m72mz5k415s" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        // Prevent duplicate binding
+        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
+            __SHARE_BUTTON_BINDED__ = true;
+        } else {
+            return;
+        }
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+            
+    
+
+        </footer>
+    </div>
+    
+</article>
+
+
+
+    <article id="post-cache-notes" class="article article-type-post" itemscope="" itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 itemprop="name">
+            <a class="article-title" href="/2016/03/08/cache-notes/">Cache 筆記</a>
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2016/03/08/cache-notes/">
+            <time datetime="2016-03-08T11:00:00.000Z" itemprop="datePublished">2016-03-08</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/Program/">Program</a>
+    </div>
+
+                        
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/cache/">cache</a>, <a class="tag-link" href="/tags/mechanism/">mechanism</a>
+    </div>
+
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            <p><ul>
+<li>瀏覽器 cache 是一種機制，透過特定狀態告知瀏覽器不需要重新下載檔案</li>
+<li>cache 最早使用 Expires 和 Pragma，現今主要使用 Cache-Control 來控制</li>
+<li>cache 大略流程，在實際下載檔案之前發生：<ol start="0">
+<li>cache 的實際處理機制存在瀏覽器中，也就是我們需要透過指令(cache-directives)告訴瀏覽器該怎麼處理</li>
+<li>瀏覽器設定為不提供 cache ，完全忽略下面步驟直接請求資源</li>
+<li>瀏覽器發送請求，此時可包含 cache-request-directive 這部分的資訊主要是拿來和 server 協商比對用的</li>
+<li>伺服器判斷是否有更新並回傳通知 cache-response-directive</li></ol></li></ul></p>
+            <p class="article-more-link">
+                <a href="/2016/03/08/cache-notes/#more">繼續閱讀</a>
+            </p>
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+
+</div>
+
+    <a data-url="//andyyou.github.io/2016/03/08/cache-notes/" data-id="cknx2z2bw00bs3m72ktjtmsjo" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -672,145 +810,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="//andyyou.github.io/2016/03/08/line-height-notes/" data-id="cknx2m9ua00ddzs72a6mn5wie" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
-<script>
-    (function ($) {
-        // Prevent duplicate binding
-        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
-            __SHARE_BUTTON_BINDED__ = true;
-        } else {
-            return;
-        }
-        $('body').on('click', function() {
-            $('.article-share-box.on').removeClass('on');
-        }).on('click', '.article-share-link', function(e) {
-            e.stopPropagation();
-
-            var $this = $(this),
-                url = $this.attr('data-url'),
-                encodedUrl = encodeURIComponent(url),
-                id = 'article-share-box-' + $this.attr('data-id'),
-                offset = $this.offset(),
-                box;
-
-            if ($('#' + id).length) {
-                box = $('#' + id);
-
-                if (box.hasClass('on')){
-                    box.removeClass('on');
-                    return;
-                }
-            } else {
-                var html = [
-                    '<div id="' + id + '" class="article-share-box">',
-                        '<input class="article-share-input" value="' + url + '">',
-                        '<div class="article-share-links">',
-                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
-                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
-                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
-                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
-                        '</div>',
-                    '</div>'
-                ].join('');
-
-              box = $(html);
-
-              $('body').append(box);
-            }
-
-            $('.article-share-box.on').hide();
-
-            box.css({
-                top: offset.top + 25,
-                left: offset.left
-            }).addClass('on');
-
-        }).on('click', '.article-share-box', function (e) {
-            e.stopPropagation();
-        }).on('click', '.article-share-box-input', function () {
-            $(this).select();
-        }).on('click', '.article-share-box-link', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
-        });
-    })(jQuery);
-</script>
-
-            
-    
-
-        </footer>
-    </div>
-    
-</article>
-
-
-
-    <article id="post-cache-notes" class="article article-type-post" itemscope="" itemprop="blogPost">
-    <div class="article-inner">
-        
-        
-            <header class="article-header">
-                
-    
-        <h1 itemprop="name">
-            <a class="article-title" href="/2016/03/08/cache-notes/">Cache 筆記</a>
-        </h1>
-    
-
-                
-                    <div class="article-meta">
-                        
-    <div class="article-date">
-        <i class="fa fa-calendar"></i>
-        <a href="/2016/03/08/cache-notes/">
-            <time datetime="2016-03-08T11:00:00.000Z" itemprop="datePublished">2016-03-08</time>
-        </a>
-    </div>
-
-
-                        
-    <div class="article-category">
-    	<i class="fa fa-folder"></i>
-        <a class="article-category-link" href="/categories/Program/">Program</a>
-    </div>
-
-                        
-    <div class="article-tag">
-        <i class="fa fa-tag"></i>
-        <a class="tag-link" href="/tags/cache/">cache</a>, <a class="tag-link" href="/tags/mechanism/">mechanism</a>
-    </div>
-
-                    </div>
-                
-            </header>
-        
-        
-        <div class="article-entry" itemprop="articleBody">
-        
-            <p><ul>
-<li>瀏覽器 cache 是一種機制，透過特定狀態告知瀏覽器不需要重新下載檔案</li>
-<li>cache 最早使用 Expires 和 Pragma，現今主要使用 Cache-Control 來控制</li>
-<li>cache 大略流程，在實際下載檔案之前發生：<ol start="0">
-<li>cache 的實際處理機制存在瀏覽器中，也就是我們需要透過指令(cache-directives)告訴瀏覽器該怎麼處理</li>
-<li>瀏覽器設定為不提供 cache ，完全忽略下面步驟直接請求資源</li>
-<li>瀏覽器發送請求，此時可包含 cache-request-directive 這部分的資訊主要是拿來和 server 協商比對用的</li>
-<li>伺服器判斷是否有更新並回傳通知 cache-response-directive</li></ol></li></ul></p>
-            <p class="article-more-link">
-                <a href="/2016/03/08/cache-notes/#more">繼續閱讀</a>
-            </p>
-        
-        </div>
-        <footer class="article-footer">
-            <div class="share-container">
-
-
-
-</div>
-
-    <a data-url="//andyyou.github.io/2016/03/08/cache-notes/" data-id="cknx2m9ud00dkzs727zzwspz3" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="//andyyou.github.io/2016/03/08/line-height-notes/" data-id="cknx2z2c000bz3m72gf8udsy1" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -941,7 +941,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="//andyyou.github.io/2016/03/08/raspberrypi-with-node/" data-id="cknx2m9ue00dnzs72v52qabh4" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="//andyyou.github.io/2016/03/08/raspberrypi-with-node/" data-id="cknx2z2c500c93m72ji4r7y16" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1072,7 +1072,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="//andyyou.github.io/2016/03/06/expressions-vs-statements-in-js/" data-id="cknx2m9uc00dgzs726puczttu" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="//andyyou.github.io/2016/03/06/expressions-vs-statements-in-js/" data-id="cknx2z2c100c23m72rfaa8h9q" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1203,7 +1203,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="//andyyou.github.io/2016/03/03/z-index/" data-id="cknx2m9u900d9zs72bo7q3wvs" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="//andyyou.github.io/2016/03/03/z-index/" data-id="cknx2z2by00bv3m72e86ha4vx" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1334,7 +1334,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="//andyyou.github.io/2016/03/01/variables-differents/" data-id="cknx2m9u700d2zs72wigkyko3" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="//andyyou.github.io/2016/03/01/variables-differents/" data-id="cknx2z2bs00bo3m729sc9o5f9" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding
@@ -1477,7 +1477,7 @@ ga('send', 'pageview');
 
 </div>
 
-    <a data-url="//andyyou.github.io/2016/02/25/vue-in-slim-delims-problem/" data-id="cknx2m9u600czzs7229kel9bd" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+    <a data-url="//andyyou.github.io/2016/02/25/vue-in-slim-delims-problem/" data-id="cknx2z2bn00be3m723rw6rcb8" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
 <script>
     (function ($) {
         // Prevent duplicate binding

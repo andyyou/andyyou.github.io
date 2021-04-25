@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    
+    <title>React Native Push Notifications | DEVLOG of andyyou</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <!-- Google Tag Manager -->
+    <script>(function (w, d, s, l, i) {
+        w[l] = w[l] || []; w[l].push({
+          'gtm.start':
+            new Date().getTime(), event: 'gtm.js'
+        }); var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+            'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+      })(window, document, 'script', 'dataLayer', 'GTM-57LT2GG');</script>
+    <!-- End Google Tag Manager -->
+    <meta name="description" content="在 React Native 中的 Push NotificationsReact Native 官方在 v0.13+ 之後支援 Push notifications 然而在這篇文章撰寫時仍然未實做完所有功能。現階段只支援靜態的推播通知，另外關於錯誤處理的功能也還在開發中Error handling">
+<meta name="keywords" content="javascript,reactjs,react native">
+<meta property="og:type" content="article">
+<meta property="og:title" content="React Native Push Notifications">
+<meta property="og:url" content="//andyyou.github.io/2015/12/08/how-to-use-push-notification-in-react-native/index.html">
+<meta property="og:site_name" content="DEVLOG of andyyou">
+<meta property="og:description" content="在 React Native 中的 Push NotificationsReact Native 官方在 v0.13+ 之後支援 Push notifications 然而在這篇文章撰寫時仍然未實做完所有功能。現階段只支援靜態的推播通知，另外關於錯誤處理的功能也還在開發中Error handling">
+<meta property="og:locale" content="zh-TW">
+<meta property="og:image" content="https://cdn-images-1.medium.com/max/800/1*0Z1BFcBG2bhkfLC_LI_KLw.png">
+<meta property="og:image" content="https://cdn-images-1.medium.com/max/800/1*IKeas87gWv3Nvw1t1G71zA.png">
+<meta property="og:image" content="https://cdn-images-1.medium.com/max/800/1*X74rWsdILiM31QOJ0hxWwA.jpeg">
+<meta property="og:image" content="https://cdn-images-1.medium.com/max/800/1*tcy_3mb08T8GxwIh6lePSw.png">
+<meta property="og:image" content="https://cdn-images-1.medium.com/max/800/1*xLkvLxURShSpK8ftn6fW0w.png">
+<meta property="og:image" content="https://cdn-images-1.medium.com/max/800/1*IzJgkooEepq6mJhVPH8ogg.png">
+<meta property="og:updated_time" content="2016-12-19T02:31:59.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="React Native Push Notifications">
+<meta name="twitter:description" content="在 React Native 中的 Push NotificationsReact Native 官方在 v0.13+ 之後支援 Push notifications 然而在這篇文章撰寫時仍然未實做完所有功能。現階段只支援靜態的推播通知，另外關於錯誤處理的功能也還在開發中Error handling">
+<meta name="twitter:image" content="https://cdn-images-1.medium.com/max/800/1*0Z1BFcBG2bhkfLC_LI_KLw.png">
+    
+
+    
+
+    
+        <link rel="icon" href="/images/favicon.png">
+    
+
+    <link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/lib/open-sans/styles.css">
+    <link rel="stylesheet" href="/lib/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/lib/jquery/2.1.3/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/lib/lightgallery/css/lightgallery.min.css">
+    
+    
+    
+        <script type="text/javascript">
+(function(i,s,o,g,r,a,m) {i['GoogleAnalyticsObject']=r;i[r]=i[r]||function() {
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-39208536-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+    
+    
+    
+
+
+</head>
+</html>
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-57LT2GG" height="0" width="0"
+        style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    <div id="container">
+        <header id="header">
+    <div id="header-main" class="header-inner">
+        <div class="outer">
+            <a href="/" id="logo">
+                <i class="logo"></i>
+                <span class="site-title">DEVLOG of andyyou</span>
+            </a>
+            <nav id="main-nav">
+                
+                    <a class="main-nav-link" href="/.">Home</a>
+                
+                    <a class="main-nav-link" href="/archives">Archives</a>
+                
+                    <a class="main-nav-link" href="/categories">Categories</a>
+                
+                    <a class="main-nav-link" href="/tags">Tags</a>
+                
+            </nav>
+            
+                
+                <nav id="sub-nav">
+                    <div class="profile" id="profile-nav">
+                        <a id="profile-anchor" href="javascript:;">
+                            <img class="avatar" src="https://avatars2.githubusercontent.com/u/665690?v=3&amp;s=466">
+                            <i class="fa fa-caret-down"></i>
+                        </a>
+                    </div>
+                </nav>
+            
+            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜尋">
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="Type something...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: 'Pages',
+            CATEGORIES: '分類',
+            TAGS: '標籤',
+            UNTITLED: '(Untitled)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+        </div>
+    </div>
+    <div id="main-nav-mobile" class="header-sub header-inner">
+        <table class="menu outer">
+            <tr>
+                
+                    <td><a class="main-nav-link" href="/.">Home</a></td>
+                
+                    <td><a class="main-nav-link" href="/archives">Archives</a></td>
+                
+                    <td><a class="main-nav-link" href="/categories">Categories</a></td>
+                
+                    <td><a class="main-nav-link" href="/tags">Tags</a></td>
+                
+                <td>
+                    
+    <div class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜尋">
+    </div>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+</header>
+
+        <div class="outer">
+            
+                
+
+<aside id="profile">
+    <div class="inner profile-inner">
+        <div class="base-info profile-block">
+            <img id="avatar" src="https://avatars2.githubusercontent.com/u/665690?v=3&amp;s=466">
+            <h2 id="name">andyyou</h2>
+            <h3 id="title">Web Developer</h3>
+            <span id="location"><i class="fa fa-map-marker"></i>Taipei, Taiwan</span>
+            <a id="follow" target="_blank" href="https://github.com/andyyou">關注我</a>
+        </div>
+        <div class="article-info profile-block">
+            <div class="article-info-block">
+                185
+                <span>文章</span>
+            </div>
+            <div class="article-info-block">
+                79
+                <span>標籤</span>
+            </div>
+        </div>
+        
+        <div class="profile-block social-links">
+            <table>
+                <tr>
+                    
+                    
+                    <td>
+                        <a href="https://github.com/andyyou" target="_blank" title="github" class="tooltip">
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="https://www.linkedin.com/pub/zongyan-you/2a/493/16" target="_blank" title="linkedin" class="tooltip">
+                            <i class="fa fa-linkedin"></i>
+                        </a>
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
+        
+    </div>
+</aside>
+
+            
+            <section id="main"><article id="post-how-to-use-push-notification-in-react-native" class="article article-type-post" itemscope="" itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+            React Native Push Notifications
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2015/12/08/how-to-use-push-notification-in-react-native/">
+            <time datetime="2015-12-07T21:00:00.000Z" itemprop="datePublished">2015-12-08</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/Mobile/">Mobile</a>
+    </div>
+
+                        
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/javascript/">javascript</a>, <a class="tag-link" href="/tags/react-native/">react native</a>, <a class="tag-link" href="/tags/reactjs/">reactjs</a>
+    </div>
+
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <h1 id="在-React-Native-中的-Push-Notifications"><a href="#在-React-Native-中的-Push-Notifications" class="headerlink" title="在 React Native 中的 Push Notifications"></a>在 React Native 中的 Push Notifications</h1><p>React Native 官方在 <code>v0.13+</code> 之後支援 Push notifications 然而在這篇文章撰寫時仍然未實做完所有功能。<br>現階段只支援靜態的推播通知，另外關於錯誤處理的功能也還在開發中<a href="https://github.com/facebook/react-native/pull/2336" target="_blank" rel="noopener">Error handling</a><br><a id="more"></a></p>
+<h1 id="React-Native-v0-12"><a href="#React-Native-v0-12" class="headerlink" title="React Native v0.12"></a>React Native v0.12</h1><p>對於上面的說法你可能有些疑問，事實會說在 0.13 支援是因為 0.12 的推播功能有些 Bug 不過在 0.13 時已經處理掉了。<br>其實 0.12 也可以用，這篇文章會包含如何修好該 Bug 的步驟。</p>
+<h1 id="步驟"><a href="#步驟" class="headerlink" title="步驟"></a>步驟</h1><p>為了要能夠在 React native 中使用推播通知的功能我們需要完成下面的步驟</p>
+<ul>
+<li>匯入 Push Notification 函式庫</li>
+<li>加入表頭檔路徑 (header path)</li>
+<li>修改 <code>AppDelegate.m</code></li>
+<li>建立憑證與開啟推播功能</li>
+<li>撰寫程式碼完成功能</li>
+</ul>
+<h1 id="匯入函式庫"><a href="#匯入函式庫" class="headerlink" title="匯入函式庫"></a>匯入函式庫</h1><p>第一步我們要做的就是加入 <code>PushNotificationIOS</code> 函式庫。這一步在<a href="https://facebook.github.io/react-native/docs/linking-libraries-ios.html#content" target="_blank" rel="noopener">官方文件</a>中已經說明得非常清楚了<br>你可以選擇看官方的或者下面的說明</p>
+<ul>
+<li>使用 Xcode 開啟專案</li>
+<li>在左邊檔案導覽區塊中展開 Library 目錄</li>
+<li>透過 Finder 開啟專案並且找到 <code>node_modules/react-native/Libraries/PushNotificationIOS</code></li>
+<li>把這個 <code>RCTPushNotification.xcodeproj</code> 拖到 Libraries 目錄下</li>
+</ul>
+<p><img src="https://cdn-images-1.medium.com/max/800/1*0Z1BFcBG2bhkfLC_LI_KLw.png" alt=""></p>
+<p>現在這個函式庫已經被加入到專案中了，下一步我們需要連結 binary 檔案。</p>
+<ul>
+<li>點擊左側導覽區中的專案檔如下圖 1 的地方然後切換到 <code>Build Phases</code> 2</li>
+</ul>
+<p><img src="https://cdn-images-1.medium.com/max/800/1*IKeas87gWv3Nvw1t1G71zA.png" alt=""></p>
+<ul>
+<li>把 <code>libRCTPushNotification.a</code> 拖到 <code>Link Binary With Libraries</code> 如上圖 3 處</li>
+</ul>
+<p>對大部分的 React native 函式庫來說加入專案中並關聯就完成設定了。不過如果我們是要使用 PushNotification 函式庫我們還需要其他的設定</p>
+<h1 id="加入表頭檔路徑"><a href="#加入表頭檔路徑" class="headerlink" title="加入表頭檔路徑"></a>加入表頭檔路徑</h1><p>到此函式庫已經被夾到專案中了，我們需要加入<code>表頭檔路徑(Header Path)</code>。這個步驟只有在當我們在編譯時需要用到函式庫內容才會需要做<br>例如 <code>PushNotificationIOS 和 LinkingIOS</code> 否則這個步驟是可以省略的。<br>要加入 Header Path 如下步驟</p>
+<ul>
+<li>一樣點擊導覽區的專案如下圖 1 處</li>
+<li>切換到 <code>Build Settings</code> 圖 2</li>
+<li>搜尋 <code>header search paths</code> 如圖 3</li>
+<li><code>Header Search Paths</code> 欄位的路徑上點擊兩下</li>
+<li>加入新的路徑如圖 4</li>
+<li>取得該 Library 需要的檔案的路徑如圖 5</li>
+</ul>
+<p>一般 React Native app 要填入的路徑 <code>$(SRCROOT)/node_modules/react-native/Libraries</code></p>
+<ul>
+<li>請確認一下該路徑後面是 <code>recursive</code> 如圖 6</li>
+</ul>
+<p><img src="https://cdn-images-1.medium.com/max/800/1*X74rWsdILiM31QOJ0hxWwA.jpeg" alt=""></p>
+<p>加入的 <code>Header Search Path</code> 的意義，在原生 Obj-C 這個路徑就是當我們要 import 函式庫時該去哪些路徑找檔案勒就像是 JS 中 require 預設的路徑是 <code>node_modules</code><br>如此一來我們在 <code>AppDelegate.m</code> 匯入的時候才找得到檔案</p>
+<h1 id="修改-AppDelegate-m"><a href="#修改-AppDelegate-m" class="headerlink" title="修改 AppDelegate.m"></a>修改 AppDelegate.m</h1><p>這個 <code>PushNotificationIOS</code> 函式庫使用了一些 Obj-C 的方法來完成註冊與接收推播訊息。然而這些方法只能夠在 AppDelegate 中使用。<br>想想也很合理的，因為他是 Obj-C 的方法，因此我們需要加入一些程式碼將資料從 AppDelegate 傳到 PushNotificationIOS</p>
+<ul>
+<li>第一步我們需要匯入 <code>RCTPushNotificationManager.h</code> 到 <code>AppDelegate.m</code></li>
+</ul>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#import <span class="meta-string">"RCTPushNotificationManager.h"</span></span></span><br></pre></td></tr></table></figure>
+<ul>
+<li>第二件事我們需要加入幾行程式碼</li>
+</ul>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// Required for the register event.</span></span><br><span class="line">- (<span class="keyword">void</span>)application:(<span class="built_in">UIApplication</span> *)application didRegisterForRemoteNotificationsWithDeviceToken:(<span class="built_in">NSData</span> *)deviceToken</span><br><span class="line">&#123;</span><br><span class="line"> [RCTPushNotificationManager application:application didRegisterForRemoteNotificationsWithDeviceToken:deviceToken];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// Required for the notification event.</span></span><br><span class="line">- (<span class="keyword">void</span>)application:(<span class="built_in">UIApplication</span> *)application didReceiveRemoteNotification:(<span class="built_in">NSDictionary</span> *)notification</span><br><span class="line">&#123;</span><br><span class="line"> [RCTPushNotificationManager application:application didReceiveRemoteNotification:notification];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>少了這幾行程式，資訊將無法被傳遞到 PushNotificationIOS</p>
+<h1 id="替-v0-12-修補-Bug"><a href="#替-v0-12-修補-Bug" class="headerlink" title="替 v0.12 修補 Bug"></a>替 v0.12 修補 Bug</h1><p>只有在專案使用的 React Native 版本是 0.12 或更早之前的才需要下面步驟<br>這是舊版的 Bug 他導致了在 iOS8 以後的手機系統無法正常推播，意味著 0.12 遇上最新的 iOS 會不正常。<br>下面的步驟則是修好這個 Bug</p>
+<ul>
+<li>在 Xcode 中到 <code>Library</code> 目錄下打開 <code>RCTPushNotification.xcodeproj/RCTPushNotificationManager.m</code></li>
+<li>捲到大概 155 行</li>
+</ul>
+<p><img src="https://cdn-images-1.medium.com/max/800/1*tcy_3mb08T8GxwIh6lePSw.png" alt=""></p>
+<h4 id="如果你使用的是-v0-11-或更早的版本"><a href="#如果你使用的是-v0-11-或更早的版本" class="headerlink" title="如果你使用的是 v0.11 或更早的版本"></a>如果你使用的是 v0.11 或更早的版本</h4><ul>
+<li>換成下面這段程式碼</li>
+</ul>
+<p><img src="https://cdn-images-1.medium.com/max/800/1*xLkvLxURShSpK8ftn6fW0w.png" alt=""></p>
+<figure class="highlight obj-c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">UIApplication</span> *app = [<span class="built_in">UIApplication</span> sharedApplication];</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> ([app respondsToSelector:<span class="keyword">@selector</span>(registerUserNotificationSettings:)])&#123;</span><br><span class="line"></span><br><span class="line"><span class="built_in">UIUserNotificationSettings</span> *notificationSettings = [<span class="built_in">UIUserNotificationSettings</span> settingsForTypes:(<span class="built_in">NSUInteger</span>)types categories:<span class="literal">nil</span>];</span><br><span class="line"></span><br><span class="line">[app registerUserNotificationSettings:notificationSettings];</span><br><span class="line"></span><br><span class="line">[app registerForRemoteNotifications];</span><br><span class="line"></span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line"></span><br><span class="line">[app registerForRemoteNotificationTypes:(<span class="built_in">NSUInteger</span>)types];</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h4 id="如果使用的是-v0-12"><a href="#如果使用的是-v0-12" class="headerlink" title="如果使用的是 v0.12"></a>如果使用的是 v0.12</h4><ul>
+<li>換成下面的程式碼</li>
+</ul>
+<p><img src="https://cdn-images-1.medium.com/max/800/1*IzJgkooEepq6mJhVPH8ogg.png" alt=""></p>
+<figure class="highlight obj-c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">UIApplication</span> *app = RCTSharedApplication();</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span> ([app respondsToSelector:<span class="keyword">@selector</span>(registerUserNotificationSettings:)])&#123;</span><br><span class="line"></span><br><span class="line"><span class="built_in">UIUserNotificationSettings</span> *notificationSettings = [<span class="built_in">UIUserNotificationSettings</span> settingsForTypes:(<span class="built_in">NSUInteger</span>)types categories:<span class="literal">nil</span>];</span><br><span class="line"></span><br><span class="line">[app registerUserNotificationSettings:notificationSettings];</span><br><span class="line"></span><br><span class="line">[app registerForRemoteNotifications];</span><br><span class="line"></span><br><span class="line">&#125; <span class="keyword">else</span> &#123;</span><br><span class="line"></span><br><span class="line">[app registerForRemoteNotificationTypes:(<span class="built_in">NSUInteger</span>)types];</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<ul>
+<li>存檔然後 Bug 就修復了</li>
+</ul>
+<p>現在我們已經把 React native 專案需要的部分都處理好了，接下來要使用推託我們必須要取得憑證</p>
+<h1 id="憑證設定"><a href="#憑證設定" class="headerlink" title="憑證設定"></a>憑證設定</h1><p>也許你可能知道推播功能是透過 Apple 的 Server 傳到你的程式。並且為了讓功能能夠運作我們需要取得一些憑證<br>這部分 Parse 有提供一份非常詳細的<a href="https://parse.com/tutorials/ios-push-notifications" target="_blank" rel="noopener">教學</a><br>針對本文的部分只需要 step 1 <code>Creating the SSL certificate</code> 和 step 2 <code>Creating the Provisioning Profile</code></p>
+<p>一旦你完成這個步驟我們就可以開始使用推播功能了</p>
+<h1 id="使用推播功能"><a href="#使用推播功能" class="headerlink" title="使用推播功能"></a>使用推播功能</h1><p>在 React native 中推播功能的 API 非常直覺。也可以透過<a href="https://facebook.github.io/react-native/docs/pushnotificationios.html" target="_blank" rel="noopener">官方的文件</a>來學習。</p>
+<h1 id="概覽用法"><a href="#概覽用法" class="headerlink" title="概覽用法"></a>概覽用法</h1><p>首須我們需要在 Javascript 中匯入 <code>PushNotificationIOS</code></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">var</span> &#123;</span><br><span class="line"> AppRegistry,</span><br><span class="line"> StyleSheet,</span><br><span class="line"> Text,</span><br><span class="line"> View,</span><br><span class="line"> PushNotificationIOS <span class="comment">// &lt;- 加入這一行</span></span><br><span class="line">&#125; = React;</span><br></pre></td></tr></table></figure>
+<h4 id="取得權限"><a href="#取得權限" class="headerlink" title="取得權限"></a>取得權限</h4><p>在本機上要使用這個功能需要跟用戶要權限，要注意的是模擬器並不能夠使用推播必須要在實機上測試。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">PushNotificationIOS.requestPermissions();</span><br></pre></td></tr></table></figure>
+<h4 id="註冊事件"><a href="#註冊事件" class="headerlink" title="註冊事件"></a>註冊事件</h4><p>當使用者註冊了接收遠端通知的時候會被觸發，透過這個事件可以取得裝置的 token</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">PushNotificationIOS.addEventListener(‘register’, <span class="function"><span class="keyword">function</span>(<span class="params">token</span>)</span>&#123;</span><br><span class="line"> <span class="built_in">console</span>.log(‘You are registered and the device token is: ‘,token)</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<h4 id="通知事件"><a href="#通知事件" class="headerlink" title="通知事件"></a>通知事件</h4><p>當收到推播通知的時候，繫結的函式會被觸發</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">PushNotificationIOS.addEventListener(‘notification’, <span class="function"><span class="keyword">function</span>(<span class="params">notification</span>)</span>&#123;</span><br><span class="line"> <span class="built_in">console</span>.log(‘You have received a <span class="keyword">new</span> notification!’, notification);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<h1 id="錯誤處理事件"><a href="#錯誤處理事件" class="headerlink" title="錯誤處理事件"></a>錯誤處理事件</h1><p>在這個時間點你不會看到 PushNotificationIOS 產生任何錯誤。一般來說在 iOS 例如你的憑證失效時你應該會取得錯誤訊息<br>或者是在模擬器執行的時候，不過現階段這些錯誤都不會觸發</p>
+<p>你可以持續關注<a href="https://github.com/facebook/react-native/pull/2336" target="_blank" rel="noopener">Pull Request</a>來看此功能是否被整合或者有其他更好的做法。</p>
+<h1 id="該如何傳送一個推播通知"><a href="#該如何傳送一個推播通知" class="headerlink" title="該如何傳送一個推播通知"></a>該如何傳送一個推播通知</h1><p>為了要能夠發送推播我們會需要一個後端和憑證，這個部分我們有下面幾種做法</p>
+<h4 id="使用服務"><a href="#使用服務" class="headerlink" title="使用服務"></a>使用服務</h4><p>採用外面的服務例如 <a href="https://parse.com" target="_blank" rel="noopener">Parse</a> 或者 <a href="https://www.urbanairship.com/" target="_blank" rel="noopener">Urban Airship</a></p>
+<h4 id="建立自己的後端程式"><a href="#建立自己的後端程式" class="headerlink" title="建立自己的後端程式"></a>建立自己的後端程式</h4><ul>
+<li><a href="https://github.com/argon/node-apn" target="_blank" rel="noopener">NodeJS - node-apn</a></li>
+<li><a href="https://github.com/nomad/houston" target="_blank" rel="noopener">Ruby - houston</a></li>
+</ul>
+<h4 id="憑證"><a href="#憑證" class="headerlink" title="憑證"></a>憑證</h4><p>過程中我們可能還需要一些憑證這個時候可以參考<a href="http://stackoverflow.com/questions/21250510/generate-pem-file-used-to-setup-apple-push-notification" target="_blank" rel="noopener">StackOverflow</a>的解答</p>
+<h1 id="參考"><a href="#參考" class="headerlink" title="參考"></a>參考</h1><p><a href="https://medium.com/@DannyvanderJagt/how-to-use-push-notifications-in-react-native-41e8b14aadae#.1xisavno9" target="_blank" rel="noopener">How to use Push Notifications in React-Native (IOS)</a></p>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+
+</div>
+
+    <a data-url="//andyyou.github.io/2015/12/08/how-to-use-push-notification-in-react-native/" data-id="cknx2z2b300ac3m721dyk63og" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        // Prevent duplicate binding
+        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
+            __SHARE_BUTTON_BINDED__ = true;
+        } else {
+            return;
+        }
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+            
+    
+
+        </footer>
+    </div>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2015/12/17/react-lifecycle/" id="article-nav-newer" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">上一篇</strong>
+            <div class="article-nav-title">
+                
+                    深入 React 生命週期
+                
+            </div>
+        </a>
+    
+    
+        <a href="/2015/11/30/virtual-dom-vs-incremental-dom-vs-glimmer/" id="article-nav-older" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">下一篇</strong>
+            <div class="article-nav-title">React Virtual DOM vs Incremental DOM vs Ember’s Glimmer</div>
+        </a>
+    
+</nav>
+
+
+    
+</article>
+
+
+    
+    <section id="comments">
+    
+    </section>
+
+</section>
+            
+                <aside id="sidebar">
+   
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">分類</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Cloud/">Cloud</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Database/">Database</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Fun/">Fun</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Mobile/">Mobile</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Program/">Program</a><span class="category-list-count">132</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/System/">System</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Tools/">Tools</a><span class="category-list-count">17</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">歸檔</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/04/">四月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/03/">三月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/10/">十月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">五月 2019</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">六月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">十二月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">十一月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">九月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">十月 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">九月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">六月 2016</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">十二月 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">十一月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">十月 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">九月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">八月 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">七月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">五月 2015</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">四月 2015</a><span class="archive-list-count">19</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">十二月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/11/">十一月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/10/">十月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">九月 2014</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/08/">八月 2014</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/02/">二月 2014</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/01/">一月 2014</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">十一月 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">十月 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">九月 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">八月 2013</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/03/">三月 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">三月 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">一月 2012</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2011/11/">十一月 2011</a><span class="archive-list-count">3</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">標籤</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/net-mvc/">.net mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RoR/">RoR</a><span class="tag-list-count">15</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/api/">api</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aws/">aws</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/azure/">azure</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bot/">bot</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bundler/">bundler</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cache/">cache</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/carrier-wave/">carrier wave</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/centos/">centos</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/chrome/">chrome</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cloudflare/">cloudflare</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/compass/">compass</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/devise/">devise</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dnd/">dnd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/e-invoice/">e-invoice</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/entity-framework/">entity framework</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/es6/">es6</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/facebook/">facebook</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flux/">flux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/framework/">framework</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gcp/">gcp</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/grunt/">grunt</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gulp/">gulp</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/heroku/">heroku</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/html/">html</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/iisexpress/">iisexpress</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ios/">ios</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">70</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript-express-passport/">javascript express passport</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript-nodejs/">javascript nodejs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jekyll/">jekyll</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jetstream/">jetstream</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jspm/">jspm</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jwt/">jwt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/laravel/">laravel</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/letsencrypt/">letsencrypt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mechanism/">mechanism</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongodb/">mongodb</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/node/">node</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nodejs/">nodejs</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/oocss/">oocss</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/osx/">osx</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package-manager/">package manager</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/php/">php</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/postgres/">postgres</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/postgresql/">postgresql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/queue/">queue</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rabbitmq/">rabbitmq</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rack-server/">rack server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails/">rails</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails-webpack-stimulus-javascript-bootstrap/">rails webpack stimulus javascript bootstrap</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/raspberry-pi/">raspberry-pi</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react/">react</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react-native/">react native</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/reactjs/">reactjs</a><span class="tag-list-count">32</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redux/">redux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sass/">sass</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/selenium/">selenium</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/slim/">slim</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssh/">ssh</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssl/">ssl</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/stimulus/">stimulus</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/svg-javascript/">svg javascript</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/task-runner/">task runner</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tmux/">tmux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tools/">tools</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vm/">vm</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/">vue</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vuejs/">vuejs</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/webpack/">webpack</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/windows/">windows</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/xml/">xml</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">標籤雲</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/net-mvc/" style="font-size: 10px;">.net mvc</a> <a href="/tags/RoR/" style="font-size: 16.67px;">RoR</a> <a href="/tags/api/" style="font-size: 10px;">api</a> <a href="/tags/aws/" style="font-size: 12.5px;">aws</a> <a href="/tags/azure/" style="font-size: 10.83px;">azure</a> <a href="/tags/bot/" style="font-size: 10px;">bot</a> <a href="/tags/bundler/" style="font-size: 10.83px;">bundler</a> <a href="/tags/cache/" style="font-size: 10px;">cache</a> <a href="/tags/carrier-wave/" style="font-size: 10.83px;">carrier wave</a> <a href="/tags/centos/" style="font-size: 10px;">centos</a> <a href="/tags/chrome/" style="font-size: 10px;">chrome</a> <a href="/tags/cloudflare/" style="font-size: 10px;">cloudflare</a> <a href="/tags/compass/" style="font-size: 10px;">compass</a> <a href="/tags/css/" style="font-size: 17.5px;">css</a> <a href="/tags/devise/" style="font-size: 10px;">devise</a> <a href="/tags/dnd/" style="font-size: 10px;">dnd</a> <a href="/tags/docker/" style="font-size: 10.83px;">docker</a> <a href="/tags/e-invoice/" style="font-size: 10px;">e-invoice</a> <a href="/tags/entity-framework/" style="font-size: 10px;">entity framework</a> <a href="/tags/es6/" style="font-size: 11.67px;">es6</a> <a href="/tags/facebook/" style="font-size: 10px;">facebook</a> <a href="/tags/flux/" style="font-size: 10px;">flux</a> <a href="/tags/framework/" style="font-size: 10.83px;">framework</a> <a href="/tags/gcp/" style="font-size: 10.83px;">gcp</a> <a href="/tags/go/" style="font-size: 10px;">go</a> <a href="/tags/grunt/" style="font-size: 12.5px;">grunt</a> <a href="/tags/gulp/" style="font-size: 11.67px;">gulp</a> <a href="/tags/heroku/" style="font-size: 14.17px;">heroku</a> <a href="/tags/html/" style="font-size: 10.83px;">html</a> <a href="/tags/iisexpress/" style="font-size: 10px;">iisexpress</a> <a href="/tags/ios/" style="font-size: 11.67px;">ios</a> <a href="/tags/javascript/" style="font-size: 20px;">javascript</a> <a href="/tags/javascript-express-passport/" style="font-size: 10px;">javascript express passport</a> <a href="/tags/javascript-nodejs/" style="font-size: 10px;">javascript nodejs</a> <a href="/tags/jekyll/" style="font-size: 10.83px;">jekyll</a> <a href="/tags/jetstream/" style="font-size: 10px;">jetstream</a> <a href="/tags/jspm/" style="font-size: 10px;">jspm</a> <a href="/tags/jwt/" style="font-size: 10px;">jwt</a> <a href="/tags/laravel/" style="font-size: 11.67px;">laravel</a> <a href="/tags/letsencrypt/" style="font-size: 10px;">letsencrypt</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/mechanism/" style="font-size: 10px;">mechanism</a> <a href="/tags/mongodb/" style="font-size: 10.83px;">mongodb</a> <a href="/tags/node/" style="font-size: 10px;">node</a> <a href="/tags/nodejs/" style="font-size: 15px;">nodejs</a> <a href="/tags/oocss/" style="font-size: 10px;">oocss</a> <a href="/tags/osx/" style="font-size: 14.17px;">osx</a> <a href="/tags/package-manager/" style="font-size: 14.17px;">package manager</a> <a href="/tags/php/" style="font-size: 10.83px;">php</a> <a href="/tags/postgres/" style="font-size: 10px;">postgres</a> <a href="/tags/postgresql/" style="font-size: 10.83px;">postgresql</a> <a href="/tags/queue/" style="font-size: 10.83px;">queue</a> <a href="/tags/rabbitmq/" style="font-size: 10.83px;">rabbitmq</a> <a href="/tags/rack-server/" style="font-size: 10px;">rack server</a> <a href="/tags/rails/" style="font-size: 14.17px;">rails</a> <a href="/tags/rails-webpack-stimulus-javascript-bootstrap/" style="font-size: 10px;">rails webpack stimulus javascript bootstrap</a> <a href="/tags/raspberry-pi/" style="font-size: 10px;">raspberry-pi</a> <a href="/tags/react/" style="font-size: 15.83px;">react</a> <a href="/tags/react-native/" style="font-size: 10px;">react native</a> <a href="/tags/reactjs/" style="font-size: 19.17px;">reactjs</a> <a href="/tags/redux/" style="font-size: 10px;">redux</a> <a href="/tags/ruby/" style="font-size: 18.33px;">ruby</a> <a href="/tags/sass/" style="font-size: 10.83px;">sass</a> <a href="/tags/selenium/" style="font-size: 10px;">selenium</a> <a href="/tags/slim/" style="font-size: 10px;">slim</a> <a href="/tags/ssh/" style="font-size: 10px;">ssh</a> <a href="/tags/ssl/" style="font-size: 10.83px;">ssl</a> <a href="/tags/stimulus/" style="font-size: 10px;">stimulus</a> <a href="/tags/svg-javascript/" style="font-size: 11.67px;">svg javascript</a> <a href="/tags/task-runner/" style="font-size: 11.67px;">task runner</a> <a href="/tags/tmux/" style="font-size: 10px;">tmux</a> <a href="/tags/tools/" style="font-size: 10px;">tools</a> <a href="/tags/ubuntu/" style="font-size: 10.83px;">ubuntu</a> <a href="/tags/vm/" style="font-size: 10px;">vm</a> <a href="/tags/vue/" style="font-size: 10px;">vue</a> <a href="/tags/vuejs/" style="font-size: 13.33px;">vuejs</a> <a href="/tags/webpack/" style="font-size: 12.5px;">webpack</a> <a href="/tags/windows/" style="font-size: 10px;">windows</a> <a href="/tags/xml/" style="font-size: 10px;">xml</a>
+        </div>
+    </div>
+
+    
+    <div id="toTop" class="fa fa-angle-up"></div>
+</aside>
+            
+        </div>
+        <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2021 andyyou(You,ZongYan)
+        </div>
+    </div>
+</footer>
+
+        
+
+    
+        <script src="/lib/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-share.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-video.min.js"></script>
+    
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+</body>
+</html>

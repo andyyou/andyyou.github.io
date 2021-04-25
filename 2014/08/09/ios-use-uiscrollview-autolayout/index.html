@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head><meta name="generator" content="Hexo 3.8.0">
+    <meta charset="utf-8">
+    
+    <title>iOS UIScrollView 使用 Autolayout | DEVLOG of andyyou</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <!-- Google Tag Manager -->
+    <script>(function (w, d, s, l, i) {
+        w[l] = w[l] || []; w[l].push({
+          'gtm.start':
+            new Date().getTime(), event: 'gtm.js'
+        }); var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : ''; j.async = true; j.src =
+            'https://www.googletagmanager.com/gtm.js?id=' + i + dl; f.parentNode.insertBefore(j, f);
+      })(window, document, 'script', 'dataLayer', 'GTM-57LT2GG');</script>
+    <!-- End Google Tag Manager -->
+    <meta name="description" content="前言誰說你不能讓一些既有的控制項使用一些新技巧，UIScrollView 是從 iOS 一開始就存在的控制項，已經很多部落格文章, Stackflow 問題和官方文件討論如何用舊有的方式在 UIScrollView 中設定你的內容，本文將描述一些搭配 AutoLayout 的使用技巧。">
+<meta name="keywords" content="ios">
+<meta property="og:type" content="article">
+<meta property="og:title" content="iOS UIScrollView 使用 Autolayout">
+<meta property="og:url" content="//andyyou.github.io/2014/08/09/ios-use-uiscrollview-autolayout/index.html">
+<meta property="og:site_name" content="DEVLOG of andyyou">
+<meta property="og:description" content="前言誰說你不能讓一些既有的控制項使用一些新技巧，UIScrollView 是從 iOS 一開始就存在的控制項，已經很多部落格文章, Stackflow 問題和官方文件討論如何用舊有的方式在 UIScrollView 中設定你的內容，本文將描述一些搭配 AutoLayout 的使用技巧。">
+<meta property="og:locale" content="zh-TW">
+<meta property="og:image" content="http://i.imgur.com/byXTQHf.png">
+<meta property="og:image" content="http://i.imgur.com/zwf9oPh.png">
+<meta property="og:image" content="http://i.imgur.com/0r64vYP.png">
+<meta property="og:image" content="http://i.imgur.com/0FOTjbk.png">
+<meta property="og:image" content="http://i.imgur.com/fR2U3Bh.png">
+<meta property="og:image" content="http://i.imgur.com/z1v8BmR.png">
+<meta property="og:image" content="http://i.imgur.com/dtEbG6i.png">
+<meta property="og:image" content="http://i.imgur.com/5Yx9sIu.png">
+<meta property="og:image" content="http://i.imgur.com/8mgRrSB.png">
+<meta property="og:image" content="http://i.imgur.com/UYqmUdn.png">
+<meta property="og:image" content="http://i.imgur.com/aKF0gc5.png">
+<meta property="og:image" content="http://i.imgur.com/0EHR01R.png">
+<meta property="og:image" content="http://i.imgur.com/FKjxeXc.png">
+<meta property="og:image" content="http://i.imgur.com/bRBDIQm.png">
+<meta property="og:image" content="http://i.imgur.com/HFM4VGx.png">
+<meta property="og:image" content="http://i.imgur.com/MzGkoff.png">
+<meta property="og:updated_time" content="2016-12-19T02:31:59.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="iOS UIScrollView 使用 Autolayout">
+<meta name="twitter:description" content="前言誰說你不能讓一些既有的控制項使用一些新技巧，UIScrollView 是從 iOS 一開始就存在的控制項，已經很多部落格文章, Stackflow 問題和官方文件討論如何用舊有的方式在 UIScrollView 中設定你的內容，本文將描述一些搭配 AutoLayout 的使用技巧。">
+<meta name="twitter:image" content="http://i.imgur.com/byXTQHf.png">
+    
+
+    
+
+    
+        <link rel="icon" href="/images/favicon.png">
+    
+
+    <link rel="stylesheet" href="/lib/font-awesome/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/lib/open-sans/styles.css">
+    <link rel="stylesheet" href="/lib/source-code-pro/styles.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+    <script src="/lib/jquery/2.1.3/jquery.min.js"></script>
+    
+    
+        <link rel="stylesheet" href="/lib/lightgallery/css/lightgallery.min.css">
+    
+    
+    
+        <script type="text/javascript">
+(function(i,s,o,g,r,a,m) {i['GoogleAnalyticsObject']=r;i[r]=i[r]||function() {
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-39208536-1', 'auto');
+ga('send', 'pageview');
+
+</script>
+    
+    
+    
+
+
+</head>
+</html>
+<body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-57LT2GG" height="0" width="0"
+        style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+    <div id="container">
+        <header id="header">
+    <div id="header-main" class="header-inner">
+        <div class="outer">
+            <a href="/" id="logo">
+                <i class="logo"></i>
+                <span class="site-title">DEVLOG of andyyou</span>
+            </a>
+            <nav id="main-nav">
+                
+                    <a class="main-nav-link" href="/.">Home</a>
+                
+                    <a class="main-nav-link" href="/archives">Archives</a>
+                
+                    <a class="main-nav-link" href="/categories">Categories</a>
+                
+                    <a class="main-nav-link" href="/tags">Tags</a>
+                
+            </nav>
+            
+                
+                <nav id="sub-nav">
+                    <div class="profile" id="profile-nav">
+                        <a id="profile-anchor" href="javascript:;">
+                            <img class="avatar" src="https://avatars2.githubusercontent.com/u/665690?v=3&amp;s=466">
+                            <i class="fa fa-caret-down"></i>
+                        </a>
+                    </div>
+                </nav>
+            
+            <div id="search-form-wrap">
+
+    <form class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜尋">
+        <button type="submit" class="search-form-submit"></button>
+    </form>
+    <div class="ins-search">
+    <div class="ins-search-mask"></div>
+    <div class="ins-search-container">
+        <div class="ins-input-wrapper">
+            <input type="text" class="ins-search-input" placeholder="Type something...">
+            <span class="ins-close ins-selectable"><i class="fa fa-times-circle"></i></span>
+        </div>
+        <div class="ins-section-wrapper">
+            <div class="ins-section-container"></div>
+        </div>
+    </div>
+</div>
+<script>
+(function (window) {
+    var INSIGHT_CONFIG = {
+        TRANSLATION: {
+            POSTS: '文章',
+            PAGES: 'Pages',
+            CATEGORIES: '分類',
+            TAGS: '標籤',
+            UNTITLED: '(Untitled)',
+        },
+        ROOT_URL: '/',
+        CONTENT_URL: '/content.json',
+    };
+    window.INSIGHT_CONFIG = INSIGHT_CONFIG;
+})(window);
+</script>
+<script src="/js/insight.js"></script>
+
+</div>
+        </div>
+    </div>
+    <div id="main-nav-mobile" class="header-sub header-inner">
+        <table class="menu outer">
+            <tr>
+                
+                    <td><a class="main-nav-link" href="/.">Home</a></td>
+                
+                    <td><a class="main-nav-link" href="/archives">Archives</a></td>
+                
+                    <td><a class="main-nav-link" href="/categories">Categories</a></td>
+                
+                    <td><a class="main-nav-link" href="/tags">Tags</a></td>
+                
+                <td>
+                    
+    <div class="search-form">
+        <input type="text" class="ins-search-input search-form-input" placeholder="搜尋">
+    </div>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+</header>
+
+        <div class="outer">
+            
+                
+
+<aside id="profile">
+    <div class="inner profile-inner">
+        <div class="base-info profile-block">
+            <img id="avatar" src="https://avatars2.githubusercontent.com/u/665690?v=3&amp;s=466">
+            <h2 id="name">andyyou</h2>
+            <h3 id="title">Web Developer</h3>
+            <span id="location"><i class="fa fa-map-marker"></i>Taipei, Taiwan</span>
+            <a id="follow" target="_blank" href="https://github.com/andyyou">關注我</a>
+        </div>
+        <div class="article-info profile-block">
+            <div class="article-info-block">
+                185
+                <span>文章</span>
+            </div>
+            <div class="article-info-block">
+                79
+                <span>標籤</span>
+            </div>
+        </div>
+        
+        <div class="profile-block social-links">
+            <table>
+                <tr>
+                    
+                    
+                    <td>
+                        <a href="https://github.com/andyyou" target="_blank" title="github" class="tooltip">
+                            <i class="fa fa-github"></i>
+                        </a>
+                    </td>
+                    
+                    <td>
+                        <a href="https://www.linkedin.com/pub/zongyan-you/2a/493/16" target="_blank" title="linkedin" class="tooltip">
+                            <i class="fa fa-linkedin"></i>
+                        </a>
+                    </td>
+                    
+                </tr>
+            </table>
+        </div>
+        
+    </div>
+</aside>
+
+            
+            <section id="main"><article id="post-ios-use-uiscrollview-autolayout" class="article article-type-post" itemscope="" itemprop="blogPost">
+    <div class="article-inner">
+        
+        
+            <header class="article-header">
+                
+    
+        <h1 class="article-title" itemprop="name">
+            iOS UIScrollView 使用 Autolayout
+        </h1>
+    
+
+                
+                    <div class="article-meta">
+                        
+    <div class="article-date">
+        <i class="fa fa-calendar"></i>
+        <a href="/2014/08/09/ios-use-uiscrollview-autolayout/">
+            <time datetime="2014-08-09T12:15:00.000Z" itemprop="datePublished">2014-08-09</time>
+        </a>
+    </div>
+
+
+                        
+    <div class="article-category">
+    	<i class="fa fa-folder"></i>
+        <a class="article-category-link" href="/categories/Mobile/">Mobile</a>
+    </div>
+
+                        
+    <div class="article-tag">
+        <i class="fa fa-tag"></i>
+        <a class="tag-link" href="/tags/ios/">ios</a>
+    </div>
+
+                    </div>
+                
+            </header>
+        
+        
+        <div class="article-entry" itemprop="articleBody">
+        
+            
+            <h2 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h2><p>誰說你不能讓一些既有的控制項使用一些新技巧，<code>UIScrollView</code> 是從 iOS 一開始就存在的控制項，已經很多部落格文章, Stackflow 問題和官方文件討論如何用舊有的方式在 UIScrollView 中設定你的內容，本文將描述一些搭配 AutoLayout 的使用技巧。</p>
+<a id="more"></a>
+<p>自從 iOS 引入了自動佈局(Auto Layout)，也出現了一些新的方式協助你設定滾動頁面中的內容(Scrolling Content)，使用自動佈局可以大大地減少撰寫的程式碼。<br>依照舊的方式設定 UIScrollView 其中一個最麻煩的地方就是處理 UIScrollView 中內容的尺寸(Content Size)，就是裡面的那些控制項。如果內容是一張圖片你可以相當單純的直接計算圖片的尺寸，不過如果你要放在 UIScrollView 裡面的內容是一堆 UIButton, UILabel, 和你自訂 UIView 就不是這麼容易。你就需要撰寫一大堆程式碼用來處理排列對齊以及適應各種螢幕情況。</p>
+<p>在這篇文章中會教你如何使用 UIScrollView 搭配 AutoLayout 自適應設計，如此就不管裝置是直放或橫擺裡面的控制項就能呈現適合的大小，同時也會教你在 UIScrollView 中當虛擬鍵盤出現時控制項通常是 UITextField 如何捲動到適合的位置。</p>
+<h2 id="使用-IB-Interface-Builder-建立一個基本的-Layout"><a href="#使用-IB-Interface-Builder-建立一個基本的-Layout" class="headerlink" title="使用 IB (Interface Builder)建立一個基本的 Layout"></a>使用 IB (Interface Builder)建立一個基本的 Layout</h2><p>為了讓你對接下來做的事情有點感覺我們先看一下完成後的樣子</p>
+<p><img src="http://i.imgur.com/byXTQHf.png" alt=""><br><img src="http://i.imgur.com/zwf9oPh.png" alt=""></p>
+<p>現在讓我們來建立我們的 UI ，首先建立一個 <code>Single View Project</code> ，接著在 <code>Main.storyboard</code> 中的 ViewController 拖入一個 <code>UIScrollView</code> 當作主要 <code>ViewController.view</code> 的 <code>subview</code>。</p>
+<p><img src="http://i.imgur.com/0r64vYP.png" alt=""></p>
+<p>然後加入一些自動佈局的佈局條件(AutoLayout Constraints)讓 UIScrollView 放置到你想要的位置。<br>在這個範例中 UIScrollView 需要佔據整個 UIView 所以這邊加了 4 個邊緣距離設定(Edge)的佈局條件，且距離 4 邊距離都是 0 ，也許你想要的設定跟這裡的不一樣，你可以照著你想要呈現的方式設定。</p>
+<p><img src="http://i.imgur.com/0FOTjbk.png" alt=""></p>
+<h2 id="使用一個-UIView-包住其他的內容或控制項"><a href="#使用一個-UIView-包住其他的內容或控制項" class="headerlink" title="使用一個 UIView 包住其他的內容或控制項"></a>使用一個 UIView 包住其他的內容或控制項</h2><p>下一步則是在 UIScrollView 中建立一個單獨的 <code>子 UIView 控制項</code>，它的功能就是一個容器(Container)我們會將所有的內容和控制項放到這個 UIView 中。這麼做的原因是之後我們可以很簡單的使用佈局條件(Constraints)實現 AutoLayout，在這個範例中我將它命名為 <code>Content View</code>。如果你的內容是一個 UIImageView 其實你可以很單純的直接放置進 UIScrollView 就跟我們這個 Content View 一樣。<br><img src="http://i.imgur.com/fR2U3Bh.png" alt=""></p>
+<p>接著，我們要設定 Content View 和 UIScrollView 的佈局條件(Constraints)，官方對 UIScrollView 做了一些改變，如果要支援 Autolayout 你就必須要設定正確，下面是必須完成的兩個條件：</p>
+<ol>
+<li><p>Content View 控制項並需要有明確的尺寸大小，指的是你必須設定 width, height 或者使用 placeholder 預先配置一個尺寸接著在執行時期(Run Time)改變尺寸。從另一個角度來看，意思就是你的內容大小無法根據 UIScrollView 來取得尺寸大小，不過它可以根據 UIScrollView 外部的 View 來取得大小，我們將會使用這個技巧來讓你的佈局可以自動適應裝置直立或橫擺。如果你的內容是一張圖片，那麼 UIImageView 會根據你的圖片尺寸取得大小，不過你仍然要設定 Placeholder Constraints 不然 IB 依舊會顯示錯誤訊息給你。</p>
+</li>
+<li><p>即使 Content View 不能根據 UIScrollView 取得尺寸，但我們還是要設定 Content View 的 <code>Top</code>, <code>Bottom</code>, <code>Leading</code>, <code>Trailing</code> 的佈局條件，這一步是大多數人覺得困惑的地方，因為 Apple 官方已經改變了 <code>Constraints</code> 在這種情況下的用途，現在它可以用來指示 UIScrollView 關於 Content View 的邊界，所以可以拿來計算內容的大小。這些特殊情況的 <code>Constraints</code> 其行為並不像一般的佈局條件，不管你給他們什麼設定，他們不會真的改變 Content View 的尺寸。一旦它們存在 UIScrollView 就能夠計算出 Content View 的尺寸。</p>
+</li>
+</ol>
+<p><img src="http://i.imgur.com/z1v8BmR.png" alt=""></p>
+<p>這麼說可能有點抽象，讓我們繼續往下走，設定你的 Content View 到 UIScrollView 四個邊界的 Constraints 吧。當你完成這些設定你會注意到 IB 顯示了一些錯誤訊息，因為 UIScrollView 還是沒辦法決定 Content View 的尺寸。 不過你可以先不要理他們。</p>
+<p><img src="http://i.imgur.com/dtEbG6i.png" alt=""></p>
+<p>然後在這個 Content View 放入你需要的其他控制項如 UILabel, UITextField 等照你平常設定 AutoLayout 使用。<br>開啟模擬器會發現垂直的排列稍微正常一點，簡單的說你會發現似乎只有 <code>Top</code> 和 <code>Left</code> 可以往下推算的條件是生效的。<br>註：這裡為了方便辨識 UIScrollView 底色為黃色，Content View 為藍底。</p>
+<p><img src="http://i.imgur.com/5Yx9sIu.png" alt=""><br><img src="http://i.imgur.com/8mgRrSB.png" alt=""></p>
+<p>水平方向卻是錯的很離譜，雖然有設定左邊邊界到 UILabel ，UILabel 和 UITextField 的間距以及最後 UITextField 到 Content View 的間距，因為無法確定 UITextField 的尺寸設定，所以看起來整個縮起來，因為不知道右邊和下面的邊長值，所以就算你設定了 <code>Right</code> 或 <code>Bottom</code> 的 <code>Edge</code> 還是無法判斷長度或寬度。我們需要一些方式來設定 UITextField 的 width ，我們可以透過寫死的方式設定，不過這樣就沒辦法讓 UITextField 自動根據橫的或直的螢幕改變寬了。解決的辦法是直接讓佈局條件設定為依據 UIScrollView 外部 ViewController 的那個 view，不過這一個步驟無法靠 IB 完成，我們需要寫一些程式碼，此時 IB 依舊提示錯誤訊息，所以我們需要為 Content View 設定 <code>Placeholder Width</code> 來解掉這個錯誤，多加入一個 width 的 Constrains 然後把 Placeholder 勾起來。<br><img src="http://i.imgur.com/UYqmUdn.png" alt=""></p>
+<p>使用 <code>command</code> + <code>option</code> + <code>enter</code> 開啟 <code>Assistant editor</code> 把 <code>Content View</code> 加入 IBOutlet，因為我們要使用程式碼來實作我們剛剛說的方式，讓 Content View 直接參考外面的 view。接著在 viewDidLoad 加入下面程式碼</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">DBKViewController</span> ()</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">strong</span>, <span class="keyword">nonatomic</span>) <span class="keyword">IBOutlet</span> <span class="built_in">UIView</span> *contentView;</span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">@implementation</span> <span class="title">DBKViewController</span></span></span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)viewDidLoad</span><br><span class="line">&#123;</span><br><span class="line">    [<span class="keyword">super</span> viewDidLoad];</span><br><span class="line">	<span class="built_in">NSLayoutConstraint</span> *leftEdgeAlign = [<span class="built_in">NSLayoutConstraint</span> constraintWithItem:<span class="keyword">self</span>.contentView attribute:<span class="built_in">NSLayoutAttributeLeading</span> relatedBy:<span class="number">0</span> toItem:<span class="keyword">self</span>.view attribute:<span class="built_in">NSLayoutAttributeLeft</span> multiplier:<span class="number">1.0</span> constant:<span class="number">0</span>];</span><br><span class="line">    [<span class="keyword">self</span>.view addConstraint:leftEdgeAlign];</span><br><span class="line">    <span class="built_in">NSLayoutConstraint</span> *rightEdgeAlign = [<span class="built_in">NSLayoutConstraint</span> constraintWithItem:<span class="keyword">self</span>.contentView attribute:<span class="built_in">NSLayoutAttributeTrailing</span> relatedBy:<span class="number">0</span> toItem:<span class="keyword">self</span>.view attribute:<span class="built_in">NSLayoutAttributeTrailing</span> multiplier:<span class="number">1.0</span> constant:<span class="number">0</span>];</span><br><span class="line">    [<span class="keyword">self</span>.view addConstraint:rightEdgeAlign];</span><br><span class="line">&#125;</span><br><span class="line"><span class="keyword">@end</span></span><br></pre></td></tr></table></figure>
+<p>你還是會看到 IB 出現一些警示，所以我們可以透過 IB 的功能來更新一下 storyboard<br><img src="http://i.imgur.com/aKF0gc5.png" alt=""><br><img src="http://i.imgur.com/0EHR01R.png" alt=""></p>
+<p>或者一口氣更新<br><img src="http://i.imgur.com/FKjxeXc.png" alt=""><br><img src="http://i.imgur.com/bRBDIQm.png" alt=""></p>
+<p>然後我們就完成了讓控制項自適應的技巧。</p>
+<h2 id="把控制項移動到鍵盤上方"><a href="#把控制項移動到鍵盤上方" class="headerlink" title="把控制項移動到鍵盤上方"></a>把控制項移動到鍵盤上方</h2><p>到了這一步你可以會問有什麼是我曾經被 UIScrollView 困擾的問題，乍看之下好像都完成了，不過當你需要編輯 UITextField 的時候，就會發現你的控制項被虛擬鍵盤擋住了，這也是我們為什麼會需要用 UIScrollView 通常是因為你有太多控制項需要往下延伸，不過鍵盤擋住了我們的輸入框導致在輸入的時候看不到我們輸入了什麼。<br>要解決這個問題，首先我們需要追蹤是哪一個 UITextField 開始進入編輯的狀態，有很多種方式，這邊我們選擇了設定 UITextField 的 delegate 到 ViewController。<br>先在 ViewController 中加上 UITextFieldDelegate</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">DBKViewController</span> () &lt;<span class="title">UITextFieldDelegate</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>然後</p>
+<p><img src="http://i.imgur.com/HFM4VGx.png" alt=""></p>
+<p>選擇 <code>delegate</code><br><img src="http://i.imgur.com/MzGkoff.png" alt=""></p>
+<p>接著我們實作一些委派函式好讓正在編輯的 UITextField 可以捲動到鍵盤的上方，我們需要取得正在編輯的控制項參考，所以加入下面的程式碼：</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">@interface</span> <span class="title">DBKViewController</span> () &lt;<span class="title">UITextFieldDelegate</span>&gt;</span></span><br><span class="line"><span class="keyword">@property</span> (<span class="keyword">nonatomic</span>, <span class="keyword">weak</span>) <span class="built_in">UITextField</span> *activeTextField;</span><br><span class="line"><span class="keyword">@end</span></span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)textFieldDidBeginEditing:(<span class="built_in">UITextField</span> *)textField</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">self</span>.activeTextField = textField;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)textFieldDidEndEditing:(<span class="built_in">UITextField</span> *)textField</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">self</span>.activeTextField = <span class="literal">nil</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>接著我們需要註冊關於鍵盤出現的通知(Notifications)。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)viewWillAppear:(<span class="built_in">BOOL</span>)animated &#123;</span><br><span class="line">    [<span class="keyword">super</span> viewWillAppear:animated];</span><br><span class="line">    [<span class="keyword">self</span> registerForKeyboardNotifications];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)viewWillDisappear:(<span class="built_in">BOOL</span>)animated &#123;</span><br><span class="line">    [<span class="keyword">self</span> deregisterFromKeyboardNotifications];</span><br><span class="line">    [<span class="keyword">super</span> viewWillDisappear:animated];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)registerForKeyboardNotifications</span><br><span class="line">&#123;</span><br><span class="line">    [[<span class="built_in">NSNotificationCenter</span> defaultCenter] addObserver:<span class="keyword">self</span> selector:<span class="keyword">@selector</span>(keyboardWasShown:) name:<span class="built_in">UIKeyboardDidShowNotification</span> object:<span class="literal">nil</span>];</span><br><span class="line">    [[<span class="built_in">NSNotificationCenter</span> defaultCenter] addObserver:<span class="keyword">self</span> selector:<span class="keyword">@selector</span>(keyboardWillBeHidden:) name:<span class="built_in">UIKeyboardWillHideNotification</span> object:<span class="literal">nil</span>];</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)deregisterFromKeyboardNotifications</span><br><span class="line">&#123;</span><br><span class="line">    [[<span class="built_in">NSNotificationCenter</span> defaultCenter] removeObserver:<span class="keyword">self</span> name:<span class="built_in">UIKeyboardDidShowNotification</span> object:<span class="literal">nil</span>];</span><br><span class="line">    [[<span class="built_in">NSNotificationCenter</span> defaultCenter] removeObserver:<span class="keyword">self</span> name:<span class="built_in">UIKeyboardWillHideNotification</span> object:<span class="literal">nil</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>最後實作當鍵盤<code>出現/消失</code>的函式(selector)和替 UIScrollView 加入一個 IBOutlet 以方便當要捲動時設定，如果你覺得這些程式碼似曾相識因為他們是參考 Apple 官方文件而來的，如果你曾經搜尋過 <code>how to scroll a text field into view</code> 你應該也看過很多類似的程式碼。不過大部份的文章包含 Apple 的教學，當你需要轉動裝置時都會有一個 Bug 那就是他們取到了錯誤的鍵盤尺寸。相關問題可以參考<a href="http://stackoverflow.com/questions/9746417/keyboard-willshow-and-willhide-vs-rotation" target="_blank" rel="noopener">這篇Stackoverflow</a></p>
+<p>第一步我們透過<code>NSNotification</code>物件取得鍵盤的尺寸，接著使用 UIEdgeInsets 去偏移顯示區域，取得鍵盤的高度之後透過計算在呼叫 <code>scrollRectToVisible</code> 去捲動，程式碼如下</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">- (<span class="keyword">void</span>)keyboardWasShown:(<span class="built_in">NSNotification</span>*)notification</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">NSDictionary</span>* info = [notification userInfo];</span><br><span class="line">    <span class="built_in">CGRect</span> keyboardRect = [[info objectForKey:<span class="built_in">UIKeyboardFrameBeginUserInfoKey</span>] <span class="built_in">CGRectValue</span>];</span><br><span class="line">    keyboardRect = [<span class="keyword">self</span>.view convertRect:keyboardRect fromView:<span class="literal">nil</span>];</span><br><span class="line"></span><br><span class="line">    <span class="built_in">UIEdgeInsets</span> contentInsets = <span class="built_in">UIEdgeInsetsMake</span>(<span class="number">0.0</span>, <span class="number">0.0</span>, keyboardRect.size.height, <span class="number">0.0</span>);</span><br><span class="line">    <span class="keyword">self</span>.scrollView.contentInset = contentInsets;</span><br><span class="line">    <span class="keyword">self</span>.scrollView.scrollIndicatorInsets = contentInsets;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">CGRect</span> screenRect = <span class="keyword">self</span>.view.frame;</span><br><span class="line">    screenRect.size.height -= keyboardRect.size.height;</span><br><span class="line">    <span class="keyword">if</span> (!<span class="built_in">CGRectContainsPoint</span>(screenRect, <span class="keyword">self</span>.activeTextField.frame.origin) ) &#123;</span><br><span class="line">        [<span class="keyword">self</span>.scrollView scrollRectToVisible:<span class="keyword">self</span>.activeTextField.frame animated:<span class="literal">YES</span>];</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">- (<span class="keyword">void</span>)keyboardWillBeHidden:(<span class="built_in">NSNotification</span>*)notification</span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">UIEdgeInsets</span> contentInsets = <span class="built_in">UIEdgeInsetsZero</span>;</span><br><span class="line">    <span class="keyword">self</span>.scrollView.contentInset = contentInsets;</span><br><span class="line">    <span class="keyword">self</span>.scrollView.scrollIndicatorInsets = contentInsets;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h2 id="完整範例-Github"><a href="#完整範例-Github" class="headerlink" title="完整範例 Github"></a><a href="https://github.com/AndyYou/AutoLayoutWithUIScrollView" target="_blank" rel="noopener">完整範例 Github</a></h2><h2 id="其他補充"><a href="#其他補充" class="headerlink" title="其他補充"></a>其他補充</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">scrollView.contentInset</span><br><span class="line">這個屬性效果等於 CSS 中的 Padding 屬性，設定時使用 UIEdgeInsetsMake(0,0,0,0) 順序為上、左、下、右。</span><br></pre></td></tr></table></figure>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">CGRectContainsPoint(arg1, arg2) 判斷當 arg1(CGRect) 中有 arg2(CGPoint)時回傳 YES</span><br></pre></td></tr></table></figure>
+<h2 id="參考資料"><a href="#參考資料" class="headerlink" title="參考資料"></a>參考資料</h2><p><a href="http://spin.atomicobject.com/2014/03/05/uiscrollview-autolayout-ios/" target="_blank" rel="noopener">Using UIScrollView with Auto Layout in iOS</a><br><a href="http://www.cocoachina.com/iphonedev/sdk/2010/1224/2503.html" target="_blank" rel="noopener">UIScrollView 原理详解</a></p>
+
+        
+        </div>
+        <footer class="article-footer">
+            <div class="share-container">
+
+
+
+</div>
+
+    <a data-url="//andyyou.github.io/2014/08/09/ios-use-uiscrollview-autolayout/" data-id="cknx2z28x005g3m72jgwdo64y" class="article-share-link"><i class="fa fa-share"></i>分享到</a>
+<script>
+    (function ($) {
+        // Prevent duplicate binding
+        if (typeof(__SHARE_BUTTON_BINDED__) === 'undefined' || !__SHARE_BUTTON_BINDED__) {
+            __SHARE_BUTTON_BINDED__ = true;
+        } else {
+            return;
+        }
+        $('body').on('click', function() {
+            $('.article-share-box.on').removeClass('on');
+        }).on('click', '.article-share-link', function(e) {
+            e.stopPropagation();
+
+            var $this = $(this),
+                url = $this.attr('data-url'),
+                encodedUrl = encodeURIComponent(url),
+                id = 'article-share-box-' + $this.attr('data-id'),
+                offset = $this.offset(),
+                box;
+
+            if ($('#' + id).length) {
+                box = $('#' + id);
+
+                if (box.hasClass('on')){
+                    box.removeClass('on');
+                    return;
+                }
+            } else {
+                var html = [
+                    '<div id="' + id + '" class="article-share-box">',
+                        '<input class="article-share-input" value="' + url + '">',
+                        '<div class="article-share-links">',
+                            '<a href="https://twitter.com/intent/tweet?url=' + encodedUrl + '" class="fa fa-twitter article-share-twitter" target="_blank" title="Twitter"></a>',
+                            '<a href="https://www.facebook.com/sharer.php?u=' + encodedUrl + '" class="fa fa-facebook article-share-facebook" target="_blank" title="Facebook"></a>',
+                            '<a href="http://pinterest.com/pin/create/button/?url=' + encodedUrl + '" class="fa fa-pinterest article-share-pinterest" target="_blank" title="Pinterest"></a>',
+                            '<a href="https://plus.google.com/share?url=' + encodedUrl + '" class="fa fa-google article-share-google" target="_blank" title="Google+"></a>',
+                        '</div>',
+                    '</div>'
+                ].join('');
+
+              box = $(html);
+
+              $('body').append(box);
+            }
+
+            $('.article-share-box.on').hide();
+
+            box.css({
+                top: offset.top + 25,
+                left: offset.left
+            }).addClass('on');
+
+        }).on('click', '.article-share-box', function (e) {
+            e.stopPropagation();
+        }).on('click', '.article-share-box-input', function () {
+            $(this).select();
+        }).on('click', '.article-share-box-link', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            window.open(this.href, 'article-share-box-window-' + Date.now(), 'width=500,height=450');
+        });
+    })(jQuery);
+</script>
+
+            
+    
+
+        </footer>
+    </div>
+    
+        
+<nav id="article-nav">
+    
+        <a href="/2014/08/26/using-gulp-for-front-end-development-server/" id="article-nav-newer" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">上一篇</strong>
+            <div class="article-nav-title">
+                
+                    使用 Gulp 為前端開發伺服器
+                
+            </div>
+        </a>
+    
+    
+        <a href="/2014/08/08/turn-off-osx-notification-icon-animation-of-jump-jump/" id="article-nav-older" class="article-nav-link-wrap">
+            <strong class="article-nav-caption">下一篇</strong>
+            <div class="article-nav-title">關閉OSX通知時 ICON 跳跳跳的動畫</div>
+        </a>
+    
+</nav>
+
+
+    
+</article>
+
+
+    
+    <section id="comments">
+    
+    </section>
+
+</section>
+            
+                <aside id="sidebar">
+   
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">分類</h3>
+        <div class="widget">
+            <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/categories/Cloud/">Cloud</a><span class="category-list-count">12</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Database/">Database</a><span class="category-list-count">5</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Fun/">Fun</a><span class="category-list-count">1</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Mobile/">Mobile</a><span class="category-list-count">4</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Program/">Program</a><span class="category-list-count">132</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/System/">System</a><span class="category-list-count">13</span></li><li class="category-list-item"><a class="category-list-link" href="/categories/Tools/">Tools</a><span class="category-list-count">17</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">歸檔</h3>
+        <div class="widget">
+            <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/04/">四月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2021/03/">三月 2021</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/10/">十月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/09/">九月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/07/">七月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2020/05/">五月 2020</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/08/">八月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/07/">七月 2019</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/06/">六月 2019</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/05/">五月 2019</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2019/04/">四月 2019</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/11/">十一月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/06/">六月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/05/">五月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2018/03/">三月 2018</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/12/">十二月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/11/">十一月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/10/">十月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/09/">九月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/08/">八月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/07/">七月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/06/">六月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/05/">五月 2017</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/04/">四月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/03/">三月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/02/">二月 2017</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2017/01/">一月 2017</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/12/">十二月 2016</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/11/">十一月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/10/">十月 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/09/">九月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/08/">八月 2016</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/06/">六月 2016</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/05/">五月 2016</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/04/">四月 2016</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/03/">三月 2016</a><span class="archive-list-count">7</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/02/">二月 2016</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2016/01/">一月 2016</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/12/">十二月 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/11/">十一月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/10/">十月 2015</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/09/">九月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">八月 2015</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/07/">七月 2015</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">五月 2015</a><span class="archive-list-count">5</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/04/">四月 2015</a><span class="archive-list-count">19</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/12/">十二月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/11/">十一月 2014</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/10/">十月 2014</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/09/">九月 2014</a><span class="archive-list-count">17</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/08/">八月 2014</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/02/">二月 2014</a><span class="archive-list-count">12</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2014/01/">一月 2014</a><span class="archive-list-count">3</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/11/">十一月 2013</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/10/">十月 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/09/">九月 2013</a><span class="archive-list-count">4</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/08/">八月 2013</a><span class="archive-list-count">6</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2013/03/">三月 2013</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/03/">三月 2012</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2012/01/">一月 2012</a><span class="archive-list-count">2</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2011/11/">十一月 2011</a><span class="archive-list-count">3</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">標籤</h3>
+        <div class="widget">
+            <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/tags/net-mvc/">.net mvc</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/RoR/">RoR</a><span class="tag-list-count">15</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/api/">api</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/aws/">aws</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/azure/">azure</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bot/">bot</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/bundler/">bundler</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cache/">cache</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/carrier-wave/">carrier wave</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/centos/">centos</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/chrome/">chrome</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/cloudflare/">cloudflare</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/compass/">compass</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/css/">css</a><span class="tag-list-count">17</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/devise/">devise</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/dnd/">dnd</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/docker/">docker</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/e-invoice/">e-invoice</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/entity-framework/">entity framework</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/es6/">es6</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/facebook/">facebook</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/flux/">flux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/framework/">framework</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gcp/">gcp</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/go/">go</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/grunt/">grunt</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/gulp/">gulp</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/heroku/">heroku</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/html/">html</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/iisexpress/">iisexpress</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ios/">ios</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript/">javascript</a><span class="tag-list-count">70</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript-express-passport/">javascript express passport</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/javascript-nodejs/">javascript nodejs</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jekyll/">jekyll</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jetstream/">jetstream</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jspm/">jspm</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/jwt/">jwt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/laravel/">laravel</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/letsencrypt/">letsencrypt</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/linux/">linux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mechanism/">mechanism</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/mongodb/">mongodb</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/node/">node</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/nodejs/">nodejs</a><span class="tag-list-count">7</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/oocss/">oocss</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/osx/">osx</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/package-manager/">package manager</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/php/">php</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/postgres/">postgres</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/postgresql/">postgresql</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/queue/">queue</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rabbitmq/">rabbitmq</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rack-server/">rack server</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails/">rails</a><span class="tag-list-count">6</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/rails-webpack-stimulus-javascript-bootstrap/">rails webpack stimulus javascript bootstrap</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/raspberry-pi/">raspberry-pi</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react/">react</a><span class="tag-list-count">9</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/react-native/">react native</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/reactjs/">reactjs</a><span class="tag-list-count">32</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/redux/">redux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ruby/">ruby</a><span class="tag-list-count">18</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/sass/">sass</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/selenium/">selenium</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/slim/">slim</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssh/">ssh</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ssl/">ssl</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/stimulus/">stimulus</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/svg-javascript/">svg javascript</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/task-runner/">task runner</a><span class="tag-list-count">3</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tmux/">tmux</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/tools/">tools</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/ubuntu/">ubuntu</a><span class="tag-list-count">2</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vm/">vm</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vue/">vue</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/vuejs/">vuejs</a><span class="tag-list-count">5</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/webpack/">webpack</a><span class="tag-list-count">4</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/windows/">windows</a><span class="tag-list-count">1</span></li><li class="tag-list-item"><a class="tag-list-link" href="/tags/xml/">xml</a><span class="tag-list-count">1</span></li></ul>
+        </div>
+    </div>
+
+    
+        
+    <div class="widget-wrap">
+        <h3 class="widget-title">標籤雲</h3>
+        <div class="widget tagcloud">
+            <a href="/tags/net-mvc/" style="font-size: 10px;">.net mvc</a> <a href="/tags/RoR/" style="font-size: 16.67px;">RoR</a> <a href="/tags/api/" style="font-size: 10px;">api</a> <a href="/tags/aws/" style="font-size: 12.5px;">aws</a> <a href="/tags/azure/" style="font-size: 10.83px;">azure</a> <a href="/tags/bot/" style="font-size: 10px;">bot</a> <a href="/tags/bundler/" style="font-size: 10.83px;">bundler</a> <a href="/tags/cache/" style="font-size: 10px;">cache</a> <a href="/tags/carrier-wave/" style="font-size: 10.83px;">carrier wave</a> <a href="/tags/centos/" style="font-size: 10px;">centos</a> <a href="/tags/chrome/" style="font-size: 10px;">chrome</a> <a href="/tags/cloudflare/" style="font-size: 10px;">cloudflare</a> <a href="/tags/compass/" style="font-size: 10px;">compass</a> <a href="/tags/css/" style="font-size: 17.5px;">css</a> <a href="/tags/devise/" style="font-size: 10px;">devise</a> <a href="/tags/dnd/" style="font-size: 10px;">dnd</a> <a href="/tags/docker/" style="font-size: 10.83px;">docker</a> <a href="/tags/e-invoice/" style="font-size: 10px;">e-invoice</a> <a href="/tags/entity-framework/" style="font-size: 10px;">entity framework</a> <a href="/tags/es6/" style="font-size: 11.67px;">es6</a> <a href="/tags/facebook/" style="font-size: 10px;">facebook</a> <a href="/tags/flux/" style="font-size: 10px;">flux</a> <a href="/tags/framework/" style="font-size: 10.83px;">framework</a> <a href="/tags/gcp/" style="font-size: 10.83px;">gcp</a> <a href="/tags/go/" style="font-size: 10px;">go</a> <a href="/tags/grunt/" style="font-size: 12.5px;">grunt</a> <a href="/tags/gulp/" style="font-size: 11.67px;">gulp</a> <a href="/tags/heroku/" style="font-size: 14.17px;">heroku</a> <a href="/tags/html/" style="font-size: 10.83px;">html</a> <a href="/tags/iisexpress/" style="font-size: 10px;">iisexpress</a> <a href="/tags/ios/" style="font-size: 11.67px;">ios</a> <a href="/tags/javascript/" style="font-size: 20px;">javascript</a> <a href="/tags/javascript-express-passport/" style="font-size: 10px;">javascript express passport</a> <a href="/tags/javascript-nodejs/" style="font-size: 10px;">javascript nodejs</a> <a href="/tags/jekyll/" style="font-size: 10.83px;">jekyll</a> <a href="/tags/jetstream/" style="font-size: 10px;">jetstream</a> <a href="/tags/jspm/" style="font-size: 10px;">jspm</a> <a href="/tags/jwt/" style="font-size: 10px;">jwt</a> <a href="/tags/laravel/" style="font-size: 11.67px;">laravel</a> <a href="/tags/letsencrypt/" style="font-size: 10px;">letsencrypt</a> <a href="/tags/linux/" style="font-size: 10px;">linux</a> <a href="/tags/mechanism/" style="font-size: 10px;">mechanism</a> <a href="/tags/mongodb/" style="font-size: 10.83px;">mongodb</a> <a href="/tags/node/" style="font-size: 10px;">node</a> <a href="/tags/nodejs/" style="font-size: 15px;">nodejs</a> <a href="/tags/oocss/" style="font-size: 10px;">oocss</a> <a href="/tags/osx/" style="font-size: 14.17px;">osx</a> <a href="/tags/package-manager/" style="font-size: 14.17px;">package manager</a> <a href="/tags/php/" style="font-size: 10.83px;">php</a> <a href="/tags/postgres/" style="font-size: 10px;">postgres</a> <a href="/tags/postgresql/" style="font-size: 10.83px;">postgresql</a> <a href="/tags/queue/" style="font-size: 10.83px;">queue</a> <a href="/tags/rabbitmq/" style="font-size: 10.83px;">rabbitmq</a> <a href="/tags/rack-server/" style="font-size: 10px;">rack server</a> <a href="/tags/rails/" style="font-size: 14.17px;">rails</a> <a href="/tags/rails-webpack-stimulus-javascript-bootstrap/" style="font-size: 10px;">rails webpack stimulus javascript bootstrap</a> <a href="/tags/raspberry-pi/" style="font-size: 10px;">raspberry-pi</a> <a href="/tags/react/" style="font-size: 15.83px;">react</a> <a href="/tags/react-native/" style="font-size: 10px;">react native</a> <a href="/tags/reactjs/" style="font-size: 19.17px;">reactjs</a> <a href="/tags/redux/" style="font-size: 10px;">redux</a> <a href="/tags/ruby/" style="font-size: 18.33px;">ruby</a> <a href="/tags/sass/" style="font-size: 10.83px;">sass</a> <a href="/tags/selenium/" style="font-size: 10px;">selenium</a> <a href="/tags/slim/" style="font-size: 10px;">slim</a> <a href="/tags/ssh/" style="font-size: 10px;">ssh</a> <a href="/tags/ssl/" style="font-size: 10.83px;">ssl</a> <a href="/tags/stimulus/" style="font-size: 10px;">stimulus</a> <a href="/tags/svg-javascript/" style="font-size: 11.67px;">svg javascript</a> <a href="/tags/task-runner/" style="font-size: 11.67px;">task runner</a> <a href="/tags/tmux/" style="font-size: 10px;">tmux</a> <a href="/tags/tools/" style="font-size: 10px;">tools</a> <a href="/tags/ubuntu/" style="font-size: 10.83px;">ubuntu</a> <a href="/tags/vm/" style="font-size: 10px;">vm</a> <a href="/tags/vue/" style="font-size: 10px;">vue</a> <a href="/tags/vuejs/" style="font-size: 13.33px;">vuejs</a> <a href="/tags/webpack/" style="font-size: 12.5px;">webpack</a> <a href="/tags/windows/" style="font-size: 10px;">windows</a> <a href="/tags/xml/" style="font-size: 10px;">xml</a>
+        </div>
+    </div>
+
+    
+    <div id="toTop" class="fa fa-angle-up"></div>
+</aside>
+            
+        </div>
+        <footer id="footer">
+    <div class="outer">
+        <div id="footer-info" class="inner">
+            &copy; 2021 andyyou(You,ZongYan)
+        </div>
+    </div>
+</footer>
+
+        
+
+    
+        <script src="/lib/lightgallery/js/lightgallery.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-thumbnail.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-pager.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-autoplay.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-fullscreen.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-zoom.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-hash.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-share.min.js"></script>
+        <script src="/lib/lightgallery/js/lg-video.min.js"></script>
+    
+    
+
+
+
+<!-- Custom Scripts -->
+<script src="/js/main.js"></script>
+
+    </div>
+</body>
+</html>

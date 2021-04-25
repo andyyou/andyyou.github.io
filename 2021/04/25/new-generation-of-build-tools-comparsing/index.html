@@ -27,7 +27,7 @@
 <meta property="og:image" content="https://i.imgur.com/4Q8jfcL.png">
 <meta property="og:image" content="https://i.imgur.com/RYDqioS.png">
 <meta property="og:image" content="https://i1.wp.com/css-tricks.com/wp-content/uploads/2021/03/s_864795E8DFCEBDF45A714B0A68D25726C4192DC77A541292A7CD86FFCB3E5238_1614545243859_wmr-in-browser.png?w=655&ssl=1">
-<meta property="og:updated_time" content="2021-04-25T11:10:31.380Z">
+<meta property="og:updated_time" content="2021-04-25T11:31:11.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="新世代建置工具解析(esbuild、Snowpack、Vite、wmr)">
 <meta name="twitter:description" content="本文為翻譯自 Comparing the New Generation of Build Tools 一文加上更新補充。因建置工具更新速度關係，如遇部分內容無法實作不不一致請參考各官方文件。  過去的一年出現了一堆新的開發工具，它們緊跟著那些目前佔據前端世界的建置工具例如：webpack，Babel，Rollup，Parcel，create-react-app。 這些新工具的目的並不是實現一模一">
@@ -292,7 +292,7 @@ ga('send', 'pageview');
 </ul>
 <p>這些新工具都可以編譯 TypeScript 為 JavaScript，但即便型別錯誤還是會繼續編譯。針對型別檢查您可以安裝 TypeScript 然後執行 <code>tsc --noEmit</code> 或者在您的編輯器安裝套件來檢查。</p>
 <h2 id="esbuild"><a href="#esbuild" class="headerlink" title="esbuild"></a>esbuild</h2><p>esbuild 是 <a href="https://github.com/evanw" target="_blank" rel="noopener">Evan Wallace</a> （ Figma 的 CTO）開發的。其主要目的為提升建置速度，比起基於 Nodejs 的工具可達到  10 到 100 倍快。跟像是 create-react-app 這類型的工具比起來和開發體驗沒什麼太大關係，但後續出現了很多基於 esbuild 建置的工具，它們補上了其他功能例如 create-react-app-esbuild，estrella，Snowpack。它們都是使用 esbuild 來編譯程式碼。</p>
-<p>esbuild 目前還沒 1.0 算是蠻新的專案，不建議直接使用在正式版本使用，但離 1.0 應該不遠了。同時 esbuild 搭配智能預設值提供了直觀的指令介面 API 。</p>
+<p>esbuild 目前還沒 1.0 算是蠻新的專案，不建議直接在正式專案使用，但離 1.0 應該不遠了。同時 esbuild 搭配智能預設值提供了直觀的指令介面 API 。</p>
 <h3 id="適用情境"><a href="#適用情境" class="headerlink" title="適用情境"></a>適用情境</h3><p>esbuild 顛覆了前端工具的世界。在大型專案中增加了幾倍的編譯速度是非常實用的。將來 1.0 版本的時候，估計可以為大型專案提供不少幫助，大量減少等待編譯的時間。</p>
 <p>目前還是等待穩定版本再使用在專案的正式版本，但您的一些非正式專案可以開始使用。</p>
 <p>esbuild 的超快速度無論您在開發什麼類型的專案都能有所幫助。減少等待建置的時間對於開發體驗肯定是加分的。如果考慮到加速應用程式的開發您也許想從其他比 esbuild 高階的工具起手。不然您還是需要花時間安裝相依套件和設定專案。另外一提如果想要盡可能最小化編譯檔案的大小，使用 Rollup 和 terser，它們產出的檔案稍微小一點。</p>

@@ -1,0 +1,855 @@
+---
+layout: post
+title:  "Compass 使用筆記"
+date: 2015-04-04 12:00:00
+categories: Program
+tags: [sass, compass]
+---
+
+## Compass Note
+* 4 個關鍵的功能 變數, mixin, 繼承, 巢狀 selector
+* sass 透過變數 `$` 來減少重複與達到管理樣式的能力，與 less 的 `@` 是一樣的 e.g. `$variable`
+* 透過 mixin 就可以減少重複 selector ，且一般我們如果要追加某種共用樣式可能要多加一個 class 在 sass 中可以透過 mixin 來處理這個問題
+
+<!--more-->
+
+~~~css
+ul.horizontal-list {
+    float: left;
+    padding-left: 1em;
+}
+
+#header ul.nav {
+    color: white;
+}
+
+#footer ul.nav {
+    color: black;
+}
+~~~
+
+就可以換成
+
+~~~css
+@mixin horizontal-list {
+    float: left;
+    padding-left: 1em;
+}
+
+#header ul.nav {
+    @include horizontal-list;
+    color: white;
+}
+
+#footer ul.nav {
+    @include horizontal-list;
+    color: black;
+}
+~~~
+
+* mixin 也可以使用參數，把其當作一個 function 來宣告並使用，宣告時用 @mixin 前綴詞，引用時用 @include
+* 透過在 scss 內部加入 `@extend` 來繼承，繼承的原理就只是把 @extend 的父元素名稱複製一份加到 @extend .list 中的 list
+
+~~~css
+.error {
+    color: red;
+}
+
+.validate-error {
+    @extend: .error;
+}
+~~~
+
+* extend 後面記得是 `.class`
+* sass 3.2 後有一種 placeholder selector 用 `%` 就是該 class 是不會輸出的
+
+~~~css
+%base {
+    color: red;
+}
+
+.header {
+    @extend %base;
+}
+~~~
+
+* `placeholder selector` 的用途是避免多產生多餘的樣式，以免干擾 CSS
+* 如果 placeholder selector 沒有被繼承那麼所有片段程式碼都不會被輸出
+* 簡言之 Compass 是一個 Sass Framework 作用是讓撰寫 Sass 更有效率更快速
+* 就像 Rails 之於 Ruby , Compass 之於 Sass
+* Compass 是由三個主要的部分組成的
+  1. mixins, utilities 函式庫
+  2. 一個和應用程式整合的環境
+  3. 一個平台用來建置套件和 framework
+
+## 操作
+建立專案
+
+~~~css
+compass create project-name
+~~~
+
+compass 幫你建立了一個 `config.rb`, `sass 目錄`, `stylesheets 目錄` 其中 stylesheets 是用來輸出 css 的地方
+
+`compass unpack extension-name` 可以把套件解壓縮到專案目錄 `extensions/`
+`compass stats` 查閱目前樣式狀態
+
+`@import "compass/reset"` 可以載入 Eric Meyer 的 reset.css
+
+而 compass 有把 reset 拆成比較小的 mixin 如: @include reset-body;
+
+* Grid system 最有名的兩套分別是 Bluepint and 960Grid
+簡單的說 Grid system 就是透過 columns 和 gutter 來設定欄位和區間，原本你可能需要數學計算分配而透過這些 framework 你只需要指定所佔的欄位數即可。
+
+* Compass 支援 Grid system 中的功能把其變成 mixin 於是你就只要在原本具有的語義 class 中 @include 就好
+如此一來就不需要追加 class
+
+
+## Blueprint
+* .container width: 950px
+* column 設定方式為 span-1, span-x 預設共 24 欄
+* compass 現在已經移除 blueprint 如果要再用需要 `gem install compass-blueprint` 接著在 config.rb 加入 `require "copass-blue"`
+* compass 把 blueprint 抽成 mixin 所以只需要在要套用的樣式中 @include column(2)
+
+## zebra-stripe Table helpers
+
+~~~css
+@import "compass/reset";
+@import "compass/utilities/tables";
+
+table {
+  $table-color: #666;
+  @include table-scaffolding;
+  @include inner-table-borders(1px, darken($table-color, 40%));
+  @include outer-table-borders(2px);
+  @include alternating-rows-and-columns($table-color, adjust-hue($table-color, -120deg), #222222);
+}
+~~~
+
+* 載入 css3 函式庫
+
+~~~css
+@import 'compass/css3';
+.rounded {
+  @include border-radius(5px);
+}
+
+/* 單個圓角 */
+.rounded-one {
+  @include border-corner-radius(top, left, 5px);
+}
+~~~
+
+* Sass 的變數是有 scope 的
+* 舊版的 Sass 變數採用 `!` 不過因為不好看就改成 `$`
+* 當宣告完變數之後本身並沒有任何影響，除非你開始套用變數
+* CSS 的命名規則是只有 _ 和英文字為開頭後面可用一般英數，使用 `-` 連接時視為單一字的語意 e.g. $dark-color 而不是 $dark_color 用 `_` 則表示兩個單字的語義
+* 在 Sass 中 `-` 和 `_` 是可以互換的 $blue-color 和 $blue_color 都可以指向同一個變數，包含 mixin 和 function 除了變數, mixin, function 之外其他 .class 的地方則不能通用
+* & 在 nested selector 中代表的是 parent. 所以除了一般
+
+~~~css
+/* 除了一般 */
+.foo {
+  &:hover {
+    color: red;
+  }
+}
+<!--也可以-->
+.foo {
+  .bar & {
+    color: blue;
+  }
+}
+~~~
+
+* selector nesting 還可以用在樣式
+
+~~~css
+.nav {
+  border: {
+    color: red;
+    width:1px;
+    style: solid;
+        }
+}
+border: 1px solid #ccc {
+  left: 0px;
+  0pright: 0px;
+}
+~~~
+
+* 在變數後面加上 `!default` 的意思是如果載入的的檔案中有人先定義了那就不複寫
+* 一般來說在 Sass 中 `@import` 是說在 compile 時期去把對應的檔案載入一起編譯而不是原來的 CSS import 不過在三種狀況下會使用原來 CSS 的 import
+  1. 後面接 `.css` 副檔名
+  2. http 的檔案路徑
+  3. 使用 `url()`
+* 如果有一隻 CSS 又想要用 sass 的 @import 那就直接把副檔名換成 `.scss`
+* 在原生 CSS 中所有註解都會顯示但在 sass 中提供一種 silent comments 的機制
+* `//` 註解就是 silent comment 一般是不會被輸出的
+* `/*...*/` 則會輸出，不過如果該註解被放在一些地方則不會被輸出
+
+~~~css
+body {
+  color /* This won't appear in the CSS */: #333;
+  padding: 1em; /* Nor will this */ 0;
+}
+~~~
+
+* 當需要重複的不再只是單純得值，而是一小段樣式的時候就該使用 mixin
+* 區分何時該用 mixin 何時該用 .class 的區別，通常如果你能夠給一些樣式集一個有意義的名稱且在不同的 .class 中套用那就應該用 mixin e.g. rounded-corner
+  而 .class 是用在 html 裡面的， mixin 適用在 css 裡面的
+* 依照 Sass 的觀念 mixin 用來描述外觀，而 .class 需要有語意
+* mixin 參數用 `,` 隔開
+
+~~~css
+@mixin link-color($normal, $hover, $visited) {
+  color:$normal;
+  &:hover { color:$hover; }
+  &:visited {color:$visited; }
+}
+~~~
+
+* @include mixin 時參數可以帶名稱和預設值
+* 一直用 mixin 會導致 CSS 越來越大，有效的利用繼承可以減少程式碼
+
+* @extend 繼承的功用
+
+~~~css
+.disabled {
+  color: gray;
+  @extend a;
+}
+~~~
+
+* 繼承簡單來說就是把被繼承的 selector 複製一份加入繼承元素的 selector group
+
+~~~css
+a {
+  color: blue;
+}
+
+.disabled {
+  @extend a;
+}
+
+<!--will turn to -->
+a, .disabled {
+  color: blue;
+}
+~~~
+
+* @extend 的時候不能指定 `.a .b` 一次只能指定一個 selector 或 placeholder selector
+
+~~~css
+.a .b {
+  color:red;
+}
+
+.c {
+  @extend .a // 可以
+  @extend .a.b // 可以
+  @extend .a .b // 錯誤
+}
+~~~
+
+* 儘量讓 @extend 繼承保持單純不要去 @extend 已經在巢狀內部的 selector
+* 透過 @import 整合成一隻檔案避開傳統 css @import 效能低落的問題
+* `$x: red !default;` 預設變數的跟 !important 相反，如果有直就不覆蓋
+* `_` 和 `-` 可以互相替換，變數, mixin, function 都可以，不過 selector 就不行了
+* mixin 讓我們可以在 sass 裡面把表現層的語義保留在 sass 內部而不用為了增加外觀樣式追加 .class
+* extend 就是擴展 selector group，盡量不要在多重 nest 中使用 extend ，僅僅在有關係的語義上使用可以避免混亂
+
+## Grid system
+* Grid 是從印刷術出現就開始有的近幾年引入 web design
+* 簡單說其目的就是提供統一的欄位與間隔留白讓所有內容遵循規則來達成好閱讀，有設計感的目的
+* 在 web 中 grid 就只是一些簡單的數學除法 用來計算 content 和 container
+* Grid 技術上使用了 3 種東西來設計 column 測量內容的垂直單位, container 容器包含著一個柵格系統, gutter 統一的間距在每個 column 之間
+* sass 裡面是可以用 for 的用法如下
+
+~~~css
+@for $n from 1 to 10 {
+  .span-#{$n} {
+    @extend .column;
+    width: span($n);
+  }
+}
+.span-#{$blueprint-grid-columns} {
+  @extend .column;
+  width: span($blueprint-grid-columns);
+  margin: 0;
+}
+~~~
+
+* Sass 跟 Less 一樣都能用 `#{$variable}` 來取代 selector 或者 properties
+* ceil 無條件進位
+* floor 無條件捨去
+* round 四捨五入
+* compass create project --using blueprint/basic 只建立最基本的 blueprint 只提供 span() 等 function
+* compass create project --using blueprint/semantic 有提供 column 來建立欄位
+*`@include column($content-columns, true);` true 是 `last` 就是沒有 margin-right: 10px 那段
+
+## 960 Grid
+* 960Grid 和 Blueprint 第一個差異是 960Grid 的 column 兩邊都有 gutter
+* 在 960gs 中 container 變成 `container_12` 而 `span-1` 變成 `grid_1`
+* 在 960gs 不像 blueprint 需要在 row 最後一個 column 加上 last 他會自動斷行，不過如果需要強制斷行就要用 `omega`
+
+## 安裝外掛
+* `gem install compass-plugin` 接著在 `config.rb` require
+* compass create project -r x --using 960  其中 `-r` 是 require 某 lib ，而 `--using` 是套用某 framework 到該專案
+* blueprint 用 span() function 和語意版的 column() 來做欄位切分而 960gs 則是用 grid()
+
+* grid system 還有一個重要的部分就是 vertical rhythm, column 用來做垂直分配 column 而 vertical rhythm 則用來控制水平 row 之間的間距
+
+## vertical rhythm
+* 用 compass 來處理 vertical rhythm 第一步就是先載入 `compass/typography"
+* 宣告 `$base-font-size` `base-line-height` `@include establish-baseline`
+* 接著用 `@include adjust-font-size-to(48px);`
+* 要在上下追加空白 `@include leader(2)` or `@include trailer(1)` 底層的原理是透過一樣的計算方式追加 margin
+* leader(2) 裡面的數字是 baseline 的倍數
+* leader, trailer 用的是 margin
+* padding-leader, padding-trailer 是用 padding
+
+
+~~~css
+@import "compass/typography";
+$base-font-size: 16px;
+$base-line-height: 24px;
+@include establish-baseline;
+
+h1 {
+  @include adjust-font-size-to(24px);
+}
+~~~
+
+
+## compass common helpers
+* 其他筆記 table 要消除預設的 border 間距
+
+~~~css
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+~~~
+
+* 載入 reset.css 只要 @import "compass/reset"
+* 或者
+
+~~~css
+@import "compass/reset/utilities";
+@include global-reset;
+~~~
+
+* 又或者要個別使用每個小段落
+* `reset-html5` 讓 html5 新標籤 display: block;
+* `reset-box-model` 移除 margin, padding, borders
+* `reset-font` 設定 font-size 和 line-height
+* `reset-focus` 移除 outline 例如 input 的樣式
+* `reset-table, reset-table-cell` 設定 table 的 border 和 alignment
+* `reset-quotation` 特別為 blockquotes 設定
+* 截斷文字
+
+~~~css
+.truncate {
+  wihte-space:nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+~~~
+
+* 超連結樣式，截斷文字，清單樣式 這些功能都需要先 `@import "compass/typography"`
+* 最佳實踐關於超連結的 pseudo selector 的順序應該是
+  1. a
+  2. :visited
+  3. :focus
+  4. :hover
+  5. :active
+* 不過 compass 提供的 link-color 的參數是根據開發者常用的習慣
+* link-colors($normal, $hover, $active, $visited, $focus)
+* 帶參數名稱如下
+
+~~~css
+a { @include link-colors(
+           #333,
+           $hover: #00f,
+           $active: #f00,
+           $visited: #555,
+           $focus: #f00);
+}
+~~~
+
+* 不過根據 80/20 法則我們一般開發時最常用的狀況是 `a { @include link-colors(#333, #00f); }` 就是設定一般顏色和 hover 顏色而已
+* a {@include hover-link} 單純在 hover 時幫你的 link 加底線
+* `@include unstyled-link` 幫你把連結的樣式全部去除，編譯後的 CSS 如下
+
+~~~css
+p.secret a,
+p.secret a:hover,
+p.secret a:focus {
+  color: inherit;
+  cursor: inherit;
+  text-decoration: inherit
+}
+~~~
+
+## List
+* background-position: right 30px bottom 10px 也可以這樣設定
+* background-position 若用百分比的話不是以外框來計算而是以中心點
+
+* 在處理圖片清單時因為 IE 的 list-style-image 有 bug 所以一般的做法都是如下
+
+~~~css
+ul.features li {
+  background: url(/images/pretty-bullet.png) 5px 5px no-repeat;
+  list-style-type: none;
+  padding-left:20px;
+}
+~~~
+
+* 不過你就需要根據圖片大小計算 background-position `(padding - image width)/2`
+* compass 提供了 `@include pretty-bullets('pretty-bullet.png')` 方法讓你可以快速製作圖片清單
+* 同時也提供 $height, $width, $line-height, and $padding 參數給你設定
+
+~~~css
+ul.features {
+  @include pretty-bullets('pretty-bullet.png',
+             $padding: 10px,
+             $line-height: 22px)
+}
+~~~
+
+* 注意在 compass 中我們設定圖片不指定完整路徑只要給 檔名+副檔名即可
+* mixin 內部 compass 自己有用 `image-url` helper
+* 因為在 IE 8 以前光用 `list-style: none` 是無法去除 list 樣式的還要額外加上 `list-style-image: none; list-style-type: none; margin: 0;`
+  所以 compass 另外提供了 `@include no-bullets` 來消除樣式
+* 注意無論 pretty-bullets 或者 no-bullets 都有單複數的用法差別是加上 s 會影響所有子元素，不加 s 只會影響一層
+* @include horizontal-list 可以快速做出水平的清單
+* horizontal-list($padding, $direction)
+* `@include delimited-list` 把項目 inline 並且在中間加上 `,`
+
+~~~css
+ul.words { @include delimited-list("! ") }
+~~~
+
+* 截斷文字 `@include ellipsis;`
+* 不換行 `@include nowrap`
+* `text-indent` 文字縮排
+* 直接用圖片取代文字 `@include replace-text("coffee-header.png")`
+* replace-text-with-dimensions 根據圖片尺寸修改元素尺寸
+
+## Layout helper
+* 要用 sticky footer 和延展元素的 Helper 就需要先載入 `compass/layout`
+* 果直接用 fixed 把 footer 定在 bottom 在 IE6 會死必須要設定 body height:100%;
+* sticky footer -> `@include sticky-footer(40px, "#content", "#footer", "#sticky-footer");` #footer 放在 #content 內部是用來撐開內容避免和 #sticky-footer 重疊
+* stretch 擴展元素
+
+~~~css
+a.login { @include stretch(5px, 5px, 5px, 5px) }
+/* 編譯成 */
+a.login {
+          position: absolute;
+          top: 5px; right: 5px; bottom: 5px; left: 5px;
+}
+~~~
+
+## css3
+* 要用 css3 功能要先 @import "compass/css3"
+* 舉例來說 @include border-radius(5px) 會幫你把所有瀏覽器的 prefix 都加進去，所以檔案一定會變大，如果要減少你可以設定
+
+~~~css
+@import "compass/css3";
+$experimental-support-for-opera: false;
+$experimental-support-for-khtml: false;
+$experimental-support-for-microsoft:false;
+~~~
+
+設定成 false，compass 就會忽略不加 prefix
+
+
+* `@include border-radius(10px);` 圓角
+
+## line-height
+* 有 5 種方式定義 line-height
+  1. normal 是第一種預設是 1 - 1.2
+  2. inherit 繼承 parent
+  3. 百分比
+  4. px, em  等單位
+  5. 純數字
+* 這五種定義的方式可以用縮寫跟在 font 後面
+
+~~~css
+body {
+  font: 100%/normal arial;
+}
+~~~
+
+* CSS 的繼承又分成 絕對繼承和相對繼承
+* 例如 color 在 parent 設定了之後子元素都會繼承，這種稱為絕對繼承
+* font-sizez 為相對繼承，例如 body 12px 子元素 h1 `font-size: 120%` 就會拿 12px * 1.2 = 14.4
+* [繼承列表](http://www.w3.org/TR/CSS21/propidx.html)
+* line-height 的繼承比較複雜
+* `@include text-shadow($color, $x, $y, $blur)` mixin 來做陰影
+* `box-shadow` 和 `text-shadow` 都有 mixin 可以用
+* 使用 shadow 時可以設定預設值這樣就不用全部一個一個設定
+
+~~~css
+$shadow-color:#ccc
+$shadow-h:5px;
+$shadow-v:5px;
+$shadow-blur:0;
+
+$default-text-shadow-color: $shadow-color;
+$default-text-shadow-h-offset: $shadow-h;
+$default-text-shadow-v-offset: $shadow-v;
+$default-text-shadow-blur: $shadow-blur;
+
+$default-box-shadow-color: $shadow-color;
+$default-box-shadow-h-offset:$shadow-h;
+$default-box-shadow-v-offset: $shadow-v;
+$default-box-shadow-blur: $shadow-blur;
+~~~
+
+## 漸層
+* 漸層的顏色方向 0deg 和 360 deg 方向是往上，90deg 往右 順時針以此類推至於顏色的百分比則是到該點前都是這個顏色，顏色的百分比把它當成點即可
+* 在 compass 裡面用漸層如下
+
+~~~css
+#pattern {
+  @include background(
+    linear-gradient(360deg, red 0%, blue 100%)
+  )
+}
+~~~
+
+
+
+
+## line-height 繼承的例子
+
+~~~html
+<html>
+  <head>
+  <style>
+  body { font-size: 16px;  line-height:120%;}
+  h1 { font-size: 32px; }
+  p {font-size: 12px;}
+  #footer { font-size:12px;}
+  </style>
+  </head>
+  <body>
+    <h1> Level - h1 </h1>
+    <p> Lorem ipsum dolor sit amet co </p>
+    <div id='footer'>
+      This is footer foobar.
+    </div>
+  </body>
+</html>
+~~~
+
+* 當大家都有 font-size 然後 line-height 在父元素用百分比時如上 16px * 120% = 19.2px 所以底下的子元素都會套用這個 line-height
+* line-height 是設定 content-area 跟 inline-box 是兩個東西
+* 因為繼承的關係所以 line-height 最好用純數字，因為其會根據 font-size 做計算
+
+
+* font-face 可以用來指定字體來源
+* 在 compass 中使用 font-face
+
+~~~css
+@import "compass";
+@include font-face("FontName",
+                    "FontName.woff", woff, "FontName.ttf", ttf)
+~~~
+
+
+* compass 可以透過 PIE.htc 來支援 IE6 以前的瀏覽器使用方法是先安裝 `compass install compass/pie`
+
+~~~css
+@import "compass/css3/pie";
+.pie-element {
+  @include pie-element(relative);
+}
+
+.rounded {
+  @include pie;
+  @include border-radius(20px);
+}
+~~~
+
+## CSS sprites
+* 為什麼要用 sprite 第一點降低下載的次數，第二當 web 需要換圖片路徑時不管網路速度多快還是會閃爍
+* compass 產的 sprite 只能夠用 png
+* 要用 compass 幫你產 sprites 第一步需要先 `@import "compass/utilities/sprites";`
+* 第二步只要 `@import "icons/*.png"` 只要 import 該目錄底下的圖片即可就可以讓 compass 幫你產 sprite map 的圖片而已，注意不要路徑不要全帶。
+  以 @import "icons/*.png" 這個範例接著 compass 就會去把 images/icons/ 底下的 png 都合體產出一張 icons-xxxxxx.png 的圖片在 /images 中
+  預設 sprites 會用垂直排列的方式
+* 第三步我們要產出 spriting css 就是對應取得圖片的 css ，compass 提供兩種方式產出這些 css
+  1. @include all-icons-sprites; // 中間是 map name 接著就會全部寫入 css
+  2. @include <map>-sprite($name) // 前面是 map name 後面參數是要產出的圖片檔名，這種方式不能用在全域只能套用在某個 .class 內部。
+* 通常 map name 就是目錄的名稱
+* 當我們用 @include all-icons-sprites 把所有 css 的樣式產出之後就可以用 `icons-filename` 去套用該圖片
+* 預設來說 compass 不會幫我們設定 width, height
+* 通常我們在套用 sprite 的時候建議用 @extend ，因為產出是 .class
+* 如果要使用 mixin 就要改成下面的寫法，注意這種方式只會產出內部的 properties 就是樣式 rules
+`單一 mixin 的方式只能寫在 selector 內部`
+
+~~~css
+@import "compass/utilities/sprites";
+@import "icons/*.png";
+
+.add-button {
+  @include icons-sprite(box-add);
+}
+~~~
+
+* 當把圖片放在巢狀目錄內的時候 e.g. `images/icons/whats` 那麼 sprites 會在該目錄先產出一張圖片命名規則一樣 `what-<hashcode>.png`，不過 mixin, variable, function 則會用最後一層的目錄名稱
+* 可以使用 map 的名稱即目錄名稱加上屬性來針對該 sprite 設定
+
+~~~css
+$<map>-<property>: setting;
+$<map>-<sprite>-<property>: setting;
+$<目錄名稱>-<圖片名稱>-<屬性>: 設定值;
+
+$icons-spacing: 10px;
+~~~
+
+* `注意：這些變數必須被定義在圖片匯入 @import 之前否則他們不會產生效果`
+* $icons-spacing 可以在 sprite 周圍加透明的 padding
+* $icons-repeat: repeat-x; 可以設定圖片是否要重複
+* compass 不支援垂直重複，所以沒有 `repeat-y` 可以設定
+* 透過 `$<map>-position: 0px` 來達到 offset ，注意的是百分比%會跟 CSS 的 position 一樣並不是用最左邊界來計算也就是說如果設定 100% 會剛好貼齊右邊
+
+## sprite map layout
+
+* 除了預設的垂直排列外 compass 還提供了不同的組圖方式
+* `$<map>-layout: vertical/horizontal/diagonal/smart`
+* `$icons-layout:smart` 用 smart ，compass 會用最少的空間去排列組合 sprites
+* 注意一旦使用了 smart 就不能用 position 和 repeat 這兩個屬性只能給 vertical 和 horizontal 使用
+* compass 預設會自動清除過期或不用的圖片，不過如果你不想清除可以設定 `$<map>-clean-up: true/false`
+* 預設 compass 產出的 sprite 是沒有帶尺寸的 postion 會自動根據圖片的大小去排列但如果要加上尺寸也是可以如下設定，注意他們是 helper function 不是設定值
+
+~~~css
+<map>-sprite-height($name);
+<map>-sprite-width($name);
+
+@import "icons/*.png";
+.next {
+  @include icons-sprite(arrow);
+  width: icons-sprite-width(arrow);
+  height: icons-sprite-height(arrow);
+}
+~~~
+
+* 或者全部都要加上尺寸 `$<map>-sprite-dimensions: true/false`
+* 當然我們也可以替所有的 sprite 加上基本的樣式 .class
+
+~~~css
+$<map>-sprite-base-class: ".class-name";
+~~~
+
+* 原理來說每一個 sprite 會 @extend base-class
+* compass 會自動輸出 :hover, :active, :target 等 pseudo selectors 給 sprites 只要檔案名稱結尾符合 `_hover` `_active`
+* 只要圖片名稱如上面這樣給定 compass 就會自動幫你產出 :hover 等狀態時的樣式 `arrow_hover.png`
+* 通常我們只要 `@import "icons/*.png" compass 就會自動幫我們產生一張 sprite map 然後伴隨著 mixin, function 等東西，但如果你不想使用這些變數或 mixin 也可以使用 `sprite-map($glob)` helper
+
+~~~css
+$icons: sprite-map("icons/*.png", $arrow-spacing: 5px);
+~~~
+
+如此一來就不用根據 map name 和 sprite name 一個一個設定
+
+* 在 compass 協助我們產出 sprites map 之後我們仍然需要針對每一個 sprite 撰寫樣式此時我們就能夠用 `sprite` helper 或者說這個 helper 可以直接讓我們操作底層的東西
+
+~~~css
+$icons: sprite-map("icons/*.png");
+.next {
+  background: sprite($icons, arrow) no-repeat;
+}
+~~~
+
+* 模擬底層的運作寫法 `sprite-map` 函式的意義就是建立一個 map 物件
+
+~~~css
+$icons: sprite-map("icons/*.png");
+.sprite-base { background: $icons no-repeat;}
+.next {
+  @extend: .sprite-base;
+  background-position: sprite-position($icons, arrow);
+}
+.add-button {
+  @extend .sprite-base;
+  @include sprite-background-position($icons, box-add);
+}
+~~~
+
+* 加入尺寸
+
+~~~css
+@icons: sprite-map("icons/*.png");
+.sprite-base { background: $icons no-repeat; }
+.next {
+  @extend .sprite-base;
+  @include sprite-background-position($icons, arrow);
+  @include sprite-dimensions($icons, arrow);
+}
+~~~
+
+* compass 提供了三種路徑 helper
+  1. image-url('logo.png') 從 /root 裡面的 images 目錄開始找
+  2. font-url('arial.ttf') 從 /font 目錄找
+  3. stylesheet-url 從 /css 或 /stylesheets 目錄開始找
+* 注意到 compass 沒有提供 javascript 的目錄同樣的也沒有 sass 的 helper
+
+* 透過在 config.rb 加入一些設定可以在 assets 後面追加 query 且使用版號
+
+~~~ruby
+asset_cache_buster do |http_path, real_path|
+  "v=1"
+end
+~~~
+
+* 因為在路徑後面加上 query 會導致某些 proxy 不敢 cache 所以也可以關掉
+
+~~~ruby
+asset_cache_buster :none
+~~~
+
+* 所以正確來說我們會在檔案中加入 time-stamp 或 hash 所以 compass 提供的作法如下
+
+~~~ruby
+asset_cache_buster do |path, real_path|
+  if File.exists? (real_path)
+    pathname = Pathname.new(path)
+    modified_time = File.mtime(real_path)
+
+    new_path = "%s/%s-%s%s" % [
+      pathname.dirname,
+      pathname.basename(pathname.extname),
+      modified_time.strftime("%s"),
+      pathname.extname
+    ]
+    {:path => new_path}
+  end
+end
+~~~
+
+* 即使在開發時期都應該使用 URL 而不是相對路徑，不過 compass 還是提供設定讓你可以快速產生相對路徑
+
+~~~ruby
+relative_assets = true
+~~~
+
+* http_path 可以快速幫所有路徑修改 URL Path `http_path = "/super-fancy-app"`
+* 編譯 production  
+
+~~~ruby
+compass compile --force -e production
+~~~
+
+* 一旦加上了 http_path 建議就要把 relative_assets 關閉
+
+~~~ruby
+http_path = '/my-app'
+relative_assets = false
+images_dir = 'images' #locally it's the images folder
+http_images_dir = 'imgs' #on the webserver it's different
+~~~
+
+* 在註解加上驚嘆號就會被強制輸出
+
+~~~css
+/*!
+  comment here
+*/
+~~~
+
+* 另外就像 less 一樣變數也可以在字串中，樣式屬性，Selector 使用用法為 `#{$variable}`
+
+~~~css
+$copyright-year: unquote("2012");
+$company-name: unquote("Example, Inc");
+/*!
+  Copyright #{$copyright-year}, #{$company-name}
+  All Rights Reserved.
+*/
+~~~
+
+* 包含全部網址的設定
+
+~~~ruby
+asset_host do |asset|
+  host_number = (asset.hash % 4) + 1
+  "//img-#{host_number}.example.com"
+end
+~~~
+
+* compass 也提供一個 method 讓我們可以快速地把圖片轉成 base64 `.icon { background: inline-image("black-dot.png"); }`
+* gem install css_parser
+* compass stats 可以觀察目前 selectors 和 css 的狀態
+* expression 表達式在 sass 中大多用來表示樣式值或屬性
+
+## data type
+* 每一個 css property 的值或者變數都有一個型別，依據不同的型別有不同的行為
+* string 分成有加 `"` 和 沒有 `"` ，有加的可以包含除了 " 以外其他的特殊符號例如 !, 沒有加引號的不能用數字或特殊符號開頭也不能包含空白 * &
+* 除此之外還有一些其他特殊的結構 sass 也是為字串 如 !important 雖然他是用 ! 開頭但 sass 是其為字串
+* url() 內部得值也被視為 unquoted string
+* number, 單位也會被一併計算 e.g 1em * 2px = 2em*px
+* color 有 hex, rgb, hsl 等方式定義
+* list e.g. `1px solid black`，列表值可以用空白隔開或者 ,
+* list 是一系列的值的組合被用在像是 border 或 background 中
+* boolean 在 sass 中 若比較的兩個值為非布林值則傳回得值跟一般程式不同，e.g `blue and red = red`, `false and red = false`, `blue or red = blue`
+* string, number, color, list, boolean 以上為 Sass 中的型別
+* 當 function 有很多參數時 sass 的 function 可以帶入參數名稱 `rgb($green: 127, %blue: 127, $red: 255)`
+* abs() 絕對值, ceil() 無條件進位, comparable(1, 2) 傳回 true/false 看兩者是否能夠運算或比較, floor() 無條件捨去, percentage() 把小數轉成百分比, round() 四捨五入, unit() 傳回單位, unitless() 傳回 true/false 看是否有單位
+* 色彩的 function 像是 alpha($color), opacity($color), blue($color), red($color), green($color) 來取得色彩資訊
+* adjust($color, $red:20, $blue: -20) 調整顏色 red + 20, blue - 20
+* 調淡顏色 adjust(gray, $lightness:15%)
+* scale($color, $lightness: 30%) scale 只能用百分比且不支援 $hue
+* function 的寫法
+
+~~~css
+@function grid-width($cells) {
+  @return ($cell-width +$cell-padding) * $cells;
+}
+~~~
+
+* 在 `#{...}` 中 `"` 會被移除
+
+* 迴圈的寫法
+
+~~~css
+@for $i from 1 to 5 {
+  ... /* $i 到 4 */
+}
+
+@for $i form 1 through 5 {
+  /* ... 到 5 */
+}
+~~~
+
+* Sass 的 loop 不能一次加2 也不能倒數，不過我們可以透過一些小技巧來達到這個需求
+
+~~~css
+@for $i from 0 to 10 {
+  $i: 10 - $i;
+  ...
+}
+
+@for $i from 0 through 10 {
+
+  $i:$ * 2;
+  ...
+}
+~~~
+
+* each 的用法
+
+~~~css
+@each $section in home, about, archive, projects {
+
+  nav .#{section} {
+    ...
+  }
+}
+~~~
+
+* nth($list, $index) 取得列表中的值

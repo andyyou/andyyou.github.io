@@ -1,0 +1,1297 @@
+---
+layout: post
+title: 'Webpack 筆記'
+date: 2015-07-23 08:30:00
+categories: Tools
+tags: [webpack, javascript, bundler]
+---
+
+# 動機
+今時今日所謂的網站正進化成網路應用程式，它不再只是單純的顯示圖片文字資訊，而包含著更多互動與操作行為，同時也意味著一個網站:
+* 具有更多的 Javascript
+* 可以在現代的瀏覽器上做更多事
+* 較少全頁重新載入的行為 ➞ 甚至更多程式碼在單一頁面
+<!--more-->
+其結果就是有更多程式碼出現在客戶端(Client side)
+有大量的程式碼需要被組織化。模組化系統提供一種方式讓我們可以切割我們的程式碼使其變成個別的模組。
+
+> 如果您是實作派的可以直接看 `跟著官方文件實作一遍` 下面除了官方入門，同時也搭配 Pete Hunt 的 webpack-how-to 實作一遍常用的功能
+
+# 模組化系統的風格
+針對如何定義模組之間的相依性，在 JS 世界中有很多不同的標準:
+
+* `<script>` 標籤(不具備模組化系統)
+* `CommonJS`
+* `AMD` 以及其衍伸的標準
+* `ES6 模組`
+* 其他
+
+### `<script>` 標籤
+當你不使用任何其他模組化系統，這是你在網頁中處理模組或說切割 JS 檔案的方法。
+
+~~~html
+<script src="module1.js"></script>
+<script src="module2.js"></script>
+<script src="libraryA.js"></script>
+<script src="module3.js"></script>
+~~~
+
+這種方式通常一個模組會匯出介面到全域物件，即 `window` 物件，模組可以透過全域物件存取相依的介面或叫方法。
+常見的問題
+
+* 在全域物件中產生衝突
+* 載入的順序非常重要，錯了其他需要相依的函式庫就不能用
+* 開發者必須要自己解決模組和函式庫之間相依性的問題
+* 在大型專案中這一串載入的列表可能非常長，難以維護
+
+### CommonJS 同步 `require`
+
+這種方式採用同步風格的 `require` 方法，類似我們 `C#` 的 `using`, `Ruby` 的 `require` 或 `load`，透過這個方法載入相依的函式庫並匯出一系列介面
+一個模組可以透過在 `exports` 加上屬性(Property)或 `module.exports` 的值來設定其介面，這段話有點抽象換成白話一點的解釋: 根據 CommonJS 標準，一個檔案即一個模組。載入模組使用 require 方法，這個方法會讀取檔案並執行，最後回傳檔案內部 exports 的物件。
+
+~~~js
+// 基礎的用法
+require('module');
+require('../file.js');
+exports.doStuff = function () {};
+module.exports = someValue;
+
+// 簡易的範例
+/***  car.js ***/
+function Car() {
+  this.run = function () {
+    console.log("Car run...");
+  }
+  this.stop = function () {
+    console.log("Car stop!!");
+  }
+}
+
+var car = new Car();
+module.exports = car;
+
+/***  main.js ***/
+var Car = require("./car");
+Car.run(); // Car run...
+~~~
+
+明白了一點點用法後我們知道 CommonJS 載入模組是同步的。
+
+優點
+* 伺服器端模組可以被重複使用
+* 已經有許多 npm 的模組採用這種風格
+* 因為其語法和用起來簡單易懂
+
+缺點
+* 阻塞式的調用並不適合網路環境，因為網路溝通的 `request` 是非同步的
+* 沒有支援多模組的平行載入
+實作
+* [node.js](http://nodejs.org/)
+* [browserify](https://github.com/substack/node-browserify)
+* [modules-webmake](https://github.com/medikoo/modules-webmake)
+* [wreq](https://github.com/substack/wreq)
+
+### AMD 非同步載入
+因為瀏覽器的需求以及同步 require 的問題，所以引進了一個非同步的版本
+
+~~~js
+require(['module', '../file'], function(module, file) { /* code here */});
+
+define('mymodule', ["dep1", "dep2"], function(d1, d2) {
+  return someExportedValue;
+});
+~~~
+
+優點
+* 符合網路非同步載入的需求
+* 可多模組平行載入
+
+缺點
+* 需撰寫比較多的程式碼，比較難讀寫(對開發者來說)和維護
+* 看起來像是某種取巧的解法
+實作
+* [require.js](http://requirejs.org/)
+* [curl](https://github.com/cujojs/curl)
+
+### ES6 模組
+
+ECMAScript6 內建的用法
+
+~~~js
+import "jquery";
+export function doStuff() {}
+module "localModule" {}
+~~~
+
+優點
+* 靜態解析非常容易
+* 未來將會是標準
+缺點
+* 瀏覽器全面支援需要花些時間
+* 非常少模組已採用此種方式
+
+### 兼容的解決方案
+
+讓開發者選擇模組化的標準，讓已存在的程式碼可以運作，使其可以輕鬆的加入其他模組標準。
+
+# 關於傳輸
+
+模組通常會在客戶端執行，所以必須從伺服器端傳輸到瀏覽器。
+
+這邊有兩種關於傳輸模組的極端例子:
+
+* 每一個模組一個請求
+* 所有模組整合成一個請求
+
+兩者都被廣泛的使用，但也都不是最佳的做法
+
+關於一個模組一個請求
+* 優點: 只有需要的模組會被傳輸，不會傳一堆不相關的東西
+* 缺點: 太多 request
+* 缺點: 因為 request 太多導致可能害應用程式初始化或者第一次載入時很慢
+
+所有模組整合成一個請求
+* 優點: 較少的請求數，程式開始的時候比較快
+* 缺點: 不需要的模組也會被一併傳輸
+
+# 分組傳輸
+
+一種比較彈性的傳輸，在上面兩種極端的方法中取得平衡的折中作法。
+在編譯所有模組時: 將系列模組區分成多個較小的區塊(程式碼片段)
+如此一來就不用在初始化的時候一口氣全部載入，只要根據需求載入即可
+
+
+# 為什麼不僅僅只載入 Javascript?
+
+我們應該反問為什麼模組化系統只協助開發者處理 Javascript? 還有其他靜態資源檔案需要被處理:
+
+* stylesheets
+* images
+* webfonts
+* html for templating
+
+還有其他
+
+* coffeescript ➞ javascript
+* less stylesheet ➞ css
+* jade ➞ html
+* i18n ➞ something
+
+~~~js
+require("./style.css");
+require("./style.less");
+require("./template.jade");
+require("./image.png");
+~~~
+
+因為上面這些動機，所以您找到了 webpack。
+
+
+# Webpack 是什麼?
+
+`webpack` 簡單說就是一個模組的封裝工具(module bundler)，由德國的 Tobias Koppers 所開發。webpack 會將模組與其相依性的模組, 函式庫, 其他需要預先編譯的檔案等整合產生此模組的靜態資源檔
+![](http://webpack.github.io/assets/what-is-webpack.png)
+嫌太饒舌，那我們直接看官方的圖片，就是把我們常用的 `.less`, `.scss`, `.jade` `.jsx` 等等的檔案編譯成單純的 `js` + `圖片`(圖片有時候也可以被編譯成 base64 格式的 dataUrl)。
+第一次接觸 Webpack 的人可能會忽略這個重點(小弟就是其一)，那就是編譯後的靜態資源檔真的就如圖上所示，只有 `js` + `圖片`。`css`也會被編譯到 js 中，也就不需要在額外匯入。
+達到真正的模組化。看看下圖一隻編譯完成的檔案
+
+{% asset_img webpack-1.png%}
+
+# 為什麼不用其他 bundler?
+
+已存在的 bundler 針對大型專案並不是真的那麼適合，這裡指的是大型的 SPA。為什麼要創造 webpack 最重要的動機就是需要 `Code Splitting` 拆分程式碼，同時像是 css, 圖片等等靜態資源檔需要無縫整合。這邊的`拆分程式碼`指的是依照需求，功能來區分模組達到關注點分離。
+如果您曾經試過其他 bundler 他們並無法達到這個目的。大部份都只是個別組織 JS 檔案和靜態資源檔案。因此 webpack 為了滿足這個動機而誕生。
+
+# 目標
+
+* 能夠拆分相依性的關係結構變成程式碼片段，然後依據需求載入
+* 盡可能減少初始化載入的時間
+* 每一個靜態資源檔也應該要能被模組化
+* 有能力整合其他第三方函式庫為模組
+* bundler 絕大部份能夠依照需求自訂修改
+* 適合大型專案
+
+# Webpack 有哪些不同?
+
+### Code Splitting 拆分程式碼
+
+webpack 在其相依性結構(Dependency tree)中有兩種相依的類型: `sync` 和 `async`。以非同步相依作為分割點，形成一個新的片段。當 chunk tree 程式碼片段之間的結構被優化之後，就會透過一個檔案整合發佈每一個 chunk 即每個片段程式碼。
+
+### loaders 載入器
+
+載入器當然是翻得不好，一般來說其意義就是負責載入安裝程式的角色，所以這邊我們還是稱其為 loader。雖然 webpack 本身只能夠處理 Javascript，不過因為有 loaders，可以被用來轉換其他資源為 Javascript ，透過這種方式每一個資源檔都可以被轉換成模組形式。
+換個方式來比喻其實 html 的 `<link rel="stylesheet" />` 就是一個 css 載入器的角色，又或者有用過 browserify 的人所熟悉的 transforms。
+其功能為轉換解析 ➞ 載入 ➞ 使用。
+
+### 智慧型解析
+
+webpack 擁有更聰明的解析工具可以處理幾乎所有的第三方函式庫。甚至允許在相依性設定上使用表達式，例如: `require("./templates/" + name + ".jade")`。
+這幾乎能處理大部份的模組化標準(CommonJS, AMD)
+
+### 擴充套件系統
+
+webpack 擁有豐富的擴充套件。大部份內部的功能都是架構在擴充套件之上。這使得我們能夠自訂客製 webpack 來滿足我們的需求，並且可以發佈成通用套件為 Open Source
+至此我們對於 webpack 有了一點概念性的了解。
+
+# 安裝 webpack
+
+### node.js
+
+使用 webpack 之前我們需要安裝 node.js 以及其內建的套件管理工具 `npm`
+
+### webpack
+
+接著就可以透過 `npm` 直接安裝 webpack
+
+~~~bash
+$ npm install webpack -g
+~~~
+
+透過 `-g` 參數 webpack 會被安裝在系統全域環境同時具備 `webpack` 指令
+
+### 在專案中使用 webpack
+
+在專案中使用 webpack 最好也讓專案相依於 webpack，即透過 npm 為專案安裝 webpack。透過這個方式我們可以選擇調整 webpack 的版本，而不必被強迫使用全域的版本。
+建立專案的步驟首先需要建立一個 `package.json` 設定檔或者直接使用 `npm` 指令來產生
+
+~~~bash
+$ npm init
+~~~
+
+關於 `npm init` 會用互動的方式在指令介面問你的問題，如果專案不會公開出去的話其實也不是太重要
+接著一樣透過 `npm` 指令安裝 `webpack`
+
+~~~bash
+$ npm install webpack --save-dev
+~~~
+
+### 版本
+
+一般來說 webpack 同時間會有兩個版本。穩定版以及 Beta 版本。Beta 版會加後綴 `-beta` 在版號後面。Beta 版本可能會部分實驗性或較不穩定缺少足夠測試的功能，對於需要較嚴謹的東西應該使用穩定版較佳。
+您可以透過指令來指定安裝的版本
+
+~~~bash
+$ npm install webpack@1.2.x --save-dev
+~~~
+
+接著我們就可以來看看該如何使用
+
+# 指令介面
+
+### 安裝全域指令
+
+~~~bash
+$ npm install webpack -g
+~~~
+
+### 單純編譯指令
+
+~~~bash
+$ webpack <entry> <output>
+~~~
+
+### entry
+
+傳入一個檔案或者路徑字串。您可以傳入多個程式進入點檔案(每一個檔案將會在啟動期間被載入)，entry 用實作的行為來說明就是那隻用來 require 其他模組的檔案。
+另外如果你使用 `<name>=<filename/request>` 的格式您可以替 entry point 建立一個別名。用法如下
+
+~~~bash
+$ webpack bar=./entry.js "[name].js"
+>> output a bar.js file.
+~~~
+
+同時這個名稱也會被對應到設定檔 `entry`，太難懂！！沒關係我們換個實際例子來證明這段說明，首先我們建立一個 `webpack.config.js`
+
+~~~js
+// webpack.config.js
+module.exports = {
+  output: {
+    filename: "[name].bundle.js"
+  }
+}
+~~~
+
+接著執行指令
+
+~~~bash
+$ webpack FooBar=./entry.js
+>> Output a file that is named FooBar.bundle.js
+~~~
+
+### output
+
+參數: 表示欲輸出的路徑，其會被映射到設定檔中的 `output.path` 以及 `output.filename`
+
+
+### 設定參數
+
+webpack 有很多參數能夠直接從指令去設定然後對應到設定檔，即 `--debug` 對應到 `debug: true`，`--output-library-target` 對應到 `output.libraryTarget`
+
+### 套件
+
+有些套件被映射到指令的參數選項，即 `--define <string>=<string>` 會對應到 `DefinePlugin`
+
+### Development 縮寫 -d
+
+等同於 `--debug` `--devtool source-map` `--output-pathinfo`，產生 source maps 檔案
+
+### Production 縮寫 -p
+
+等同於 `--optimize-minimize` `--optimize-occurence-order`，建置壓縮的程式碼
+
+### 監視模式 --watch
+
+會一直監視所有的相依檔案當其改變時自動重新編譯，適用於開發模式持續性的更新編譯
+
+### 指定設定檔 --config
+
+設定不同於預設的設定檔。如果您希望採用不同於預設 `webpack.config.js` 的設定檔可以採用 `--config` 來指定
+
+### 顯示參數
+
+`--progress`: 顯示編譯的進度和訊息
+`--json`: 產生 JSON 格式的 stdout
+`--color`: 彩色模式
+`--sort-modules-by`, `--sort-chunks-by`, `--sort-assets-by`: 排序
+`--display-chunks`: 顯示模組區分的資訊
+`--display-error-details`: 顯示更多關於錯誤訊息
+
+# 跟著官方文件實作一遍
+
+首先是您當然需要安裝 node.js 接著安裝 webpack。
+
+~~~bash
+$ npm install webpack -g
+~~~
+
+# 開始組織專案
+
+建立一個空目錄來置放我們的檔案，在該目錄底下建立 `entry.js`
+
+~~~js
+// File: entry.js
+document.write("It works.");
+~~~
+
+```html
+<!-- File: index.html -->
+<html>
+  <head>
+    <meta charset="utf-8" />
+  </head>
+  <body>
+    <script src="bundle.js" charset="utf-8" />
+  </body>
+</html>
+```
+
+執行
+
+~~~bash
+$ webpack ./entry.js bundle.js
+~~~
+
+就會將我們的 `entry.js` 編譯成 `bundle.js`
+如果編譯成功，就會輸出類似下面的資訊
+
+```
+Hash: e97678c23acf8ee01956
+Version: webpack 1.9.10
+Time: 62ms
+    Asset     Size  Chunks             Chunk Names
+bundle.js  1.44 kB       0  [emitted]  main
+   [0] ./entry.js 29 bytes {0} [built]
+```
+
+接著開啟 `index.html` 如下圖
+
+{% asset_img webpack-2.png%}
+
+# 第二個資源檔案
+
+接著我們模擬實際專案的狀況，匯入另外一個檔案 `content.js`
+
+~~~js
+// content.js
+module.exports = "It works from content.js";
+~~~
+
+然後編輯 `entry.js` 加入 `require`
+
+~~~js
+// File: entry.js
+document.write(require("./content.js"));
+~~~
+
+更新瀏覽器得到如下圖
+
+{% asset_img webpack-3.png%}
+
+Webpack 會分析進入點檔案並取得相依的其他檔案。這些檔案(被稱為模組)也會被加入到 `bundle.js`。Webpack 會給每一個模組唯一的 ID 然後透過 ID 存取這些模組，這些模組都會被整合到 bundle.js 裡面。只有進入點的模組會在程式啟動時被執行。這個小範例示範了 `require` 以及當相依模組被 `require` 載入後執行的用法。
+
+# 第一個 loader
+
+現在我們遇到一個問題，我們想要加入 css 到該應用程式中，Webpack 預設只能夠處理 JS 檔案，所以我們需要 `css-loader` 來處理 css 檔案。接著透過 `style-loader` 來把樣式套用到 DOM 上。
+
+建立一個空的 `node_modules` 目錄(或者您要使用 npm init)，事實上直接使用 `npm install` 也是會自動建立 `node_module` 目錄。
+執行
+
+~~~bash
+$ npm install css-loader style-loader
+~~~
+
+加入 `style.css`
+
+~~~css
+body {
+  background: yellow;
+}
+~~~
+
+再次編輯 `entry.js`
+
+~~~js
+require("!style!css!./style.css");
+document.write(require("./content.js"));
+~~~
+
+重新編譯並重整瀏覽器得到
+
+{% asset_img webpack-4.png%}
+
+透過在匯入模組(在這邊就只是一隻檔案)前加上 `!` 和 loader 的前綴字，該模組將會逐步透過每一個 loader 處理，一個 pipeline 的概念，一個處理完交棒給下一個處理，這些 loader 會將檔案中的內容根據特定需求轉換。在經過這些轉換的過程之後最終的結果就是一個 javascript 模組。
+
+# 綁定 loaders
+實務上，我們並不希望一直重複撰寫這種長長的 pipe 方式，即 `require("!style!css!./style.css");`
+我們可以根據副檔名綁定或說設定其 loaders，如此一來我們就只要寫 `require("./style.css")`
+
+改寫 `entry.js`
+
+~~~js
+// entry.js
+require("./style.css");
+document.write(require("./content.js"));
+~~~
+
+透過指令的方式繫結
+
+~~~bash
+$ webpack ./entry.js bundle.js --module-bind 'css=style!css'
+
+# 有一點要注意的是因為 ! 在 bash 裡面有特殊意義所以當您想用 " 替代 ' 請記得跳脫
+$ webpack ./entry.js bundle.js --module-bind "css=style\!css"
+~~~
+
+您應該會看到跟上面黃色底一樣的結果
+
+# 設定檔
+除非你是下指令狂，不然您應該不會希望每次指令都這麼長，這時我們可以把這些參數移到一個設定檔裡 `webpack.config.js`
+
+~~~js
+module.exports = {
+  entry: "./entry.js",
+  output: {
+    path: __dirname, // 此設定檔案所在的目錄
+    filename: "bundle.js"
+  },
+  module: {
+    loaders: [
+      { test: /\.css$/, loader: "style!css" }
+    ]
+  }
+}
+~~~
+
+一旦您有了設定檔，現在你只需要執行
+
+~~~bash
+$ webpack
+~~~
+
+webpack 指令會試圖去載入當前目錄下的 `webpack.config.js`
+
+# 整潔易看的輸出
+隨著我們的專案增長，編譯的時間可能會稍微長一點點。所以我們希望在編譯的時候有進度表以及我們希望輸出的資訊可以有顏色以便我們好觀察
+這個時候我們可以透過下面參數達成
+
+~~~bash
+$ webpack --progress --colors
+~~~
+
+
+# 監視模式 watch
+
+又或許在開發時期我們不希望一直手動輸入指令
+
+~~~bash
+$ webpack --progress --colors --watch
+~~~
+
+Webpack 可以快取沒有改變的模組。
+
+當使用監視模式，webpack 會觀察專案底下所有在編譯時會用到的檔案，如果這些檔案發生改變，馬上會重新編譯
+當快取被啟動的時候 webpack 會將所有模組存在記憶體中，如果模組沒有改變就會繼續沿用。
+
+# 開發時期伺服器
+
+更好用的開發時期的伺服器 `webpack-dev-server`
+
+~~~bash
+# 安裝
+$ npm install webpack-dev-server -g
+# 啟動
+$ webpack-dev-server --progress --colors
+~~~
+
+提供一個 `localhost:8080` 的 express server ，讓我們在開發時期可以更快速的觀察結果，當然會自動編譯，同時自動更新頁面(socket.io)
+這個工具使用 webpack 的監視模式所以編譯的結果
+
+這個開發伺服器使用了 webpack 的監視模式。同時他也會阻止 webpack 持續把編譯結果存到硬碟上，取而代之的這個結果會被保留在記憶體。
+不要誤會！這邊說的是如果你單純使用 webpack 監視模式，上例中的 bundle.js 檔案是會被產生的，但如果是 webpack-dev-server 則不會產生 bundle.js 那隻檔案。
+
+# webpack-how 跟著 Pete hunt 的文件再跑一輪
+
+這個段落我們會在翻譯以及實作 webpack-howto 來加深我們對 webpack 的理解，老實說因為官方的文件並不是非常完整。
+
+### 1. 為什麼使用 webpack (Pete hunt 版)
+
+* 它很像 browserify，但是他可以分割程式為多個檔案。例如您在一個單一頁面應用程式(SPA)中有數個頁面，那麼使用者只需要下載正在閱讀的那一頁，如果他切換到另個頁面，也不會重新下載共用部分的程式碼
+* 大多數的情況下可以取代 grunt 或 gulp 因為他也可以封裝 css, 預先編譯的 css 語言, 預先編譯的 js 語言, 圖片以及其他東西
+
+同時它支援 AMD 和 CommonJS  以及其他模組標準。如果您不知道該使用什麼，就用 CommonJS
+
+### 2. 對於會用 Browerify 的開發者
+
+下面兩個指令是等價的
+
+~~~bash
+$ browserify main.js > bundle.js
+
+$ webpack main.js bundle.js
+~~~
+
+然而 webpack 比起 Browserify 更加強大，也因為支援許多功能，所以一般來說我們會將設定存放在 `webpack.config.js` 這隻設定檔。
+讓我們再來多練習一次，建立一個 `webpack_sandbox` 目錄，裡面自己放一些簡單的 `main.js` 主要的進入點程式，`index.html` 測試載入 bundle.js 是否正常運作，以及最重要的 `webpack.config.js` 如下
+
+~~~js
+module.exports = {
+  entry: './main.js',
+  output: {
+    filename: 'bundle.js'
+  }
+}
+~~~
+
+這個 `webpack.config.js` 就只是 Javascript ，所以就像你平常寫 js 一樣修改它即可。
+
+### 3. 如何執行 webpack
+
+一般來說我們常用的編譯指令如下，記住先切換到 `webpack.config.js` 所在的目錄底下然後執行
+
+* `webpack` 建置編譯開發版的檔案，只會運行一次
+* `webpack -p` 執行一次建置的任務，產生正式版(具有壓縮)
+* `webpack --watch` 持續性編譯，即開發時期，每次一變更檔案就重新編譯(快速)
+* `webpack -d` 包含產出 source maps，即 .js.map 檔案
+
+### 4. 預先編譯的 JS 語言
+
+在 webpack 中有個跟 browserify 的 transforms 以及 RequireJS plugin 功能相等的東西，就是 loader。下面示範如何讓 webpack 載入 CoffeeScript 和 Facebook 的 JSX + ES6 支援(您必須要安裝 `babel-loader coffee-loader`)，因為 babel 內建搭載支援 JSX 所以您不需要再增加額外的 jsx-loader。
+
+為了要實際測試，我們需要再目錄中建立一個 coffee, React 元件(JSX + ES6 支援)
+首先先測試 coffee 所以我們新增一隻測試的 coffee
+
+~~~coffee
+# File: audi.coffee
+value = "It's from audi.coffee" if true # it's coffeescript syntax.
+module.exports = value;
+~~~
+
+安裝 coffee-loader
+
+~~~bash
+$ npm init
+$ npm install coffee-loader --save-dev
+~~~
+
+調整 webpack.config.js
+
+~~~js
+// File: webpack.config.js
+module.exports = {
+  entry: './main.js',
+  output: {
+    filename: 'bundle.js'
+  },
+  module: {
+    loaders: [
+      { test: /\.coffee$/, loader: 'coffee-loader' },
+    ]
+  }
+}
+~~~
+
+測試，在 main.js 中使用
+
+~~~js
+// File: main.js
+document.write("Hey from main.js");
+document.write("<br/>");
+
+var audi = require("./audi.coffee");
+document.write(audi);
+document.write("<br/>");
+~~~
+
+接著我們來測試 jsx 與 React，記得先安裝 babel-loader
+
+~~~bash
+$ npm install babel-loader --save-dev
+~~~
+
+調整 webpack.config.js 為
+
+~~~js
+module.exports = {
+  entry: './main.js',
+  output: {
+    filename: 'bundle.js'
+  },
+  module: {
+    loaders: [
+      { test: /\.coffee$/, loader: 'coffee-loader' },
+      { test: /\.js$/, loader: 'babel-loader'},
+    ]
+  }
+}
+~~~
+
+新增一隻 React 元件檔案 `toyota.js`
+
+~~~jsx
+// File: toyota.js
+export default class Totota extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+  render() {
+    return (
+      <div>
+      It's from toyota.js
+      </div>
+    );
+  }
+}
+~~~
+
+最後 main.js(記得在 index.html 補上 React 的 JS)
+
+~~~js
+// File: main.js
+document.write("Hey from main.js");
+document.write("<br/>");
+
+var audi = require("./audi.coffee");
+document.write(audi);
+document.write("<br/>");
+
+document.write("<div id='toyota'></div>");
+var Toyota = require("./toyota.js");
+// 另外一種模組標準的寫法
+// import Toyota from "./toyota.js";
+React.render(<Toyota />, document.getElementById("toyota"));
+~~~
+
+每次在 require 的時候都要輸入附檔名也是挺麻煩的，所以 webpack 也提供您 require 不加副檔名的機制，為了開啟這個功能，我們必須要加入 `resolve.extensions`
+參數告訴 webpack 該處理哪些副檔名。
+
+~~~js
+module.exports = {
+  entry: './main.js',
+  output: {
+    filename: 'bundle.js'       
+  },
+  module: {
+    loaders: [
+      { test: /\.coffee$/, loader: 'coffee-loader' },
+      { test: /\.js$/, loader: 'babel-loader' }
+    ]
+  },
+  resolve: {
+    // 現在您可以把那些 require 中的副檔名去掉了
+    extensions: ['', '.js', '.json', '.coffee']
+  }
+};
+~~~
+
+如果您是採用 `webpack-dev-server` 在修改 config 之後請記得重啟
+
+如果檔名一樣會怎樣，在正常的專案底下不同類型的資源檔通常會用不同的目錄區隔，不過在這個簡單的範例中的確是有可能會重複的。
+webpack 其實會照上面 resolve 設定的陣列依序搜尋，找到了就不往下了。也就是如果有同名的 js 和 coffee 會處理 `[檔名].js` 而不管 coffee。
+
+### 5. 樣式與圖片
+
+接著我們要來實作在模組中透過 `require()` 使用那些靜態資源檔。
+先示範在程式中我們會改成這樣參考資源檔，像 css, 圖片等等
+
+~~~js
+require("./bootstrap.css");
+require("./app.scss");
+
+var img = document.createElement("img");
+img.src = require("./images/pretty.jpg");
+document.body.appendChild(img);
+~~~
+
+當我們 require css 或者 scss, less 等等的時候，webpack 會把 css 轉換一行的字串並封裝在 JS 中，然後當我們執行 `require()` 會幫我們插入 `<stype>` 標籤到該頁面
+而當我們 require 圖片的時候，webpack 則會把圖片轉換成 dataURI 或帶入連結。
+
+當然這些都不是預設有的功能，你必須透過 loaders 告訴 webpack 該怎麼做，我們需要的 loaders，`css-loader` 和 `style-loader` 處理樣式，`sass-loader` 當然是處理 scss，`url-loader` 則負責處理圖片(檔案)類似。您也可以使用 `file-laoder` 不過 `url-loader` 可以設定限制檔案大小回傳 dataURI 或路徑。
+
+這邊我們額外提一下上面說的流程中 css-loader 才是真正在解析 css 檔案，並且他會解析 css 中的 `url(...)` 轉換成 `require(...)` ，如此一來所有的資源都會依照 webpack 的處理方式載入，而 style-loader 收到這個輸出之後會把這些轉換完的結果注入 DOM 。
+
+安裝 loaders
+
+~~~bash
+$ npm install css-loader style-loader sass-loader url-loader --save-dev
+~~~
+
+設定 webpack.config.js
+
+~~~js
+// webpack.config.js
+module.exports = {
+  entry: './main.js',
+  output: {
+    path: './build',
+    publicPath: 'http://andyyou.github.io/', // 圖片等需要路徑引用的資源檔加上網址
+    // 注意: 尾巴的 / 要記得加否則會產出類似 http://andyyou.github.io600e2b78b83128cc2be868b3971d0999.jpg 的路徑
+    filename: 'bundle.js'
+  },
+  module: {
+    loaders: [
+      { test: /\.coffee$/, loader: 'coffee-loader' },
+      { test: /\.js$/, loader: 'babel-loader'},
+      { test: /\.css$/, loader: 'style!css' },
+      { test: /\.scss$/, loader: 'style!css!sass'}, // => 透過 css-laoder 不只處理編譯好的 css, imports 同時包含 url(...)
+      // { test: /\.css$/, loader: 'raw!sass' }, // => 回傳編譯好的 css 程式碼單純只解析 imports 但不處理 url(...)
+      { test: /\.(png|jpg)$/, loader: 'url-loader?limit=8192' } // 當檔案小於 8K 的時候會產生 base64 格式的 dataURI 超過的話則直接帶連結
+    ]
+  },
+  resolve: {
+    extensions: ['', '.js', '.json', '.coffee', '.scss', '.css']
+  }
+}
+~~~
+
+### 6. 功能標籤
+
+我們想要某些程式碼只在特定環境下才執行，例如顯示偵錯訊息，又或者只在內部伺服器才開啟這個功能。
+因為我們是使用 webpack 來封裝編譯整個專案，所以很合理的可以加上一些 flag 讓 webpack 去替我們處理。
+我們可以直接在剛剛 main.js 中示範
+
+~~~js
+// main.js
+if (__DEV__) {
+  console.warn("It's dev environments")
+}
+
+if (__PRERELEASE__) {
+  console.log("requre and show secret feature.")
+}
+~~~
+
+不過我們不是直接就可以使用魔術般的全域變數。我們還是需要告訴 webpack 才行
+下面這邊示範在 webpack 官方提到的 plugins 用法
+
+~~~js
+var webpack = require("webpack");
+
+var definePlugin = new webpack.DefinePlugin({
+  __DEV__: JSON.stringify(JSON.parse(process.env.BUILD_DEV || 'true')),
+  __PRERELEASE__: JSON.stringify(JSON.parse(process.env.BUILD_PRERELEASE || 'false'))
+});
+
+module.exports = {
+  entry: './main.js',
+  output: {
+    path: './build', // 編譯後的檔案放在這個目錄
+    // publicPath: 'http://andyyou.github.io/', // 圖片等需要路徑引用的資源檔加上網址
+    // 注意: 尾巴的 / 要記得加否則會產出類似 http://andyyou.github.io600e2b78b83128cc2be868b3971d0999.jpg 的路徑
+    filename: 'bundle.js'
+  },
+  module: {
+    loaders: [
+      { test: /\.coffee$/, loader: 'coffee-loader' },
+      { test: /\.js$/, loader: 'babel-loader'},
+      { test: /\.css$/, loader: 'style!css' },
+      { test: /\.scss$/, loader: 'style!css!sass'}, // => 透過 css-laoder 不只處理編譯好的 css, imports 同時包含 url(...)
+      // { test: /\.css$/, loader: 'raw!sass' }, // => 回傳編譯好的 css 程式碼單純只解析 imports 但不處理 url(...)
+      { test: /\.(png|jpg)$/, loader: 'url-loader?limit=8192' } // 當檔案小於 8K 的時候會產生 base64 格式的 dataURI 超過的話則直接帶連結
+    ]
+  },
+  resolve: {
+    extensions: ['', '.js', '.json', '.coffee', '.scss', '.css']
+  },
+  plugins: [definePlugin],
+}
+~~~
+
+接著我們就能夠用 `BUILD_DEV=0 BUILD_PRERELEASE=1 webpack`, 或者 `BUILD_DEV=0 BUILD_PRERELEASE=1 webpack-dev-server --progress --colors`
+來帶入參數，注意到 `webpack -p` 壓縮程式碼的時候會把不會執行的程式碼區塊給移除，所以我們不需要擔心洩露機密的程式碼到最後產出的檔案中。
+
+### 7. 多個檔案(進入點程式, entrypoints)
+
+截至目前為止我們都只有一個 entry 即 `main.js` ，假設我們需要替`個人資料頁`和`訂閱頁面`各自加入自己擁有的 JS，因為我們不希望讓使用者在查閱個人資料時載入訂閱頁面需要的程式碼。所以我們需要打包成兩隻檔案，也就是這兩個頁面各自有自己的 entrypoint
+此時我們只需要修改設定檔
+
+~~~js
+// webpack.config.js
+var webpack = require("webpack");
+
+var definePlugin = new webpack.DefinePlugin({
+  __DEV__: JSON.stringify(JSON.parse(process.env.BUILD_DEV || 'true')),
+  __PRERELEASE__: JSON.stringify(JSON.parse(process.env.BUILD_PRERELEASE || 'false'))
+});
+
+module.exports = {
+  entry: {
+    Main: './main.js',
+    Profile: './profile.js',
+    Feed: './feed.js'
+  },
+  output: {
+    path: './build',
+    // publicPath: 'http://andyyou.github.io/', // 圖片等需要路徑引用的資源檔加上網址或路徑
+    publicPath: '/build/', // 因為有設定目錄，所以記得要補路徑，否則 require() 會取錯路徑。
+    // 注意: 尾巴的 / 要記得加否則會產出類似 http://andyyou.github.io600e2b78b83128cc2be868b3971d0999.jpg 的路徑
+    filename: '[name].bundle.js' // [name] 會使用 key 也就是上面大寫的 Main, Feed, Profile 等
+  },
+  module: {
+    loaders: [
+      { test: /\.coffee$/, loader: 'coffee-loader' },
+      { test: /\.js$/, loader: 'babel-loader'},
+      { test: /\.css$/, loader: 'style!css' },
+      { test: /\.scss$/, loader: 'style!css!sass'}, // => 透過 css-laoder 不只處理編譯好的 css, imports 同時包含 url(...)
+      // { test: /\.css$/, loader: 'raw!sass' }, // => 回傳編譯好的 css 程式碼單純只解析 imports 但不處理 url(...)
+      { test: /\.(png|jpg)$/, loader: 'url?limit=8192' } // 當檔案小於 8K 的時候會產生 base64 格式的 dataURI 超過的話則直接帶連結
+    ]
+  },
+  resolve: {
+    extensions: ['', '.js', '.json', '.coffee', '.scss', '.css']
+  },
+  plugins: [definePlugin],
+}
+~~~
+
+設好之後，接著我們就可以透過 `<script src="build/Profile.bundle.js"></script>` 針對個別頁面載入
+
+### 8. 優化通用的程式碼
+
+假設上面的 Feed 和 Profile 有很多通用的部分(比如說 React 元件和通用的樣式)
+webpack 會分析他們哪些是共用的部分，如此一來共享的部分就會直接被快取，不用再重新載入一次。
+透過使用 `new webpack.optimize.CommonsChunkPlugin` 如下
+
+~~~js
+// File: webpack.config.js
+var webpack = require("webpack");
+
+var definePlugin = new webpack.DefinePlugin({
+  __DEV__: JSON.stringify(JSON.parse(process.env.BUILD_DEV || 'true')),
+  __PRERELEASE__: JSON.stringify(JSON.parse(process.env.BUILD_PRERELEASE || 'false'))
+});
+
+var commonsPlugin = new webpack.optimize.CommonsChunkPlugin('common.js');
+// => 注意到這邊的參數會轉換成檔名輸出所以請記得加副檔名
+
+module.exports = {
+  entry: {
+    Main: './main.js',
+    Profile: './profile.js',
+    Feed: './feed.js'
+  },
+  output: {
+    path: './build',
+    // publicPath: 'http://andyyou.github.io/', // 圖片等需要路徑引用的資源檔加上網址或路徑
+    publicPath: '/build/', // 因為有設定目錄，所以記得要補路徑，否則 require() 會取錯路徑
+    // 注意: 尾巴的 / 要記得加否則會產出類似 http://andyyou.github.io600e2b78b83128cc2be868b3971d0999.jpg 的路徑
+    filename: '[name].bundle.js'
+  },
+  module: {
+    loaders: [
+      { test: /\.coffee$/, loader: 'coffee-loader' },
+      { test: /\.js$/, loader: 'babel-loader'},
+      { test: /\.css$/, loader: 'style!css' },
+      { test: /\.scss$/, loader: 'style!css!sass'}, // => 透過 css-laoder 不只處理編譯好的 css, imports 同時包含 url(...)
+      // { test: /\.css$/, loader: 'raw!sass' }, // => 回傳編譯好的 css 程式碼單純只解析 imports 但不處理 url(...)
+      { test: /\.(png|jpg)$/, loader: 'url?limit=8192' } // 當檔案小於 8K 的時候會產生 base64 格式的 dataURI 超過的話則直接帶連結
+    ]
+  },
+  resolve: {
+    extensions: ['', '.js', '.json', '.coffee', '.scss', '.css']
+  },
+  plugins: [definePlugin, commonsPlugin],
+}
+~~~
+
+事實上 webpack 檢查的就只是重複 require 的部分，當多個 entrypoint 都有使用到某個模組，就可以透過上面的方式提出。
+如此一來在 html 則要加入 `<script src="build/common.js">` 否則會爆。這麼做就可以享受瀏覽器為我們快取檔案的優點。
+
+### 9. 非同步載入
+
+CommonJS 標準屬於同步的處理方式但是 webpack 提供了一種方式來達到非同步處理相依性載入
+這通常對於 client 端有使用路由的狀況非常實用，假設您透過路由來取得的每個頁面，但是您不希望直接就下載所有程式碼直到程式運行真的需要該部分程式碼的時候才下載。
+這個時候我們就可以使用 `require.ensure()` 的方式來載入模組
+
+下面是範例的程式碼，ensure 的第一個參數是相依的模組，類似於 RequireJS 的 `define()`
+
+~~~js
+if (window.location.pathname === '/feed') {
+  showLoadingState();
+  require.ensure([], function() {
+    hideLoadingState();
+    require('./feed').show(); // 當這個函式被呼叫，模組保證被同步載入可以使用
+  });
+} else if (window.location.pathname === '/profile') {
+  showLoadingState();
+  require.ensure([], function() {
+    hideLoadingState();
+    require('./profile').show();
+  });
+}
+~~~
+
+webpack 會幫您處理剩下的事情，產生因為非同步設定而需要額外 chunk 檔案
+有點難懂，沒關係我們現在先新增另外一個模組 `benz.js`
+
+~~~js
+module.exports = "It's from module Benz";
+~~~
+
+然後在我們的 main.js 放入
+
+~~~js
+if (window.location.pathname === '/profile.html') {
+  require.ensure([], function () {
+    console.log(require("./benz"));
+    document.write(require("./benz"));
+  })
+}
+~~~
+
+編譯之後會看到如下圖，官方文件提到的 chunk 實際上就是 webpack 處理過後依照需求區分的`程式碼片段`
+
+{% asset_img webpack-5.png%}
+
+# webpack-dev-server
+
+webpack-dev-server 是一個小型的 node.js [Express](http://expressjs.com/) 伺服器，其使用 `webpack-dev-middleware` 來取得 webpack 封裝的結果。
+在運行時也有使用 socket.io 使其可以即時發送編譯後的資訊到客戶端
+同時這個開發伺服器也可以根據不同需求使用不同的模式，假設我們採用下面這組設定檔
+
+~~~js
+module.exports = {
+  entry: {
+    app: ["./app/main.js"]
+  },
+  output: {
+    path: './build',
+    publicPath: "/assets/",
+    filename: "bundle.js"
+  }
+}
+~~~
+
+上面這組設定的意思您現在應該很請楚了，即我們有一隻進入點的程式(檔案)在 `app/main.js` ，webpack 將會打包 entrypoint 成 bundle.js 檔案到 bundle 目錄。
+同時我們也回顧一下光 entry 的設定就多種組合
+
+~~~js
+module.exports = {
+  // 1
+  entry: {
+    app: ["./app/main.js"]
+  },
+  // 2
+  entry: "./app/main.js",
+  // 3
+  entry: {
+    app: "./app/main.js"
+  },
+  // 4
+  entry: ["./a.js", "./b.js"],
+}
+~~~
+
+如果使用陣列的方式設定，所有的模組會在啟動時被載入，而最後一個檔案會被匯出。另外注意到如果適用第四種方式然後在 output 也使用了 `[name]` 那這個 name 預設是 `main`
+而想要多個 entrypoint 檔案的話則透過物件的格式，webpack 就會產生多個 entrypoint bundle。
+
+### 預設一般模式(Inline mode)
+
+剛剛我們提到 webpack-dev-server 有不同的模式，現在我們就來瞭解一下其中一個 inline 模式。
+一般情況下 webpack-dev-server 會處理當前目錄的檔案(就是你下指令時的那個目錄)，除非您有指定 `content-base`
+
+~~~bash
+$ webpack-dev-server --content-base build/
+~~~
+
+使用了這個設定，webpack-dev-server 就會處理你指定的那個目錄，預設 webpack-dev-server 就會自動監視該目錄下的檔案，當發生改變就會自動重新編譯。
+不過這些編譯只會放到記憶體並和 `publicPath` 的路徑關聯，而不會產生實體檔案。
+當 bundle 已經存在在相同路徑時也就是已經產生檔案，記憶體中的會優先使用。
+舉上面一開始的設定檔為例，這個 bundle 封裝結果可以透過 `localhost:8080/assets/bundle.js` 存取
+
+為了測試這個結果我們需要建立一個 html
+
+~~~html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+</head>
+<body>
+  <script src="bundle.js"></script>
+</body>
+</html>
+~~~
+
+當啟動 webpack-dev-server 之後，預設我們就可以透過 `localhost:8080` 來存取網站，而上面的設定檔加上了 `publicPath` 所以結果網址會是 `localhost:8080/assets/`
+
+### 即時更新模式(Hot mode)
+透過把專用的 script 加到 index.html，您的專案就會得到 live reload 的功能。
+
+~~~html
+<!DOCTYPE html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Document</title>
+</head>
+<body>
+  <!-- It is important that you point to the full url -->
+  <script src="http://localhost:8080/webpack-dev-server.js"></script>
+  <script src="bundle.js"></script>
+</body>
+</html>
+~~~
+
+對了，這個功能當然也需要修改一點點設定
+
+~~~js
+module.exports = {
+  entry: {
+    app: ["webpack/hot/dev-server", "./app/main.js"]
+  },
+  output: {
+    path: "./build",
+    filename: "bundle.js"
+  }
+};
+~~~
+
+然後執行指令時要加入 `--hot` 參數
+
+~~~bash
+$ webpack-dev-server --content-base build/ --hot
+~~~
+
+### 即時更新模式 + 訊息顯示
+
+當您啟動了 webpack-dev-server 您也可以瀏覽 `localhost:8080/webpack-dev-server/` 透過這個連結您不只會看到您的內容，同時上方會有一些訊息提示。
+並且如果您採用這個連結，檔案並不需要加入剛剛那支特殊的 `webpack-dev-server script`
+所以一般建議的開發流程我們的 html 不用特地加入 script 然後使用 `localhost:8080/webpack-dev-server/` 來觀察其結果。
+
+{% asset_img webpack-6.png%}
+
+> 因為 index.html 大多數的時候不會需要靠 webpack 編譯(除非您改用 jade 或 slim)，所以當然不會被列在 watch 的檔案中。
+
+### webpack-dev-server 指令與參數
+
+一般來說所有的 webpack 參數同等於 webpack-dev-server 參數，不過 `output` 除外。當然您也可以透過 `--config` 來指定設定檔。
+下面是一些額外的參數
+
+* `--content-base`: 指定專案目錄
+* `--quiet`: 不要輸出任何資訊到 console
+* `--colors`: 彩色的輸出資訊
+* `--no-info`: 去除一些不太必要的資訊
+* `--host`: 設定 hostname 或 IP
+* `--port <number>`: 設定 port
+* `--inline`: 內嵌一個 webpack-dev-server 到封裝裡
+* `--hot`: 加入 `HotModuleReplacementPlugin` 並切換到即時更新模式 hot mode ，注意不能加入該 plugins 兩次
+* `--https`: 啟用 https 協定
+
+上面這些參數都可以加入 webpack.config.js
+
+~~~js
+module.exports = {
+    // ... webpack.config.js stuff ...
+    devServer: {
+        contentBase: "./build",
+        noInfo: true, //  --no-info option
+        hot: true,
+        inline: true
+    }
+}
+~~~
+
+# 深入 loaders
+
+### 何謂 loaders ?
+loaders 就是轉換工具，用來把資源檔也就是我們的 js, css 等等這些模組轉換套用到程式上。它們是 node.js 中執行的函式，將資源檔當作參數取得其中的程式碼，轉換並傳回新的程式碼。舉例來說您可以使用 loaders 來告訴 webpack 如何處理並載入 CoffeeScript 或 JSX
+
+### 功能
+* loader 可以被串連使用，即把一個資源檔從 A loader 交付給 B loader。講的太難懂，那我們先舉個在 Linux 底下所謂的 pipeline 的例子 `ls | grep filename` 在 Linux 底下我們可以透過 `|` 來做 pipeline，其行為就是先執行 `ls` 指令再把 `ls` 處理完的結果交給下一個指令。
+在上面的例子中 `require("!style!css!./style.css");` 就是一樣的意思把 `style.css` 交給 `css-loader` 先處理，處理完的結果再交給 `style-loader`。最終 loader 被預期傳回 Javascript，其他過程中的 loader 則可以傳回任意格式。
+* loader 可以套用同步或者非同步的行為
+* loader 運行在 node.js 環境中，且應該可以做到任何您想要的功能
+* loader 允許加入參數，其格式就像 HTTP 的 querystring 一樣，所以我們可以在設定檔或指令中帶入參數
+* loader 可以針對副檔名或正規表示式來設定要處理的檔案
+* loader 可以透過 npm 來發佈或安裝
+* 除了正常 `package.json` 的 `main`，一般模組就我們在寫 JS 的 `module.exports` 也可以匯出 loader
+* loader 可以存取設定檔
+* 擴充套件可以賦予 loader 更多功能
+* loader 可以散播額外的任意檔案
+* 其他
+
+如果您對其他 loader 範例有興趣可以參考[列表](http://webpack.github.io/docs/list-of-loaders.html)
+
+### 解析 loader
+loader 被解析的方式類似於模組。一個 loader 模組一般來說會需要輸出一個 function，且與 node.js 相容的 Javascript。在大部份的情況下我們透過 npm 來管理 loader
+不過您也可以將 loader 當作程式中的檔案來處理
+
+### 參考(匯入) loader
+
+雖然這不是強制的，但依照慣例 loader 通常命名微 `xxx-loader`，而 `xxx` 就是其功能與描述的名稱也是我們在 pipeline 使用的名稱。例如 `json-loader`
+您也許會用完整名稱來引用該 loader(json-loader) 或者透過縮寫即 json
+關於 loader 命名慣例和搜尋的優先順序被定義在 webpack 設定檔的 `resolveLoader.moduleTemplates`
+
+### 安裝
+
+如果 loader 存在，通常我們會直接透過 npm 安裝
+
+~~~bash
+$ npm install xxx-loader --save
+$ npm install xxx-loader --save-dev
+~~~
+
+### 使用方式
+
+在您的專案中可以使用不同的方式來使用 loader
+
+* 明確的寫在 `require` 中
+* 在設定檔指定
+* 直接透過指令參數設定
+
+### 明確的寫在 `require` 中
+
+注意: 盡量避免使用這種方式，而採用設定檔的慣例來設定 loader
+這種方式是透過在 `require` 語句(或者 `define`, `require.ensure`) 中指定會採用的 loaders。透過 `!` 將 loader 區隔。
+此時會相對於當前目錄去解析路徑
+
+~~~js
+require("./loader!./dir/file.txt");
+// => 使用在該目錄下的 loader.js 檔案來轉換 dir/file.txt 檔案
+
+require("jade!./template.jade");
+// => 使用 jade-loader (npm 安裝的模組) 來轉換 template.jade
+
+require("!style!css!less!bootstrap/less/bootstrap.less");
+// => 將 bootstrap/less/bootstrap.less 檔案透過 less-loader 先轉換成 css 再將結果傳給 css-loader 最後傳給 style-loader
+~~~
+
+### 在設定檔中指定
+
+您也可以透過正規表示式 RegExp 來設定
+~~~js
+{
+  module: {
+    loaders: [
+      { test: /\.jade$/, loader: "jade" },
+      // => jade loader 被用來處理 .jade 檔案
+      { test: /\.css$/, loader: "style!css" },
+      // => style-loader 和 css-loader 被用來處理 .css 檔案
+      // => 下面是等價另一種格式的寫法
+      { test: /\.css$/, loader: ["style", "css"] },
+    ]
+  }
+}
+~~~
+
+### 指令
+
+當然您也可以透過指令參數來設定對應的 loaders
+
+~~~bash
+$ webpack --module-bind jade --module-bind 'css=style!css'
+~~~
+
+上面的指令會讓 jade-loader 對應處理 `.jade` 檔案，然後 style-loader 和 css-loader 針對 css 檔案
+
+### loader 參數(Query parameters)
+
+loader 可以透過在設定傳入參數，格式類似網址的 query string。這個參數只要在該 loader 後面加上 `?` 舉例來說 `url-loader?mimetype=image/png`
+
+注意: 至於 query string 的格式則是由 loader 來決定。通常會在該 loader 的文件上說明。大部份的 loader 參數的格式會是 `?key=value&hey=hi` 或者 `?{"key": "value", "key2": "value2"}`
+整個設定寫起來會如下
+
+~~~js
+require("url-loader?mimetype=image/png!./file.png");
+~~~
+
+
+用在設定檔中
+
+~~~js
+{ test: /\.png$/, loader: "url-loader?mimetype=image/png" }
+~~~
+
+或者
+
+~~~js
+{
+    test: /\.png$/,
+    loader: "url-loader",
+    query: { mimetype: "image/png" }
+}
+~~~
+
+# 使用擴充套件
+
+擴充套件就是文件上說的 plugins，它是透過 webpack.config.js 的 `plugins` 屬性來載入模組之中，如下面設定
+
+~~~js
+var webpack = require("webpack");
+
+module.exports = {
+    plugins: [
+        new webpack.ResolverPlugin([
+            new webpack.ResolverPlugin.DirectoryDescriptionFilePlugin("bower.json", ["main"])
+        ], ["normal", "loader"])
+    ]
+};
+~~~
+
+### 其他擴充套件
+
+如果不是內建的 plugins 則通常需要透過 npm 來安裝，裝完之後照下面這樣使用即可
+
+~~~js
+var ComponentPlugin = require("component-webpack-plugin");
+module.exports = {
+    plugins: [
+        new ComponentPlugin()
+    ]
+}
+~~~
+
+# 總結
+
+經過一輪練習之後，如果您要使用 webpack-dev-server 在設定上路徑會是比較需要注意的地方，然後就是記得 webpack-dev-server 的輸出會放在記憶體。
+雖然現在官方文件比較沒有詳細的範例，不過您還是可以找到[其他](https://leanpub.com/survivejs_webpack_react)。
+希望在這篇之後各位能夠對這個起手式有些認識也應該都具有使用 webpack 的基礎能力。
+
+
+[示範多檔編譯](https://github.com/webpack/webpack/tree/master/examples/multiple-entry-points)
+[Webpack + React 中文](https://fakefish.github.io/react-webpack-cookbook/Introduction-to-Webpack.html)
+[Webpack with Rails](http://clarkdave.net/2015/01/how-to-use-webpack-with-rails/)
+[react-hot-loader](http://gaearon.github.io/react-hot-loader/getstarted/)
+[深入了解 webpack plugins](http://rhadow.github.io/2015/05/30/webpack-loaders-and-plugins/)

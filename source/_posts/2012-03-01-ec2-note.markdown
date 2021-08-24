@@ -1,0 +1,43 @@
+---
+layout: post
+title: 'Ec2 Note'
+date: 2012-03-01 23:56:00
+categories: Cloud
+tags: [aws]
+---
+
+登入 Login
+----------
+
+~~~bash
+$ ssh -i /path/key/filename.pem ec2-user@xxx.xxx.xxx.xxx  # OR DNS Pub Url
+~~~
+
+注意：/path/key/filename.pem的權限須為600。
+
+<!--more-->
+
+變更登入不使用憑證
+------------------
+
+~~~bash
+#Edit  /etc/ssh/sshd_config
+#Edit PasswordAuthentication no  to yes
+$ sudo /sbin/service sshd restart #Restart sshd
+$ passwd ec2-user #Setting ec2-user password
+~~~
+
+快速安裝LAMP
+------------
+
+~~~bash
+$ yum groupinstall "Web Server"
+$ yum groupinstall "MySQL Database"
+~~~
+
+參考資源
+--------
+[阿正老師教你免費玩Amazon EC2雲端主機(上)](http://blog.soft.idv.tw/?p=823)
+[阿正老師教你免費玩Amazon EC2雲端主機(下)](http://blog.soft.idv.tw/?p=824)
+[How to create an Amazon EC2 instance with Apache, PHP and MySQL (LAMP)](http://www.robotmedia.net/2011/04/how-to-create-an-amazon-ec2-instance-with-apache-php-and-mysql-lamp/)
+[快速安裝 Amazon EC2 LAMP 環境 (EC2 Console)](http://blog.wu-boy.com/2011/05/%E5%BF%AB%E9%80%9F%E5%AE%89%E8%A3%9D-amazon-ec2-lamp-%E7%92%B0%E5%A2%83-ec2-console/)

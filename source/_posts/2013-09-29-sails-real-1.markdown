@@ -1,0 +1,147 @@
+---
+layout: post
+title: 'Sails 實作筆記'
+date: 2013-09-29 10:14:00
+categories: Program
+tags: [framework, javascript]
+---
+
+# 何謂 sails.js
+<br />
+[sails](http://balderdashy.github.io/sails/) 其實就跟 `Rails` ，`ASP.NET MVC` 類似，是一個 MVC 的 Web 框架。目標是協助您快速的用 nodejs 開發出企業等級的網站（註：由於開發團隊仍在開發中，所以要採用前請先審慎評估XDD）。所以就跟其他框架一樣，他讓我們不用再重新造輪子，整合一般網站開發常用的功能，並且重點是支援許多 nodejs 特有的強項，特別是在開發聊天室這類的應用程式更顯得出效能。本篇文章僅僅透過實作一些基礎，讓我們快速的感受一下 sails 。
+<!--more-->
+
+# 安裝 sails.js
+<br />
+
+				$ npm -g install sails  // -g：安裝到系統路徑
+
+<br />
+# 建立專案
+<br />
+
+				$ sails new [project_name]
+				$ sails new [project_name] --linker // 使用 linker 用來整和壓縮 css 和 js 的套件
+				$ sails new [project_name] --template=jade // 預設樣板引擎是 `ejs` 可以換成 `jade`
+
+<br />
+# 安裝相依套件
+<br />
+
+				$ cd [project_name]
+				$ npm install
+				$ npm install jade --save  // 安裝 jade 並且更新 package.json
+
+<br />
+# 啓動測試網站
+<br />
+
+        $ sails lift
+
+<br />
+依照指示說明在瀏覽器輸入 `http://localhost:1337` 就可以看到預設畫面。
+<br />
+
+# 初識路由和目錄結構
+<br />
+路由設定在 `config/routes.js` ，打開該檔案我們會看到如下程式碼：
+
+				module.exports.routes = {
+					'/' : {
+						view: 'home/index'
+					}
+				}
+![](http://i.imgur.com/tOhZOb3.png)
+<br />
+<br />
+# 嘗試編輯
+<br />
+將 `view: 'home/index'` 改成 `view: 'static/index'` 。然後我們在 `views` 目錄底下建立一個 `static` 目錄，接著在裡面再建立一個 `index.ejs` 或 `index.jade` 。隨便輸入一些資料，例如
+
+				h2 Hello, This is our page using Jade
+
+或者
+
+				<h2>Hello, This is our page using EJS</h2>
+
+注意：這邊我們先不做太多解釋與設定，純粹先實作讓大家感受一下 Sails 這個框架。如果使用 jade 請記得整個 view 應該是這樣：
+
+				extends ../layout
+
+				block body
+					h2 Hello, This is our page using Jade
+
+接著我們使用 `sails lift` 指令來觀看我們的修改。
+<br />
+# 加入 bootstrap
+<br />
+到目前為止我們只有使用到 view ，我們來嘗試組織一下專案加入 bootstrap。到 bootstrap3 官網下載 zip 並且把 `bootstrap.css` 放到 `assets/styles/` 目錄底下。
+
+編輯 `views/static/index.jade` 或 `views/static/index.ejs` 加入
+
+				extends ../layout
+
+				block body
+					div.container
+						div.jumbotron
+						h1 activityOverlord
+						h2 ...tracking app activity better than the NSA since 1899.
+						a(href='/user/new', class='btn btn-lg btn-success') Sign up now!
+
+或者
+
+				<div class="container">
+					<div class="jumbotron">
+						<h1>activityOverlord</h1>
+						<h2>...tracking app activity better than the NSA since 1899.</h2>
+						<a href="/user/new" class="btn btn-lg btn-success">Sign up now!</a>
+					</div>
+				</div>
+<br />
+# 修改 Layout
+<br />
+在 `Sails` 裡面跟其他 MVC 框架一樣預設都幫您提出一個 `layout` 樣板，而每個 view 則會嵌入到 `layout` 的 body 中。例如 jade 是 `block body` ， `ejs` 是 `<%- body %>` 。如此一來相同的部分我們就可以放入 `layout` 之後如果需要修改，就只要修改一次。
+<br />
+# layout.jade 如下
+<br />
+
+				!!!
+				html
+					head
+						title= title
+
+						// Viewport mobile tag for sensible mobile support
+						meta(name="viewport",content="width=device-width, initial-scale=1, maximum-scale=1")
+
+						link(rel="stylesheet",href="/styles/bootstrap.css")
+						link(rel="stylesheet",href="/styles/custom.css")
+						block styles
+
+
+					body
+						div.navbar.navbar-inverse.navbar-fixed-top
+							div.container
+								a.navbar-brand(href="/") Activity Overload  
+
+						block body
+
+						div.container
+							hr
+							footer.footer.pull-right
+								div
+									a(href="http://sailsjs.com/") Sails.js
+								div tutorial by irl nathan, with a bunch of help from cody, gabe, heather, mike, scott and zoli
+						// A few key dependencies, linked in order
+
+						// Bring in the socket.io client
+						script(type="text/javascript", src="/js/socket.io.js")
+
+						// then beef it up with some convenience logic for talking to Sails.js'
+						script(type="text/javascript", src="/js/sails.io.js")
+
+						// listen on socket.io for incoming messages
+						script(type="text/javascript", src="/js/app.js")
+
+<br />             
+其他 ejs 範例可以透過 [ActivityOverloadd範例](https://github.com/irlnathan/activityoverlord) 下載
+原文影片教學在此 [連結](http://irlnathan.github.io/sailscasts/blog/archives/)，這篇文章讓我們先感受一下使用 Sails.js 這個 nodejs 框架使用起來的感覺。後續會補上教學。

@@ -1,0 +1,510 @@
+---
+layout: post
+title:  "Rails 精簡練習"
+date: 2015-04-04 12:00:00
+categories: Program
+tags: [ruby, RoR]
+---
+
+# 指令練習
+
+~~~bash
+$ rails generate scaffold User name:string bio:text birthday:date
+$ rails destroy scaffold User
+$ rails g scaffold Post name --skip-assets
+$ rails db
+$ rails console
+$ rails g controller posts # 複數
+$ rails g controller posts index new create # 後面可以接 action
+$ rails g model Post title body:text
+$ rails d model post
+
+$ rake db:setup
+$ rake db:migrate
+$ rake db:migrate:status
+$ rake routes
+~~~
+
+# 手刻練習
+
+
+1. 建立文章控制器 posts_controller.rb
+2. 加入 resources :posts 路由
+3. 加入 列表 action `index`
+4. 建立 index view
+5. 加入 新增 action `new`
+6. 加入 new view 重點在 form_for 表單
+7. 新增 post model `rails g model post title body:text`
+8. 建立 create action 來儲存 model，記得補上驗證
+9. 建立 show view 顯示單筆資料
+10. Model 可以建立之後把 index view 補上 each do
+11. 把 new view 抽出 _form 然後建立 edit action and update
+12. 補上 destroy action
+13. 加上關聯的 comment 留言 model
+14. 補上 model 關聯的設定
+15. 路由設定
+16. 建立 comments_controller.rb
+17. comments 這個 controller 是依附在 posts 底下，加上巢狀 resources 會得到 `/posts/:post_id/comments` 所以注意表單 `form_for([@post, @post.comments.build])` 的部分
+18. 建立 create action 重點在 `@post = Post.find(params[:post_id])` 和 `@comment = @post.comments.create(params[:comment].permit(:name, :body))`
+19. 注意 view 的 _form 部分
+20. view 總共會建立 3 個 _form, _comment, 再修改 posts/show 使用 render "comments/form"
+21. 實作 comments_controller 的 `destroy` action ，記得要從 @post.commetns.find() -> destroy
+22. models/post.rb 記得 dependent: :destroy
+
+
+## 1.
+
+~~~bash
+$ rails g controller posts
+~~~
+
+## 2. 修改 `config/routes.rb`
+
+~~~ruby
+resources :posts
+root "posts#index"
+~~~
+
+## 3. 加入 action
+
+~~~ruby
+class PostsController < ApplicationController
+
+  def index
+  end
+
+end
+~~~
+
+## 4. 加入 index view
+
+~~~erb
+<h1>Hello world!</h1>
+~~~
+
+## 5. 實作新增 new
+
+~~~ruby
+class PostsController < ApplicationController
+  #...
+
+  def new
+  end
+end
+~~~
+
+
+## 6. 在 `app/views/posts/new.html.erb` 新增表單，此時沒有 Model ，因為我們在 form_for 用 symbol
+
+~~~erb
+<%= form_for :post, url: posts_path do |f| %>
+  <%= f.label :title %>
+  <%= f.text_field :title %>
+
+  <%= f.label :body %>
+  <%= f.text_field :body %>
+
+  <%= f.submit %>
+<% end %>
+~~~
+
+此時當我們送出 post 的時候，第一沒有 create 的 action 因為 `resources :posts` 幫我們加上了 8 個路由，扣掉 put, patch 功能一樣有 7 組不同功能的路由
+
+~~~ruby
+get "posts" => "posts#index", :as => "posts" # 取得 posts_path helper
+post "posts" => "posts#create", :as => "posts"
+get "posts/:id" => "posts#show", :as => "post" # 注意單數，用的時候後面要帶 model 參數才能取得 :id
+get "posts/new" => "posts#new", :as => "new_post"
+get "posts/:id/edit" => "posts#edit", :as => "edit_post"
+put "posts/:id" => "posts#update", :as => "post"
+patch "posts/:id" => "posts#update", :as => "post"
+delete "posts/:id" => "posts#destroy", :as => "post"
+~~~
+
+
+## 7. 新增 Post Model
+
+~~~bash
+$ rails g model Post title body:test
+$ rake db:migrate
+~~~
+
+## 8. 在 controller 新增 create action
+
+~~~ruby
+def create
+  @post = Post.new(post_params)
+  @post.save
+  redirect_to @post
+end
+
+private
+def post_params
+  params.require(:post).permit(:title, :body)
+end
+~~~
+
+這個時候送出會產生錯誤，因為 `redirect_to @post` 的關係。一般情況下此時只要有對應的 `app/views/posts/show.html.erb` 就能 work 了
+
+
+## 9. 建立 show action 和 view
+
+~~~erb
+<h1><%= @post.title %></h1>
+
+<p><%= time_ago_in_words(@post.created_at) %></p>
+
+<p><%= @post.body %></p>
+~~~
+
+## 10. index 列表
+
+~~~erb
+<% @posts.each do |post| %>
+  <h2 ><%= link_to post.title, post_path(post)%></h2>
+  <p class="date"><%= post.created_at.strftime("%B %d, %Y") %></p>
+<% end %>
+~~~
+
+## 11. 加入 comment
+
+~~~bash
+$ rails g model Comment name:string body:text post:references
+$ rake db:migrate
+~~~
+
+~~~ruby
+# post.rb
+
+class Post < ActiveRecord::Base
+  has_many :comments
+  validates :title, presence: true, length: { minimum: 5 }
+  validates :body, presence: true
+end
+
+# routes.rb
+
+resources :posts do
+  resources :comments
+end
+~~~
+
+因為現在 Comment model 是關聯在 Post model 下面，所以 `@post = Post.find(params[:post_id])` 當我們要在 CommentsController 找 Post 需要 `:post_id`
+
+~~~ruby
+class CommentsController < ApplicationController
+  def create
+    @post = Post.find(params[:post_id])
+    @comment = @post.comments.create(params[:comments].permit(:name, :body))
+
+    redirect_to post_path(@post)
+  end
+end
+~~~
+
+
+
+# form_for
+form_for 的用途是建立一個 html 的 form 表單，讓使用者可以透過 form 把資料傳回後端，新增或者更新某個指定物件的屬性。
+這個方法(method)有幾種稍微不同的用法，取決於您想從 Rails 的 Model 中自動對應多少東西，或者說自動處理掉 Model 對應的部分
+針對一般情況的 Model，我們透過傳入 form_for 一個字串或 symbol 來表示我們要對應的物件
+
+
+~~~erb
+#--- erb
+
+<%= form_for :xx do |f|%>
+  <%= f.text_field :oo %>
+<% end %>
+
+#--- 輸出
+
+<form method="post" accept-charset="UTF-8" action="同一個路由">
+  <input name="utf8" value="✓" type="hidden">
+  <input name="authenticity_token" value="EsXGzijdB1Wx8f5FNtO+l8XDEpoA49Ko7nJsZw+Tb5N5BpIQPs3NCw9iO5gwZTkJgyzDm48GHDQCkPwwcFa2WA==" type="hidden">
+  <input id="xx_oo" name="xx[oo]" type="text">
+<form >
+
+#-- 協助記憶
+
+<%= form_for :object do |f| %>
+  <%= f.text_field :attribute %>
+<% end %>
+
+#--- 您也可以單純用 text_field，在 yield 中的 f 變數是一個 FormBuilder 物件，透過與 Model 物件或者 symbol 的定義合作產生表單
+
+#--- erb
+<%= text_field :a, :b %>
+<%= text_field :person, :name %>
+#--- 輸出
+<input type="text" id="a_b" name="a[b]">
+<input type="text" id="person_name" name="person[name]">
+
+#--- 當 submit 的時候會收到 params[:a][:b], params[:pserson][:name]
+
+
+#--- 此時如果有一個 @a 的變數傳進來預設就會初始化帶入這些欄位
+#--- 範例
+#--- view/
+<input type="text" id="a_b" name="a[b]">
+
+#--- controller/
+class SomeController < ApplicationController
+  class A
+    attr_accessor :b
+  end
+
+  def action
+    @a = A.new
+    @a.b = "What happen?"
+  end
+end
+
+#--- 如此 view 的 a[b] 就會自動帶入 What happen?
+~~~
+
+在 form_for 右邊還可以帶入參數
+* url 可以修改 submit 的網址即 action="url here"
+* namespace 替內部的 input id 再加上特殊的前綴字例如上面本來是 `a_b` 如果加上 namespce: 'x' 就會變成 `x_a_b`
+* html 其他原生 html  的屬性 e.g. `:html => { :multipart => true }`
+* 針對表單還有 FormOptionHelper 和 DateHelper 可以針對下拉式選單或日期做處理
+
+注意 form_for 本身不會建立一個獨立的 scope ，意味著您看同時混搭 FormHelper 和 FormTagHelper
+
+~~~erb
+<%= form_for :person do |f| %>
+  <%= f.text_field :first_name %>
+  <%= text_area :last_name %>
+  <%= check_box_tag "person[admin]", "1", @person.company.admin? %>
+  <%= f.submit %>
+<% end %>
+~~~
+
+# form_for 搭配 Model
+在上面的範例，會根據傳入 form_for 的 symbol 去產生對應的 from 表單 name 屬性，如此一來可以被對應為一個物件，如果您傳入的是字串那麼意思也是一樣的。
+我們也可以把 Model 物件本身當作參數傳入，如果 `@person` 存在且您想編輯它那麼您可以直接使用如下
+
+~~~erb
+<%= form_for @person do |f| %>
+  ...
+<% end %>
+~~~
+
+這麼寫的行為幾乎跟您使用 symbol 一樣，不過有些微不同，首先是表單的前綴字即用 model 的 class name ， 且 form 會有 id 且會根據 new 或 edit 不同
+當然如果不想被綁死您也可以修改
+
+~~~erb
+<%= form_for(@person, as: :client) %>
+<% end %>
+~~~
+
+其次是當該物件已經被初始化或者說有值的時候對應 attributes 的欄位會自動帶入該值，因此如果該 view 已經有個變數 `post`
+也可以這樣寫
+
+~~~erb
+<%= form_for post do |f| %>
+<% end %>
+~~~
+
+在剛剛的範例中，雖然我們沒有明確的指定，但我們還是要使用 `:url` 來指定 post 的目標。
+然而如果我們的物件有透過 resources 指定路由的話路徑就會自動處理
+例如
+
+~~~erb
+<%= form_for @post do |f| %>
+<% end %>
+
+# 會等於
+<%= form_for @post, as: :post, url: post_path(@post), method: :patch, html: { class: "edit_post", id: "edit_post"} do |f| %>
+
+# 如果 @post 是剛初始化的話
+<%= form_for(Post.new) do |f| %>
+  ...
+<% end %>
+
+<%= form_for @post, as: :post, url: posts_path, html: { class: "new_post", id: "new_post" } do |f| %>
+  ...
+<% end %>
+
+# 當然也可以覆寫
+
+<%= form_for(@post, url: super_post_path) do |f| %>
+
+# 或者設定回應的格式
+<%= form_for(@post, format: :json) dp |f| %>
+
+# 針對 namespace 路由 e.g. admin_post_url
+<%= form_for([:admin, @post]) do |f|>
+
+# 如果是關聯的子物件屬性
+<%= form_for([@post, @comment]) do |f| %>
+~~~
+
+關掉 id
+
+~~~erb
+<%= form_for(@post) do |f| %>
+  <%= f.fields_for(:comments, include_id: false) do |cf| %>
+    ...
+  <% end %>
+<% end %>
+~~~
+
+也可以改用別的 FormBuilder
+
+~~~erb
+<%= form_for @person, url: { action: "create" }, builder: LabellingFormBuilder do |f| %>
+# 照上面的範例如果我們用
+<%= render f %>
+# 則會 render people/_labelling_form 的樣板
+~~~
+
+# redirect_to 的用法
+將瀏覽器重新定向到參數(options)中指定的目標，這個參數可以用下面格式:
+(Hash, Model Record, String 搭配 protocol://, String, :back) 總結來說是三種格式
+
+* Hash - 這種格式是透過搭配 url_for 產生的
+
+~~~ruby
+redirect_to url_for(controller: 'posts', action: 'new')
+redirect_to :action => "new" # 就算你不加 url_for 預設也會幫您呼叫
+~~~
+
+* Record - 一筆紀錄其實就是您取出來的 model 本質上當您 `redirct_to @model` 時總結來說就是轉址到 `model_path(@model)`
+對應的路徑即 `/posts/:id` 就是 "posts#show" (PostsController > show action)。所以雖然我們上面沒有定義 show action 但只要有 view (`show.html.erb`)就能夠執行是因為 Rails 預設當找不到 action 的時候會直接去找對應 action 的 view。
+
+傳入紀錄的方式在內部是透過 `polymorphic_url` 來處理
+
+~~~bash
+  # 當我們使用 RESTful 路由時內部的各種狀況範例如下:
+  #
+  #   # 呼叫 post_url(post)
+  #   polymorphic_url(post) # => "http://example.com/posts/1"
+  #   polymorphic_url([blog, post]) # => "http://example.com/blogs/1/posts/1"
+  #   polymorphic_url([:admin, blog, post]) # => "http://example.com/admin/blogs/1/posts/1"
+  #   polymorphic_url([user, :blog, post]) # => "http://example.com/users/1/blog/posts/1"
+  #   polymorphic_url(Comment) # => "http://example.com/comments"
+  #
+  #
+  # ==== 其他範例
+  #
+  #   # an Article record
+  #   polymorphic_url(record)  # same as article_url(record)
+  #
+  #   # a Comment record
+  #   polymorphic_url(record)  # same as comment_url(record)
+  #
+  #   # it recognizes new records and maps to the collection
+  #   record = Comment.new
+  #   polymorphic_url(record)  # same as comments_url()
+  #
+  #   # the class of a record will also map to the collection
+  #   polymorphic_url(Comment) # same as comments_url()
+~~~
+
+* 字串 - 有使用 `protocol://` 例如: `http://` 就是直接傳入網址
+* 字串不搭配 protocol 就是 `//example.com` 會用當前的通訊協定
+* :back - 簡單的說就是 `redirect_to(request.env[&quot;HTTP_REFERER&quot;])` 的縮寫
+
+
+~~~yaml
+# 完整範例
+  redirect_to :action => "show", :id => 5
+  redirect_to post
+  redirect_to "http://www.rubyonrails.org"
+  redirect_to "/images/screenshot.jpg"
+  redirect_to articles_url
+  redirect_to :back
+# 搭配狀態
+  redirect_to post_url(@post), :status => :found
+  redirect_to :action=>'atom', :status => :moved_permanently
+  redirect_to post_url(@post), :status => 301
+  redirect_to :action=>'atom', :status => 302
+~~~
+
+# routes
+routing 模組使 Ruby 具有 rewrite URL 網址的能力，這是一種處理 Request 對應到 controller 及 action 的方式。
+主要是用來取代像是 apache 中 mod_rewrite 規則的功能。而在 Rails 中您可以不用動到 Server 的設定，只要設定 `config/routes.rb` 即可。
+
+建立路由的核心概念就像是列出一張對應表，對應 Requests 。這張對應表告訴系統該怎麼執行，其中必須要遵循一些規則樣式。
+
+~~~ruby
+Rails.application.routes.draw do
+  # Pattern 1 指定對應的 request 路徑到 controller
+  # Pattern 2 告訴他們去別的地方
+end
+~~~
+
+其中路由的功能還包含 helper 來協助生成網址
+
+最基本的 Pattern 1 類似於下面範例
+
+~~~ruby
+get '/products/:id', to: 'products#show' # 把 :id 傳入 params 然後把 request 交給 products_controller 的 show action 處理
+get '/products/:id', to: 'products#show', as: 'product' # 對應單數如此一來會產生 product_path helper
+# 使用 resources 方式一口氣產出 7 種不同的路由(實際上 patch, put 功能一樣總數有8個)
+resources :products # 複數
+
+# 這種 resources 的方式是透過 http method 搭配 url 組成一系列的路由，把 4 組 url + 5 個 http verbs = 7 組功能
+# 例如 DELETE /products/17 當 Rails 收到這組 Request 時，就會呼叫 products 的 destroy 並把 params 帶入
+get '/photos', to: 'photos#index'
+get '/photos' => 'photos#index' # 除了用 :to 還可以直接用 =>
+get '/photos/new', to: 'photos#new'
+get '/photos/:id', to: 'photos#show'
+post '/photos', to: 'photos#create'
+get '/photos/:id/edit', to: 'photos#edit'
+put '/photos/:id', to: 'photos#update'
+patch '/photos/:id', to: 'photos#update'
+delete '/photos/:id', to: 'photos#destroy'
+# 省略的寫法
+match 'messages/show' # 相等於 match 'messages/show'  => 'messages#show'
+match 'messages' => 'messages#index', :as => 'index'
+match "/messages/show/:id" => "messages#show", :constraints => {:id => /\d/} # 限制參數
+
+# 單數的 resource
+resources :post
+> new_post_path
+> edit_post_path
+> post_path
+
+# 命名空間的用法
+namespace :admin do
+  resources :photos
+end
+# 這樣的路徑會加上 admin -> /admin/posts
+
+# 如果單純想把前面沒有 /admin 的路由對應到 Admin::PostsController 則
+scope module: 'admin' do
+  resources :posts
+end
+
+# 或者
+
+resources :posts, module: 'admin'
+
+# 當某個 model 底下有子 model 時如
+class User < ActiveRecord::Base
+  has_many :order
+end
+
+class Order < ActiveRecord::Base
+  belongs_to :user
+end
+
+# 路由得設法
+resources :users do
+  resources :orders
+end
+~~~
+
+# render 方法 [文件](http://apidock.com/rails/ActionController/Base/render)
+
+渲染回應給瀏覽器的內容
+
+* 渲染 action (rendering an action)
+
+~~~ruby
+render :action => "goal"
+render :action => "short_goal", :layout => false
+render :action => "long_goal", :layout => "spectacular"
+~~~

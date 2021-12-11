@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Allow: /archives/
+Allow: /categories/
+Allow: /tags/
+Sitemap: https://andyyou.github.io/sitemap.xml
+Sitemap: https://andyyou.github.io/baidusitemap.xml

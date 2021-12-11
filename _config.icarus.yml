@@ -42,7 +42,7 @@ head:
         title: DEVLOG of andyyou
         # Page type (og:type) (optional)
         # You should leave this blank for most of the time
-        type: blog
+        type:
         # Page URL (og:url) (optional)
         # You should leave this blank for most of the time
         url: 
@@ -54,7 +54,7 @@ head:
         site_name: 
         # Page author (article:author) (optional)
         # You should leave this blank for most of the time
-        author: 
+        author:  andyyou
         # Page description (og:description) (optional)
         # You should leave this blank for most of the time
         description: 
@@ -69,7 +69,7 @@ head:
         # Facebook admin ID
         fb_admins: 
         # Facebook App ID
-        fb_app_id: 
+        fb_app_id: "450470251782295"
     # Structured data of the page
     # https://developers.google.com/search/docs/guides/intro-structured-data
     structured_data:
@@ -127,7 +127,7 @@ footer:
             url: 'https://creativecommons.org/licenses/by/4.0/'
         GitHub:
             icon: fab fa-github
-            url: 'https://github.com/ppoffice/hexo-theme-icarus'
+            url: 'https://github.com/andyyou/'
 # Article related configurations
 article:
     # Code highlight settings
@@ -158,51 +158,51 @@ search:
     type: insight
 # Comment plugin configurations
 # https://ppoffice.github.io/hexo-theme-icarus/categories/Plugins/Comment/
-comment:
-    type: disqus
-    # Disqus shortname
-    shortname: ''
+# comment:
+#     type: disqus
+#     # Disqus shortname
+#     shortname: ''
 # Donate plugin configurations
 # https://ppoffice.github.io/hexo-theme-icarus/categories/Plugins/Donation/
 donates:
     # "Afdian.net" donate button configurations
-    -
-        type: afdian
-        # URL to the "Afdian.net" personal page
-        url: ''
+    # -
+    #     type: afdian
+    #     # URL to the "Afdian.net" personal page
+    #     url: ''
     # Alipay donate button configurations
-    -
-        type: alipay
-        # Alipay qrcode image URL
-        qrcode: ''
+    # -
+    #     type: alipay
+    #     # Alipay qrcode image URL
+    #     qrcode: ''
     # "Buy me a coffee" donate button configurations
     -
         type: buymeacoffee
         # URL to the "Buy me a coffee" page
-        url: ''
+        url: 'https://www.buymeacoffee.com/andyyou'
     # Patreon donate button configurations
-    -
-        type: patreon
-        # URL to the Patreon page
-        url: ''
+    # -
+    #     type: patreon
+    #     # URL to the Patreon page
+    #     url: ''
     # Paypal donate button configurations
-    -
-        type: paypal
-        # Paypal business ID or email address
-        business: ''
-        # Currency code
-        currency_code: USD
+    # -
+    #     type: paypal
+    #     # Paypal business ID or email address
+    #     business: ''
+    #     # Currency code
+    #     currency_code: USD
     # Wechat donate button configurations
-    -
-        type: wechat
-        # Wechat qrcode image URL
-        qrcode: ''
+    # -
+    #     type: wechat
+    #     # Wechat qrcode image URL
+    #     qrcode: ''
 # Share plugin configurations
 # https://ppoffice.github.io/hexo-theme-icarus/categories/Plugins/Share/
-share:
-    type: sharethis
-    # URL to the ShareThis share plugin script
-    install_url: ''
+# share:
+#     type: sharethis
+#     # URL to the ShareThis share plugin script
+#     install_url: ''
 # Sidebar configurations.
 # Please be noted that a sidebar is only visible when it has at least one widget
 sidebar:
@@ -308,7 +308,7 @@ widgets:
         position: left
         type: adsense
         # AdSense client ID
-        client_id: 'pub-3038600205998182'
+        client_id: 'ca-pub-3038600205998182'
         # AdSense AD unit ID
         slot_id: '6442659171'
     # Follow.it email subscription widget configurations

@@ -5,6 +5,7 @@ tags:
   - react
   - javascript
 categories: Program
+post_asset_folder: true
 ---
 
 ## 前言

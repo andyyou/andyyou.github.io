@@ -1,0 +1,610 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><meta><title>新世代建置工具解析(esbuild、Snowpack、Vite、wmr) - DEVLOG of andyyou</title><link rel="manifest" href="/manifest.json"><meta name="application-name" content="DEVLOG of andyyou"><meta name="msapplication-TileImage" content="/img/faicon.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="DEVLOG of andyyou"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="description" content="本文為翻譯自 Comparing the New Generation of Build Tools 一文加上更新補充。因建置工具更新速度關係，如遇部分內容無法實作或不一致請參考各官方文件。  過去的一年出現了一堆新的開發工具，它們緊跟著那些目前佔據前端世界的建置工具例如：webpack，Babel，Rollup，Parcel，create-react-app。 這些新工具的目的並不是實現一模一"><meta property="og:type" content="article"><meta property="og:title" content="DEVLOG of andyyou"><meta property="og:url" content="https://andyyou.github.io/2021/04/25/new-generation-of-build-tools-comparsing/"><meta property="og:site_name" content="DEVLOG of andyyou"><meta property="og:description" content="本文為翻譯自 Comparing the New Generation of Build Tools 一文加上更新補充。因建置工具更新速度關係，如遇部分內容無法實作或不一致請參考各官方文件。  過去的一年出現了一堆新的開發工具，它們緊跟著那些目前佔據前端世界的建置工具例如：webpack，Babel，Rollup，Parcel，create-react-app。 這些新工具的目的並不是實現一模一"><meta property="og:locale" content="zh_TW"><meta property="og:image" content="https://www.snowpack.dev/img/snowpack-unbundled-example-3.png"><meta property="og:image" content="https://i.imgur.com/4Q8jfcL.png"><meta property="og:image" content="https://i.imgur.com/RYDqioS.png"><meta property="og:image" content="https://i1.wp.com/css-tricks.com/wp-content/uploads/2021/03/s_864795E8DFCEBDF45A714B0A68D25726C4192DC77A541292A7CD86FFCB3E5238_1614545243859_wmr-in-browser.png?w=655&amp;ssl=1"><meta property="article:published_time" content="2021-04-25T11:09:22.000Z"><meta property="article:modified_time" content="2023-05-12T00:48:25.309Z"><meta property="article:author" content="andyyou"><meta property="article:tag" content="javascript"><meta property="twitter:card" content="summary"><meta property="twitter:image" content="https://www.snowpack.dev/img/snowpack-unbundled-example-3.png"><meta property="fb:app_id" content="450470251782295"><script type="application/ld+json">{"@context":"https://schema.org","@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"https://andyyou.github.io/2021/04/25/new-generation-of-build-tools-comparsing/"},"headline":"新世代建置工具解析(esbuild、Snowpack、Vite、wmr)","image":["https://www.snowpack.dev/img/snowpack-unbundled-example-3.png","https://i.imgur.com/4Q8jfcL.png","https://i.imgur.com/RYDqioS.png"],"datePublished":"2021-04-25T11:09:22.000Z","dateModified":"2023-05-12T00:48:25.309Z","author":{"@type":"Person","name":"https://avatars2.githubusercontent.com/u/665690?v=3&s=466"},"publisher":{"@type":"Organization","name":"DEVLOG of andyyou","logo":{"@type":"ImageObject","url":"https://andyyou.github.io/img/logo.png"}},"description":"本文為翻譯自 Comparing the New Generation of Build Tools 一文加上更新補充。因建置工具更新速度關係，如遇部分內容無法實作或不一致請參考各官方文件。  過去的一年出現了一堆新的開發工具，它們緊跟著那些目前佔據前端世界的建置工具例如：webpack，Babel，Rollup，Parcel，create-react-app。 這些新工具的目的並不是實現一模一"}</script><link rel="canonical" href="https://andyyou.github.io/2021/04/25/new-generation-of-build-tools-comparsing/"><link rel="icon" href="/img/favicon.png"><link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.2/css/all.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@9.12.0/styles/atom-one-dark.css"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@400;600&amp;family=Source+Code+Pro"><link rel="stylesheet" href="/css/default.css"><style>body>.footer,body>.navbar,body>.section{opacity:0}</style><!--!--><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/lightgallery@1.6.8/dist/css/lightgallery.min.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/justifiedGallery@3.7.0/dist/css/justifiedGallery.min.css"><script src="https://www.googletagmanager.com/gtag/js?id=G-C93NK5NEGP" async></script><script>window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+    
+        gtag('config', 'G-C93NK5NEGP');</script><script src="https://cdn.jsdelivr.net/npm/pace-js@1.0.2/pace.min.js"></script><!--!--><script data-ad-client="ca-pub-3038600205998182" src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js" async></script><meta name="generator" content="Hexo 5.4.0"></head><body class="is-2-column"><nav class="navbar navbar-main"><div class="container"><div class="navbar-brand justify-content-center"><a class="navbar-item navbar-logo" href="/"><img src="/img/logo.png" alt="DEVLOG of andyyou" height="28"></a></div><div class="navbar-menu"><div class="navbar-start"><a class="navbar-item" href="/">Home</a><a class="navbar-item" href="/archives">Archives</a><a class="navbar-item" href="/categories">Categories</a><a class="navbar-item" href="/tags">Tags</a><a class="navbar-item" href="/about">About</a></div><div class="navbar-end"><a class="navbar-item" target="_blank" rel="noopener" title="Download on GitHub" href="https://github.com/andyyou"><i class="fab fa-github"></i></a><a class="navbar-item search" title="搜尋" href="javascript:;"><i class="fas fa-search"></i></a></div></div></div></nav><section class="section"><div class="container"><div class="columns"><div class="column order-2 column-main is-8-tablet is-8-desktop is-8-widescreen"><div class="card"><article class="card-content article" role="article"><div class="article-meta is-size-7 is-uppercase level is-mobile"><div class="level-left"><span class="level-item"><time dateTime="2021-04-25T11:09:22.000Z" title="2021/4/25 下午7:09:22">2021-04-25</time>發表</span><span class="level-item"><time dateTime="2023-05-12T00:48:25.309Z" title="2023/5/12 上午8:48:25">2023-05-12</time>更新</span><span class="level-item"><a class="link-muted" href="/categories/Program/">Program</a></span><span class="level-item">1 小時讀完 (大約9369個字)</span></div></div><h1 class="title is-3 is-size-4-mobile">新世代建置工具解析(esbuild、Snowpack、Vite、wmr)</h1><div class="content"><blockquote>
+<p>本文為翻譯自 Comparing the New Generation of Build Tools 一文加上更新補充。因建置工具更新速度關係，如遇部分內容無法實作或不一致請參考各官方文件。</p>
+</blockquote>
+<p>過去的一年出現了一堆新的開發工具，它們緊跟著那些目前佔據前端世界的建置工具例如：webpack，Babel，Rollup，Parcel，create-react-app。</p>
+<p>這些新工具的目的並不是實現一模一樣功能，它們各自有不同想嘗試解決的問題或新增的功能。儘管有所不同，但這些工具都有著共同的目標：改善開發者體驗。</p>
+<p>具體來說，本文希望試著分析每個新工具，概述它們的功能，以及為什麼我們需要它們和適用的情境。我知道項目之間的比較很難非常公平，再一次強調這裡比較的項目，它們的關係並非直接的競品。實際上例如 Snowpack 底層就有使用 esbuild 來處理某些事情。</p>
+<p>本文的目的是更進一步了解這些工具的前景和它們提供什麼功能可以讓我們簡化開發流程。如此一來我們就知道能有什麼選擇，以及它們是如何組成的，然後在需要的時候我們可以做出比較好的決定。</p>
+<p>當然這些論述有受到我使用 React 和 Preact 經驗的影響。個人比較熟悉這些函式庫，但我們也會探討對其他前端函式庫的支援和使用。</p>
+<p>關於這些新工具網路上有許多不錯的文章，影片，廣播等。推薦 <a target="_blank" rel="noopener" href="https://shoptalkshow.com/454/">ShopTalk Show Episode 454</a> 探討關於 Vite 以及 <a target="_blank" rel="noopener" href="https://shoptalkshow.com/448/">Episode 448</a> Snowpack 和 wmr 作者的介紹。從這些影片介紹我們知道這些工具如何加速優化了我們的開發工作。</p>
+<span id="more"></span>
+
+<h2 id="為什麼這些工具會出現？"><a href="#為什麼這些工具會出現？" class="headerlink" title="為什麼這些工具會出現？"></a>為什麼這些工具會出現？</h2><p>某部分來說我認為這些工具反應了 JavaScript 工具鏈的問題 - <a target="_blank" rel="noopener" href="https://hackernoon.com/how-it-feels-to-learn-javascript-in-2016-d3a717dd577f">關於在 2016 學習 JavaScript</a> 一文很好的詮釋了問題。這些工具填補了撰寫一個原始 JavaScript 檔案到下載相依函式庫之際的環節。這些新工具內建功能，不用額外再安裝其他相依套件，部分符合了 JavaScript 生態圈的趨勢 - <a target="_blank" rel="noopener" href="https://www.swyx.io/js-third-age/">Collapsing Layers</a>。</p>
+<p>Snowpack，Vite 和 wmr 已經可以在瀏覽器提供原生的 JavaScript 模組功能。回到 2018，Firefox 60 釋出預設提供 ECMAScript 2015 模組。之後，其他主流瀏覽器也都支援。Node.js 也在 2019 年 11 月搭載原生模組功能。直到 2021 年的今天我們依然在解開 JavaScript 原生模組的可能性。</p>
+<h2 id="新工具與當前工具的差異"><a href="#新工具與當前工具的差異" class="headerlink" title="新工具與當前工具的差異"></a>新工具與當前工具的差異</h2><p>無論我們使用 webpack，Rollup，Parcel 哪一個，這些工具都在建置的過程中使用像是 Babel，TypeScript 等處理 <code>node_modules</code> 並從原始碼封裝了整個程式，然後產出封裝檔（Bundle）給瀏覽器使用。即便它們支援暫存和優化，這個過程還是降低了開發伺服器的速度。</p>
+<p>Snowpack ，Vite 和 wmr 開發伺服器則不使用這種模式。相反，它們會等到瀏覽器遭遇 <code>import</code> 語句時才發出模組的請求。只有在請求發生之後，工具才會轉譯請求的模組和模組中匯入的東西，然後提供給瀏覽器執行。由於開發伺服器的工作量減少，因此加快了不少速度。</p>
+<p>還有 esbuild 。首先，基本上它是個封裝打包工具，但它跟其他工具不一樣。透過避免大量轉譯和使用 Go 語言並行的特性，讓  esbuild 可非常快速的處理程式碼。</p>
+<h2 id="實驗"><a href="#實驗" class="headerlink" title="實驗"></a>實驗</h2><p>這裡使用一個 React 的範例然後使用每個工具重新建置。這個專案是 <a target="_blank" rel="noopener" href="https://yog9.github.io/portfolio/">Yogita Verma</a> 的 <a target="_blank" rel="noopener" href="https://github.com/Yog9/SnapShot">Snap Shot</a></p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/Yog9/SnapShot">原版檔案庫</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/Elliotclyde/build-tool-test">4個不同工具版本</a></li>
+</ul>
+<p>後續我們會比較編譯的結果。重製並包含一些開發常用的套件如 React Router 和 axios 讓我們可以多了解測試其開發體驗。</p>
+<h2 id="功能比較"><a href="#功能比較" class="headerlink" title="功能比較"></a>功能比較</h2><p>在我們深入介紹每一個工具之前，先提一下，它們都支援下列功能但支援的程度不同：</p>
+<ul>
+<li>支援原生 JavaScript 模組</li>
+<li>TypeScript 編譯（不進行型別檢查）</li>
+<li>JSX</li>
+<li>擴展套件 API</li>
+<li>內建開發伺服器</li>
+<li>支援 CSS-in-JS 函式庫</li>
+</ul>
+<p>這些新工具都可以編譯 TypeScript 為 JavaScript，但即便型別錯誤還是會繼續編譯。針對型別檢查您可以安裝 TypeScript 然後執行 <code>tsc --noEmit</code> 或者在您的編輯器安裝套件來檢查。</p>
+<h2 id="esbuild"><a href="#esbuild" class="headerlink" title="esbuild"></a>esbuild</h2><p>esbuild 是 <a target="_blank" rel="noopener" href="https://github.com/evanw">Evan Wallace</a> （ Figma 的 CTO）開發的。其主要目的為提升建置速度，比起基於 Nodejs 的工具可達到  10 到 100 倍快。跟像是 create-react-app 這類型的工具比起來和開發體驗沒什麼太大關係，但後續出現了很多基於 esbuild 建置的工具，它們補上了其他功能例如 create-react-app-esbuild，estrella，Snowpack。它們都是使用 esbuild 來編譯程式碼。</p>
+<p>esbuild 目前還沒 1.0 算是蠻新的專案，不建議直接在正式專案使用，但離 1.0 應該不遠了。同時 esbuild 搭配智能預設值提供了直觀的指令介面 API 。</p>
+<h3 id="適用情境"><a href="#適用情境" class="headerlink" title="適用情境"></a>適用情境</h3><p>esbuild 顛覆了前端工具的世界。在大型專案中增加了幾倍的編譯速度是非常實用的。將來 1.0 版本的時候，估計可以為大型專案提供不少幫助，大量減少等待編譯的時間。</p>
+<p>目前還是等待穩定版本再使用在專案的正式版本，但您的一些非正式專案可以開始使用。</p>
+<p>esbuild 的超快速度無論您在開發什麼類型的專案都能有所幫助。減少等待建置的時間對於開發體驗肯定是加分的。如果考慮到加速應用程式的開發您也許想從其他比 esbuild 高階的工具起手。不然您還是需要花時間安裝相依套件和設定專案。另外一提如果想要盡可能最小化編譯檔案的大小，使用 Rollup 和 terser，它們產出的檔案稍微小一點。</p>
+<h3 id="設定"><a href="#設定" class="headerlink" title="設定"></a>設定</h3><p>我們從一個比較單純的方式使用 esbuild 建置一個 React 專案開始；單純使用 npm 安裝 esbuild，react，react-dom 不使用其他相依套件。然後建立 <code>src/app.jsx</code> 和 <code>dist/index.html</code> 檔案。接著使用下面指令產生 <code>dist/bundle.js</code></p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ npx esbuild src/app.jsx --bundle --platform=browser --outfile=dist/bundle.js</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>注意：如果您檔案中包含 JSX 則檔名須為 <code>.jsx</code> 或加入參數 <code>esbuild app.js --bundle --loader:.js=jsx</code></p>
+</blockquote>
+<p>如果您使用瀏覽器開啟 <code>index.html</code> 時畫面是空白的且發生錯誤 <code>Uncaught ReferenceError: process is not defnied</code>。可以參考<a target="_blank" rel="noopener" href="https://esbuild.github.io/getting-started/#bundling-for-the-browser">官方文件</a>設定。該錯誤解決方式是加入</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">--define:process.env.NODE_ENV=\&quot;production\&quot;</span><br></pre></td></tr></table></figure>
+
+<p>封裝任何函式庫給瀏覽器使用時，如果需要 Nodejs 環境變數則需要定義 <code>define</code> 參數。Vue 2.0 也是相同的。Preact 則不會遇到這個問題，因為它沒有使用任何環境變數且，預設就可以在瀏覽器使用。</p>
+<p><code>.jsx</code> 檔案中預設就支援 JSX 語法，但需要匯入 React ，不過 esbuild 也支援自動匯入，設定請參考 <a target="_blank" rel="noopener" href="https://esbuild.github.io/content-types/#jsx">auto imports in JSX and/or configure JSX for Preact</a></p>
+<h3 id="使用方式"><a href="#使用方式" class="headerlink" title="使用方式"></a>使用方式</h3><p>esbuild 提供 <code>--serve</code> 參數支援開發伺服器，讓我們可以直接從記憶體直接存取 JavaScript 模組，確保瀏覽器不會讀取到舊版的模組。不過它不支援 Live、Hot Reload，因此在存檔之後您需要手動讓瀏覽器重新載入，開發體驗不是非常理想。</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 依據目前的專案結構您也可使用下列指令測試開發伺服器</span></span><br><span class="line">$ npx esbuild src/app.jsx --bundle --outfile=dist/bundle.js --servedir=dist</span><br></pre></td></tr></table></figure>
+
+<p>除了內建的開發伺服器，我們也可以使用 <a target="_blank" rel="noopener" href="https://esbuild.github.io/api/#watch">watch</a> 功能搭配其他伺服器；每當檔案儲存的時候它會通知 esbuild 重新編譯。但我們需要伺服器的支援來觀察內容的變更；這裡使用 <a target="_blank" rel="noopener" href="https://www.npmjs.com/package/servor">servor</a>。</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ npm i servor -D</span><br></pre></td></tr></table></figure>
+
+<p>然後我們就可以在啟動伺服器的同時執行 esbuild 的 watch 模式；讓我們來建立 <code>watch.js</code></p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">const</span> esbuild = <span class="built_in">require</span>(<span class="string">&#x27;esbuild&#x27;</span>);</span><br><span class="line"><span class="keyword">const</span> servor = <span class="built_in">require</span>(<span class="string">&#x27;servor&#x27;</span>);</span><br><span class="line"></span><br><span class="line">esbuild.build(&#123;</span><br><span class="line">  <span class="attr">entryPoints</span>: [<span class="string">&#x27;src/app.jsx&#x27;</span>],</span><br><span class="line">  <span class="attr">outdir</span>: <span class="string">&#x27;dist&#x27;</span>,</span><br><span class="line">  <span class="attr">bundle</span>: <span class="literal">true</span>,</span><br><span class="line">  <span class="attr">define</span>: &#123;</span><br><span class="line">    <span class="string">&#x27;process.env.NODE_ENV&#x27;</span>: <span class="string">&#x27;&quot;production&quot;&#x27;</span>,</span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="attr">watch</span>: <span class="literal">true</span>,</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="keyword">async</span> <span class="function"><span class="keyword">function</span> <span class="title">serve</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="built_in">console</span>.log(<span class="string">&#x27;running server on: http://localhost:8000&#x27;</span>);</span><br><span class="line">  <span class="keyword">await</span> servor(&#123;</span><br><span class="line">    <span class="attr">browser</span>: <span class="literal">true</span>,</span><br><span class="line">    <span class="attr">root</span>: <span class="string">&#x27;dist&#x27;</span>,</span><br><span class="line">    <span class="attr">port</span>: <span class="number">8000</span>,</span><br><span class="line">  &#125;);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">serve();</span><br></pre></td></tr></table></figure>
+
+<p>接著可以在指令介面執行 <code>node watch.js</code> 。<code>servor</code> 是不錯的開發伺服器，但沒有支援 Hot Module Replacement，只是對於我們的測試來說已經足夠了。</p>
+<p>雖然每次我們存檔的時候都會重建整個應用程式，也需要重新載入。但在這個設定之後，即使電腦配備不高速度也蠻順暢的。想要支援 Live Reload 的話，可以參考這個<a target="_blank" rel="noopener" href="https://github.com/Elliotclyde/esbuild-react-starter">檔案庫</a>。</p>
+<h3 id="支援檔案"><a href="#支援檔案" class="headerlink" title="支援檔案"></a>支援檔案</h3><p> esbuild 可以在 JavaScript 匯入 CSS。可以編譯 CSS 並輸出一個跟產出 JavaScript 同檔名的檔案。預設支援打包 CSS <code>@import</code> 語句。不支援 <a target="_blank" rel="noopener" href="https://css-tricks.com/css-modules-part-1-need/">CSS Modules</a>，但未來是有計畫支援的。</p>
+<p>esbuild 套件社群持續在成長。例如有 <a target="_blank" rel="noopener" href="https://github.com/few-far/esbuild-vue-plugin">Vue 單檔元件</a> 和 <a target="_blank" rel="noopener" href="https://github.com/EMH333/esbuild-svelte">Svelte 元件</a>。</p>
+<p>esbuild 可以處理 JSON 檔案，無須進行任何設定即可使用。</p>
+<p>可以在 JavaScript 匯入圖片，並設定轉換成 Data URL 或者把它們複製到輸出目錄。但這個功能預設不提供，您可以加入下面的設定：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">loader: &#123;<span class="string">&#x27;.png&#x27;</span>: <span class="string">&#x27;dataurl&#x27;</span>&#125;</span><br><span class="line"><span class="attr">loader</span>: &#123;<span class="string">&#x27;.png&#x27;</span>: <span class="string">&#x27;file&#x27;</span>&#125;</span><br></pre></td></tr></table></figure>
+
+<p>處理過程中可能會顯示 Code Splitting 的訊息，多數會以 esm 格式輸出。另外值得一提的是內建支援 Tree-shaking （刪除沒用到的程式碼）而且不能關閉。</p>
+<h3 id="正式版本建置"><a href="#正式版本建置" class="headerlink" title="正式版本建置"></a>正式版本建置</h3><p>使用 <code>minify</code> 和 <code>bundle</code> 參數無法建置出和 Rollup / Terser 一樣小的檔案。這是因為 esbuild 犧牲了一些優化的部分來減少讀取傳入的程式碼，但差異應該不大。加速編譯時間是值得的。在上面提到的 Sanp Shot 專案，esbuild 封裝檔是 177KB，而使用 Rollup 和 terser 的 Vite 產生的是 165KB 。</p>
+<h3 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h3><table>
+<thead>
+<tr>
+<th>esbuild 功能</th>
+<th>支援</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>各種前端框架專案建置樣版</td>
+<td>X</td>
+</tr>
+<tr>
+<td>開發伺服器支援 Hot Module Replacement</td>
+<td>X</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://www.snowpack.dev/guides/streaming-imports">Streaming Imports</a></td>
+<td>X</td>
+</tr>
+<tr>
+<td>預先配置正式環境建置</td>
+<td>X</td>
+</tr>
+<tr>
+<td>自動支援 PostCSS 和 Preprocessor 轉換</td>
+<td>X</td>
+</tr>
+<tr>
+<td>轉譯產生 HTML</td>
+<td>X</td>
+</tr>
+<tr>
+<td>支援 Rollup 套件</td>
+<td>X</td>
+</tr>
+<tr>
+<td>檔案大小</td>
+<td>7.34MB</td>
+</tr>
+</tbody></table>
+<p>esbuild 是一個非常強大的工具，但需要自行進行設定配置。如果您希望預設提供更多功能則可以參考下一個工具 Snowpack 其底層就是使用 esbuild。</p>
+<blockquote>
+<p>定位：An extremely fast JavaScript bundler</p>
+</blockquote>
+<h2 id="Snowpack"><a href="#Snowpack" class="headerlink" title="Snowpack"></a>Snowpack</h2><p>Snowapck 是由 <a target="_blank" rel="noopener" href="https://www.skypack.dev/">Skypack</a> 和 <a target="_blank" rel="noopener" href="https://www.pika.dev/">Pika</a> 的作者開發的建置工具。核心功能是開發時期支援 Unbundled Development ，其概念是在開發時提供瀏覽器個別的檔案。檔案依舊可以使用 Babel，TypeScript，Sass 編譯然後由瀏覽器個別載入，也就是當您變更檔案時 Snowpack 只會重新編譯該檔，然後只重新載入該檔。節錄官方文件的說法：<a target="_blank" rel="noopener" href="https://www.snowpack.dev/concepts/build-pipeline#bundle-for-production">使用封裝工具應該是您想要使用，而不是必須要使用。</a></p>
+<p>其中一個賣點就是加速開發。</p>
+<p><img src="https://www.snowpack.dev/img/snowpack-unbundled-example-3.png"></p>
+<p>預設，Snowpack 不會將所有程式碼封裝打包成一個檔案，瀏覽器載入個別檔案。雖然 esbuild 確實是其中一個相依套件，但 Snowpack 的想法是使用原生 JavaScript 模組，直到你需要封裝成一個檔案的時候才使用 esbuild。</p>
+<p>Snowpack 擁有美觀的官方文件包含<a target="_blank" rel="noopener" href="https://www.snowpack.dev/guides">搭配其他框架的設定說明</a>和<a target="_blank" rel="noopener" href="https://github.com/snowpackjs/snowpack/tree/main/create-snowpack-app">專案樣版</a>。一些教學還處於編寫中，已完成的像 <a target="_blank" rel="noopener" href="https://www.snowpack.dev/tutorials/react">React 教學</a> 就非常清楚。另外 Snowpack 似乎以 <a target="_blank" rel="noopener" href="https://www.snowpack.dev/tutorials/svelte/">Svelete 為第一優先</a>。事實上，我第一次聽說 Snowpack 就是在 Svelte Submit 2020， Rich Harris 的 <a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=qSfdtmcZ4d0&t=636s">未來的網頁開發</a>。當時提到即將推出的 <a target="_blank" rel="noopener" href="https://svelte.dev/blog/whats-the-deal-with-sveltekit">SvelteKit</a> 應該會使用 Snowpack；後來選擇了 Vite - <a target="_blank" rel="noopener" href="https://svelte.dev/blog/sveltekit-beta">SvelteKit is in public beta 說明</a></p>
+<h3 id="適用情境-1"><a href="#適用情境-1" class="headerlink" title="適用情境"></a>適用情境</h3><p>想嘗試 Unbundle Deployment  不想增加封裝檔的複雜度， Snowpack 是不錯的選擇。如果您正在開發的專案模組量不大，意味著不會產生大量個別編譯的需求。一個不錯的使用情境是；您正逐步採用 SSR 或靜態應用程式。您可以只使用一點點 Node 生態圈的工具，但仍保留前端框架的好處。</p>
+<p>第二，我認為 Snowpack 是一個不錯的 esbuild 強化版。如果您想使用 esbuild 又想要好用的開發伺服器和專案樣版，那麼選 Snowpack 不會錯。</p>
+<p>就目前為止的情況，我認為 Snowpack 並不是零設定方案最好的選擇（例如 create-react-app），因為如果您面對的是大型專案，還是需要為了優化安裝套件並自行設定。</p>
+<h3 id="設定-1"><a href="#設定-1" class="headerlink" title="設定"></a>設定</h3><p>讓我們直接使用指令搭配 Snowpack 來開啟一個專案</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ mkdir demo</span><br><span class="line">$ <span class="built_in">cd</span> demo</span><br><span class="line">$ npm init -y</span><br><span class="line">$ npm i snowpack</span><br></pre></td></tr></table></figure>
+
+<p>然後調整 <code>package.json</code> 加入 <code>scripts</code></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;scripts&quot;</span>: &#123;</span><br><span class="line">  <span class="attr">&quot;start&quot;</span>: <span class="string">&quot;snowpack dev&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;build&quot;</span>: <span class="string">&quot;snowpack build&quot;</span></span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+
+<p>接著，建立設定檔</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ touch snowpack.config.js</span><br></pre></td></tr></table></figure>
+
+<p>我認為 Snowpack 神奇的地方就是設定看起來相對單純，例如</p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// snowpack.config.js</span></span><br><span class="line">module.exports = &#123;</span><br><span class="line">  packageOptions: &#123;</span><br><span class="line">    source: &#x27;remote&#x27;,</span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p><code>source: remote</code> 啟動了 Streaming Imports 的功能。Streaming Imports 讓 Snowpack 將我們的模組匯入例如 <code>import React from &#39;react&#39;</code> 轉換成從 <a target="_blank" rel="noopener" href="https://www.skypack.dev/">Skypack</a> 讀取（即不用先 <code>npm install</code>）。</p>
+<p>下一步，建立 <code>index.html</code></p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;!DOCTYPE <span class="meta-keyword">html</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">html</span> <span class="attr">lang</span>=<span class="string">&quot;en&quot;</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">meta</span> <span class="attr">charset</span>=<span class="string">&quot;UTF-8&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">meta</span> <span class="attr">http-equiv</span>=<span class="string">&quot;X-UA-Compatible&quot;</span> <span class="attr">content</span>=<span class="string">&quot;IE=edge&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">meta</span> <span class="attr">name</span>=<span class="string">&quot;viewport&quot;</span> <span class="attr">content</span>=<span class="string">&quot;width=device-width, initial-scale=1.0&quot;</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">title</span>&gt;</span>Hello, Snowpack<span class="tag">&lt;/<span class="name">title</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span>=<span class="string">&quot;app&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></span><br><span class="line">  <span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">&quot;module&quot;</span> <span class="attr">src</span>=<span class="string">&quot;app.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>最後建立 <code>app.jsx</code></p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> React <span class="keyword">from</span> <span class="string">&#x27;react&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; render &#125; <span class="keyword">from</span> <span class="string">&#x27;react-dom&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">const</span> App = <span class="function">() =&gt;</span> &#123;</span><br><span class="line">  <span class="keyword">return</span> (</span><br><span class="line">    <span class="xml"><span class="tag">&lt;<span class="name">div</span>&gt;</span></span></span><br><span class="line"><span class="xml">      Hello, Snowpack!</span></span><br><span class="line"><span class="xml">    <span class="tag">&lt;/<span class="name">div</span>&gt;</span></span></span><br><span class="line">  );</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">render(</span><br><span class="line">  <span class="xml"><span class="tag">&lt;<span class="name">App</span> /&gt;</span></span>,</span><br><span class="line">  <span class="built_in">document</span>.getElementById(<span class="string">&#x27;app&#x27;</span>),</span><br><span class="line">);</span><br></pre></td></tr></table></figure>
+
+<p>神奇的地方來了！現在我們不需要使用 <code>npm</code> 安裝 <code>react</code> 和 <code>react-dom</code> 直接使用下面的指令啟動開發伺服器：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ npm start</span><br></pre></td></tr></table></figure>
+
+<p>我們的範例就可以正常執行了！</p>
+<p>Snowpack 從 Skypack CDN 讀取 npm 套件，而不是 <code>node_modules</code> 。模組還是預先為瀏覽器優化過的版本，後續 Snowpack 會使用 <code>./_snowpack/pkg</code> URL 來讀取。</p>
+<p><img src="https://i.imgur.com/4Q8jfcL.png"></p>
+<p><img src="https://i.imgur.com/RYDqioS.png"></p>
+<h3 id="使用方式-1"><a href="#使用方式-1" class="headerlink" title="使用方式"></a>使用方式</h3><p>光是改變從 npm 讀取模組的流程就是一個很大的變動。實際上有部分開發者正在研究新的，基於 CDN 載入的流程。</p>
+<p>如果現在我們直接使用一樣的方式建置正式環境的檔案（ <code>npm run build</code>），則 Snowpack 會拋出錯誤。這是因為 Snowpack 從 3.0 版本開始支援 Streaming Imports，但在 3.1 版之前您需要在建置正式版本檔案之前進行  <code>snowpack.deps.json</code> 設定相依版本。可以使用下面指令來設定：</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">$ npx snowpack add react</span><br><span class="line">$ npx snowpack add react-dom</span><br></pre></td></tr></table></figure>
+
+<blockquote>
+<p>其他細節可以參考<a target="_blank" rel="noopener" href="https://www.snowpack.dev/guides/streaming-imports#snowpack-managed-dependencies">相依性管理</a></p>
+</blockquote>
+<p>上面指令不會從 npm 安裝套件，但會紀錄使用的套件版本。</p>
+<p>如果我們不用 Streaming Imports，Snowpack 開發伺服器也可以從 <code>node_modules</code> 讀取模組，並將這些檔案專案為原生 JavaScript 模組給瀏覽器使用。這表示瀏覽器可以暫存這些檔案直到檔案有變更。開發伺服器會在檔案變更時自動重新載入，但不會保持客戶端的狀態。全部相依的套件無論使用傳統模組格式或 Nodejs API 的格式內建都支援。例如我們在上面 esbuild 的 <code>process.env</code> 問題都會自動處理。</p>
+<p>至於像是要在 React 中保留狀態則需要 <a target="_blank" rel="noopener" href="https://www.skypack.dev/view/@snowpack/plugin-react-refresh">react-refresh</a>，和一些 Babel 的套件處理。這功能預設不支援，但在很多 React 的專案樣版中都有使用。</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># https://www.snowpack.dev/concepts/hot-module-replacement#enabling-hmr-%2B-fast-refresh</span></span><br><span class="line"><span class="comment"># https://github.com/snowpackjs/snowpack/tree/main/create-snowpack-app/cli</span></span><br><span class="line"></span><br><span class="line">$ npx create-snowpack-app demo --template @snowpack/app-tempate-react</span><br></pre></td></tr></table></figure>
+
+<h3 id="支援檔案-1"><a href="#支援檔案-1" class="headerlink" title="支援檔案"></a>支援檔案</h3><p>預設只支援 <code>.jsx</code>。Snowpack 會自動偵測是使用 React 還是 Preact，並以此決定 <code>render</code> 函式。不過如果您希望自訂 JSX 的功能您可以利用<a target="_blank" rel="noopener" href="https://www.npmjs.com/package/@snowpack/plugin-babel">套件</a>來安裝設定 Babel。當然 Snowpack 還支援 Vue ，Svelte，編譯 TypeScript（不會檢查型別，須使用額外 <a target="_blank" rel="noopener" href="https://www.npmjs.com/package/@snowpack/plugin-typescript">TypeScript 套件</a>）。</p>
+<p>CSS 可以在 JavaScript 匯入會在執行時期置放到 <code>&lt;head&gt;</code>。CSS Module 也預設支援，只須使用 <code>.module.css</code> 副檔名。</p>
+<p>JSON 檔案會直接編譯成一個物件。圖片則是會被複製到目錄下，因為 Unbundled 的設計原則，Snowpack 不會把圖片編譯成 Data URL。</p>
+<h3 id="正式版本建置-1"><a href="#正式版本建置-1" class="headerlink" title="正式版本建置"></a>正式版本建置</h3><p>基本上預設 <code>snowpack build</code> 指令會把編譯結果放到輸出目錄下。例如 TypeScript，JSX，JSON，<code>.vue</code>，<code>.svelte</code> 檔案會被編譯成 JavaScript，檔案各自被轉換成 JavaScript 模組。</p>
+<p>但這不是那麼適合正式環境，因為當檔案很多的時候，會導致產生大量的網路請求。例如在 Snap Shot 專案中我們檔案總共只有 184KB ，但後續卻向 Skypack 發出 105KB 相依套件的請求。</p>
+<p>不過 Snowpack 內部使用 esbuild，因此我們可以使用 bundle，minify 等參數功能來編譯程式，只要在 <code>snowpack.config.js</code> 使用 <code>optimize</code> 物件參數即可</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">module</span>.exports = &#123;</span><br><span class="line">  <span class="attr">optimize</span>: &#123;</span><br><span class="line">    <span class="attr">bundle</span>: <span class="literal">true</span>,</span><br><span class="line">    <span class="attr">minify</span>: <span class="literal">true</span>,</span><br><span class="line">    <span class="attr">target</span>: <span class="string">&#x27;es2018&#x27;</span></span><br><span class="line">  &#125;,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>如此就可以使用 esbuild 提供的優化功能。</p>
+<p>由於 esbuild 還沒 1.0，針對正式版本建置， Snowpack 建議使用 webpack 或 Rollup 套件，當然這些都需要額外設定。</p>
+<h3 id="分析-1"><a href="#分析-1" class="headerlink" title="分析"></a>分析</h3><p>通過完整功能的開發伺服器，詳細的文件，輕鬆安裝的專案樣版，這些功能讓 Snowpack 提供了輕量級的開發體驗。您可以自行決定封裝應用程式的方式。但如果您希望一個工具同時提供開發伺服器和更多建置功能，您可以參考下一個工具 Vite</p>
+<table>
+<thead>
+<tr>
+<th>Snowpack 功能</th>
+<th>支援</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>各種前端框架專案建置樣版</td>
+<td>V</td>
+</tr>
+<tr>
+<td>開發伺服器支援 Hot Module Replacement</td>
+<td>V （使用專案樣版）</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://www.snowpack.dev/guides/streaming-imports">Streaming Imports</a></td>
+<td>V</td>
+</tr>
+<tr>
+<td>預先配置正式環境建置</td>
+<td>X</td>
+</tr>
+<tr>
+<td>自動支援 PostCSS 和 Preprocessor 轉換</td>
+<td>X</td>
+</tr>
+<tr>
+<td>轉譯產生 HTML</td>
+<td>X</td>
+</tr>
+<tr>
+<td>支援 Rollup 套件</td>
+<td>V</td>
+</tr>
+<tr>
+<td>檔案大小</td>
+<td>16MB</td>
+</tr>
+</tbody></table>
+<h2 id="Vite"><a href="#Vite" class="headerlink" title="Vite"></a>Vite</h2><p>Vite 是由 Vue 作者 Evan You 和 Hades speedruns 開發的。在 esbuild 專注在編譯速度，Snowpack 專注開發伺服器。Vite 則提供兩者；完整的開發伺服器和使用 Rollup 進行優化編譯。</p>
+<h3 id="適用情境-2"><a href="#適用情境-2" class="headerlink" title="適用情境"></a>適用情境</h3><p>如果您在尋找的是像 create-react-app 或 Vue CLI 的競品，Vite 是最接近的一個，因為它內建包含這些功能。輕量快速的開發伺服器，零設定即支援正式版本優化。Vite  可以適用於小型的個人專案 Side-Project 或大型正式專案。任何 SPA 應用程式都很適合。</p>
+<p>為什麼不使用 Vite？Vite 是一個堅持己見的工具，可能您不同意其中的一些觀點。比如您不想使用 Rollup，或想使用上面提到非常快的 esbuild，或希望預設能提供完整 Babel ，eslint ，和 webpack loaders 生態圈的功能。還有如果您想使用無須額外設定的 Meta-frameworks，那麼您最好繼續使用基於 webpack 的框架，例如 Nuxt.js，Next.js 直到 Vite 的伺服器端渲染功能更完整。</p>
+<blockquote>
+<p>Meta Framework: 一網頁應用程式框架具備常見功能的核心介面，可整合服務和元件的高度擴展性。開放式的結構可和其他元件或框架合併使用。例如 Next.js，Nuxt.js</p>
+</blockquote>
+<h3 id="設定-2"><a href="#設定-2" class="headerlink" title="設定"></a>設定</h3><p>跟 esbuild 和 Snowpack 相比，Vite 包含更多主觀意見的預設值。因為作者的關係， Vue 得到了完全支援，對於 Vue 開發者來說無疑是非常友善的。當然  Vite 可以被使用在任何前端框架而且也提供了<a target="_blank" rel="noopener" href="https://github.com/vitejs/vite/tree/main/packages/create-app">一系列樣版</a>。</p>
+<h3 id="使用方式-2"><a href="#使用方式-2" class="headerlink" title="使用方式"></a>使用方式</h3><p>Vite 的開發伺服器功能非常強大。Vite 預先使用 esbuild 封裝專案全部的相依套件成一個原生 JavaScript 模組，然後使用 HTTP Header 快取。這表示一旦頁面載入，我們就不需要浪費時間編譯，發送請求，讀取相依模組。</p>
+<p>Vite 也提供清楚的錯誤資訊，顯示確切錯誤程式碼段落。使用 Vite 我不曾遇到任何關於讀取相依套件的問題，即便使用 Node API 或其他較舊的格式。它們全部都被轉換成瀏覽器相容的 ES Module。</p>
+<p>Vite 的 React 和 Vue 專案樣版都有使用套件來支援 Hot Module Replacement 。Vue 使用 <a target="_blank" rel="noopener" href="https://github.com/vitejs/vite/tree/main/packages/plugin-vue">@vitejs/plugin-vue</a> 和 <a target="_blank" rel="noopener" href="https://github.com/vitejs/vite/tree/main/packages/plugin-vue-jsx">@vitejs/plugin-vue-jsx</a> 。而 React 使用 <a target="_blank" rel="noopener" href="https://github.com/vitejs/vite/tree/main/packages/plugin-react-refresh">@vitejs/plugin-react-refresh</a> 。</p>
+<p>無論哪種方式，它們都讓我們得到 HMR 和保留客戶端狀態的功能。當然它們使用了更多相依套件包含 Babel。實際上在 Vite 中使用 JSX 並不需要 Babel 。預設情況下 JSX 的處理方式和 esbuild 一樣；就是先轉換成 <code>React.createElement</code> 。</p>
+<p>不會自動匯入 React ，但可以設定。</p>
+<p>另外值得提到 Vite 也<a target="_blank" rel="noopener" href="https://vitejs.dev/guide/ssr.html">支援伺服器端渲染</a>（處於實驗階段）。目前我們需要自行組織架構，但看起來基於 Vite 構建框架是不錯的機會。作者確實已經著手進行一個叫 <a target="_blank" rel="noopener" href="https://vitepress.vuejs.org/">VitePress</a> 的專案，一個包含 Vite 優點，預計取代<a target="_blank" rel="noopener" href="https://vuepress.vuejs.org/">VuePress</a> 的專案。</p>
+<p>還有 SvelteKit 也採用 Vite。看起來 CSS 拆分功能是 SvelteKit 後來選擇 Vite 的原因之一。</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">$ npm init @vitejs/app demo</span><br><span class="line">$ <span class="built_in">cd</span> demo</span><br><span class="line">$ npm i</span><br><span class="line">$ npm run dev</span><br></pre></td></tr></table></figure>
+
+<h3 id="支援檔案-2"><a href="#支援檔案-2" class="headerlink" title="支援檔案"></a>支援檔案</h3><p>針對 CSS，Vite 提供幾乎所有工具的功能，打包 CSS ，CSS Module，也可以安裝 PostCSS 套件並設定 <code>postcss.config.js</code>，Vite 會自動套用這些轉譯功能。</p>
+<p>其他 CSS Preprocessors 也可以使用 npm 安裝，例如 SCSS。只要副檔名正確，Vite 就會自動套用對應的處理工具。</p>
+<p>圖片匯入預設會複製到輸出目錄並提供存取的 URL，但您可以使用 <code>?raw</code> 參數將它們轉換成字串存到 JavaScript 中。</p>
+<p>JSON 檔案會轉換為 ES Module 並以單一物件形式匯出。還可以提供具名匯入，Vite 會根據 JSON 根節點的欄位搜尋，並移除其他不用的資料（Tree-shaking）。</p>
+<h3 id="正式版本建置-2"><a href="#正式版本建置-2" class="headerlink" title="正式版本建置"></a>正式版本建置</h3><p>Vite 使用 Rollup 並預先提供設定，為正式版本建置進行優化。不用額外設定即可適用於大多數使用情境。</p>
+<p>輸出的結果包含我們預期 Rollup 提供的功能；封裝，最小化，Tree-shaking。其他還有拆分程式碼，動態載入，非同步程式碼片段載入。舉例來說如果我們請求載入一個 JavaScript 模組，其匯入另一個模組時會預先對該模組進行優化讓兩個模組可以同一時間載入（非同步）。</p>
+<p>使用 Vite 的預設值建置 Snap Shot 應用程式最終會得到一個 5KB 和一個 160KB 的 JavaScript 檔案，全部 CSS 自動最小化 2.71KB。</p>
+<h3 id="分析-2"><a href="#分析-2" class="headerlink" title="分析"></a>分析</h3><p>為了使開發人員體驗真正無縫順暢的開發流程，預設就支援正式環境版本的建置，這個部分 Vite 做了很多的努力。Vite 已成為很多前端工具的競爭對手。</p>
+<table>
+<thead>
+<tr>
+<th>Vite 功能</th>
+<th>支援</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>各種前端框架專案建置樣版</td>
+<td>V</td>
+</tr>
+<tr>
+<td>開發伺服器支援 Hot Module Replacement</td>
+<td>V （使用專案樣版）</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://www.snowpack.dev/guides/streaming-imports">Streaming Imports</a></td>
+<td>X</td>
+</tr>
+<tr>
+<td>預先配置正式環境建置</td>
+<td>V</td>
+</tr>
+<tr>
+<td>自動支援 PostCSS 和 Preprocessor 轉換</td>
+<td>V</td>
+</tr>
+<tr>
+<td>轉譯產生 HTML</td>
+<td>X</td>
+</tr>
+<tr>
+<td>支援 Rollup 套件</td>
+<td>V</td>
+</tr>
+<tr>
+<td>檔案大小</td>
+<td>17.1MB</td>
+</tr>
+</tbody></table>
+<h2 id="wmr"><a href="#wmr" class="headerlink" title="wmr"></a>wmr</h2><p>wmr 是另一個類似 Vite 的建置工具，也是同時提供開發伺服器和整合建置流程。是由 Preact 作者 Jason Miller 開發的。因此肯定對於 Preact 開發者友善。Jason Miller 在 <a target="_blank" rel="noopener" href="https://changelog.com/jsparty/158">JS party podcast</a> 當來賓的時候曾解釋背後的想法：</p>
+<p>“當您在開發一個輕量的專案時 Preact 是不錯的選擇。但關於它的建置工具呢？它使用基於 webpack 的建置工具，外面很多專案也都使用 webpack ，但它的確是一個相對笨重的工具。那關於 Prototyping 的建置工具呢？其實那是一個原因，另外一直以來包含我自己在內和 Preact 團隊都沒有特別深入建置工具的生態圈，這些因素促使我們嘗試思考進一步的方向並在”編寫和交付符合主流規範的程式碼” 這個方向達成共識</p>
+<p>意思是 wmr 希望輕量化的工具能協助“編寫和交付符合主流規範的程式碼”。</p>
+<p>您可能會問 wmr 代表什麼意思？ Web Module Runtime 和 Web Module Replacement 名稱自然浮現，但其實不是它們的縮寫，就像 npm 其實也不是 Node Package Manager 一樣。</p>
+<p>wmr 跟 Preact 一樣非常小，只有 2.6MB - 沒有任何 npm 相依套件。就算如此，它還是包含很多很棒的功能包含支援 HMR 的開發伺服器以及正式環境建置的優化。</p>
+<h3 id="適用情境-3"><a href="#適用情境-3" class="headerlink" title="適用情境"></a>適用情境</h3><p>如果您要使用 Preact 來開發原型產品的話可使用 wmr 。不需要設定，下載也很快，感覺就像是開加速的靜態檔案伺服器。搭配 TypeScript ，優化建置，靜態 HTML 渲染，wmr 提供了小至中型專案所需要的功能。</p>
+<p>如果您不是使用 Preact，React 或完全原生 JavaScript 那麼 wmr 就不太適合您。Preact 團隊有為其他框架提供專案樣版，但文件看來和其他工具相比不是那麼詳細，意味著您可能會踩雷，偶而需要深入原始碼。因此假如您需要大量客製化設定的話不推薦使用。</p>
+<h3 id="設定-3"><a href="#設定-3" class="headerlink" title="設定"></a>設定</h3><p>如果您使用的是 Preact ，那如我們所預期不需要額外設定。如果是 React 搭配 wmr 則有兩個步驟，須將 <code>package.json</code> 中的 <code>alias</code> ， <code>htm/preact</code> 換成 <code>htm/react</code> 以及 <code>react</code> 換成 <code>es-react</code></p>
+<figure class="highlight json"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&quot;alias&quot;</span>: &#123;</span><br><span class="line">  <span class="attr">&quot;htm/preact&quot;</span>: <span class="string">&quot;htm/react&quot;</span>,</span><br><span class="line">  <span class="attr">&quot;react&quot;</span>: <span class="string">&quot;es-react&quot;</span></span><br><span class="line">&#125;,</span><br></pre></td></tr></table></figure>
+
+<p>然後在元件中從 <code>es-react</code> 匯入 React</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; React, ReactDOM &#125; <span class="keyword">from</span> <span class="string">&#x27;es-react&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+<p>上面程式碼代表我們不是從一般的 React 套件中匯入，而是從 <code>es-react</code> 。因為 wmr 需要依賴相容原生 JavaScript 模組的套件。原廠 React 預設不使用原生模組，而是使用 UMD 模組格式，<code>es-react</code> 套件基本上只是把原廠套件使用 JavaScript 原生模組的方式匯出。</p>
+<p>這說明了 wmr 的核心理念就是使用原生模組。另外也可以使用 Skypack 來匯入模組。</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> React <span class="keyword">from</span> <span class="string">&#x27;https://cdn.skypack.dev/react&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> ReactDOM <span class="keyword">from</span> <span class="string">&#x27;https://cdn.skypack.dev/react-dom&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+<p>wmr 預期您會以現代化標準的程式碼進行開發，它們可以直接在瀏覽器執行，同時如果您有使用一些傳統 Node API 格式的模組您可能需要額外的設定。還是以 Snap Shot 專案舉例，您就需要深入那些 Node 模組並將它們轉換成相容的原生模組。如果您使用了很多舊的函式庫，可能導致開發效率變差。而 Preact 生態圈相關的東西都已經處理了，也就是如果您使用 Preact ，wmr 肯定是比較友善的。</p>
+<p>wmr 套件部分也支援 Rollup 建置，還有很多 wmr 的範例包含最小化 HTML，使用檔案系統的路由。另外，wmr 也支援其他框架，但沒有提供預先建置的專案樣版。且設定 JSX 轉換就相當困難。</p>
+<p>話雖如此，Jason 也已經確定計畫讓 JSX 設定更加方便，還有 wmr 將不針對特定框架，預設支援 JSX 等。</p>
+<h3 id="使用方式-3"><a href="#使用方式-3" class="headerlink" title="使用方式"></a>使用方式</h3><p>欲使用 wmr 您可以執行下面指令</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ npm init wmr demo</span><br></pre></td></tr></table></figure>
+
+<p>或者手動在既有目錄下</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">$ npm init -y</span><br><span class="line">$ npm install wmr</span><br><span class="line">$ mkdir public</span><br><span class="line">$ touch public/index.html</span><br><span class="line">$ touch public/index.js</span><br></pre></td></tr></table></figure>
+
+<p>然後在 <code>index.html</code> 中加入</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span> <span class="attr">type</span>=<span class="string">&quot;module&quot;</span> <span class="attr">src</span>=<span class="string">&quot;./index.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span>  </span><br></pre></td></tr></table></figure>
+
+<p>接著就可以直接在 <code>index.js</code> 中使用 Preact</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; render &#125; <span class="keyword">from</span> <span class="string">&#x27;preact&#x27;</span>;</span><br><span class="line">render(<span class="xml"><span class="tag">&lt;<span class="name">h1</span>&gt;</span>Hello World!<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></span>, <span class="built_in">document</span>.body);</span><br></pre></td></tr></table></figure>
+
+<p>最後執行下面指令啟動支援 HMR 的開發伺服器</p>
+<figure class="highlight sh"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ npx wmr</span><br></pre></td></tr></table></figure>
+
+<p>wmr 使用 <a target="_blank" rel="noopener" href="https://github.com/developit/htm">htm</a> 工具來編譯 JSX 可以提供一些不錯的功能。例如您使用 Preact 撰寫一個計數器然後在使用 wmr 的情況下寫錯了：</p>
+<figure class="highlight js"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> &#123; render &#125; <span class="keyword">from</span> <span class="string">&#x27;preact&#x27;</span>;</span><br><span class="line"><span class="keyword">import</span> &#123; useState &#125; <span class="keyword">from</span> <span class="string">&#x27;preact/hooks&#x27;</span>;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">App</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">const</span> [count, setCount] = useState(<span class="number">0</span>);</span><br><span class="line">  <span class="keyword">return</span> (</span><br><span class="line">  	<span class="xml"><span class="tag">&lt;&gt;</span></span></span><br><span class="line"><span class="xml">    	<span class="tag">&lt;<span class="name">button</span> <span class="attr">onClick</span>=<span class="string">&#123;setCount(cout</span> + <span class="attr">5</span>)&#125;&gt;</span>Click to add 5 to count<span class="tag">&lt;/<span class="name">button</span>&gt;</span></span></span><br><span class="line"><span class="xml">			<span class="tag">&lt;<span class="name">p</span>&gt;</span>count: &#123;count&#125;<span class="tag">&lt;/<span class="name">p</span>&gt;</span></span></span><br><span class="line"><span class="xml">    <span class="tag">&lt;/&gt;</span></span></span><br><span class="line">  );</span><br><span class="line">&#125;</span><br><span class="line">render(<span class="xml"><span class="tag">&lt;<span class="name">App</span> /&gt;</span></span>, <span class="built_in">document</span>.body);</span><br></pre></td></tr></table></figure>
+
+<p>上面 <code>onClick</code> 中的 <code>count</code> 拼錯了，點擊按鈕執行的時候一定會發生錯誤。通常我們需要依靠 Source Map 的功能來取得錯在哪，但 wmr 不一樣。wmr 則使用 JS 樣版字串的方式，讓您在瀏覽器下盡可能以<strong>接近 JSX 的格式</strong>得到錯誤訊息。例如我們寫了一段 JSX</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;MyComponent&gt;I am JSX. I am not actually valid Javascript&lt;/MyComponent&gt;</span><br></pre></td></tr></table></figure>
+
+<p>htm 輸出的結果看起來像：</p>
+<figure class="highlight applescript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">html`&lt;$&#123;MyComponent&#125;&gt;I am <span class="keyword">about</span> <span class="keyword">as</span> close <span class="keyword">as</span> <span class="keyword">it</span> gets <span class="keyword">to</span> JSX <span class="keyword">as</span> you can <span class="keyword">get</span> <span class="keyword">while</span> being able <span class="keyword">to</span> <span class="built_in">run</span> <span class="keyword">in</span> <span class="keyword">the</span> browser&lt;/MyComponent&gt;`</span><br></pre></td></tr></table></figure>
+
+<p>看不懂什麼意思？現在如果我們在瀏覽器的開發工具切換到 “Sources” 面板，您會看到如下的資訊：</p>
+<p><img src="https://i1.wp.com/css-tricks.com/wp-content/uploads/2021/03/s_864795E8DFCEBDF45A714B0A68D25726C4192DC77A541292A7CD86FFCB3E5238_1614545243859_wmr-in-browser.png?w=655&ssl=1"></p>
+<p>當然這個範例有點故意，但如此一來您在除錯的時候看到的程式碼是不是更明確了。</p>
+<p>wmr 預設支援 Streaming Imports ，因此可以直接從 npm registry 上直接下載。該流程非常複雜，會檢查 npm 套件，移除測試相關的部分，轉換成原生模組，類似於 Snowpack 可以不用 npm 安裝任何東西就建置複雜的專案。</p>
+<p>其實 wmr 是第一個支援這個概念的工具。</p>
+<h3 id="支援檔案-3"><a href="#支援檔案-3" class="headerlink" title="支援檔案"></a>支援檔案</h3><p>至於 wmr 支援的檔案類型，CSS 可以在 JavaScript 中匯入，CSS Module 也支援。預設不支援 Vue 單檔元件或 Svelte 元件。然而 wmr 內部的 Rollup 和開發伺服器可以搭配 <a target="_blank" rel="noopener" href="https://github.com/lukeed/polka">Polka</a> / <a target="_blank" rel="noopener" href="https://expressjs.com/">Express</a> 的中介層來設定，因此它是可以支援其他框架元件的。實際上例如 <a target="_blank" rel="noopener" href="https://github.com/Elliotclyde/wmr-vue-plugin">wmr-vue-plugin</a> 就可以協助編譯 Vue 單檔元件。</p>
+<p>“匯入圖片” 轉換 URL 的部分則額外的套件處理。一般則需要使用標準的 JavaScript 語法匯入圖片，例如我們要在 Preact 元件使用圖片：</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">Dog</span>(<span class="params"></span>) </span>&#123;</span><br><span class="line">  <span class="keyword">return</span> (</span><br><span class="line">  	<span class="xml"><span class="tag">&lt;<span class="name">img</span> <span class="attr">src</span>=<span class="string">&#123;new</span> <span class="attr">URL</span>(&#x27;<span class="attr">.</span>/<span class="attr">dog.jpg</span>&#x27;, <span class="attr">import.meta.url</span>)&#125; <span class="attr">alt</span>=<span class="string">&quot;Dog handing out&quot;</span> /&gt;</span></span></span><br><span class="line">  );</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>利用這種方式執行建置的時候，圖片會被複製到輸出的目錄。HMR 不支援圖片，所以變更圖片不會自動反應在瀏覽器上。</p>
+<p>還有 JSON 是可以被匯入的，也是轉換成一個物件。但在建置的時候需要 <a target="_blank" rel="noopener" href="https://github.com/rollup/plugins/tree/master/packages/json">Rollup JSON 套件</a>。</p>
+<h3 id="正式版本建置-3"><a href="#正式版本建置-3" class="headerlink" title="正式版本建置"></a>正式版本建置</h3><p>wmr 支援正式環境版本建置包含最小化，Tree-Shaking 。觀察原始碼似乎是使用 Rollup 和 terser，以 Snap Shot 專案來說結果是 164KB 比 Vite 小一點點。</p>
+<p>另外還有一種搭配 <a target="_blank" rel="noopener" href="https://www.npmjs.com/package/preact-iso">preact-iso</a> 的方式也可以輸出靜態 HTML ，意味著 wmr 也可以協助 Preact 實作 Meta Framework。</p>
+<h3 id="分析-3"><a href="#分析-3" class="headerlink" title="分析"></a>分析</h3><p>對於小型專案搭配 React 或 Preact 的話 wmr 的使用體驗還不錯。</p>
+<table>
+<thead>
+<tr>
+<th>wmr 功能</th>
+<th>支援</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>各種前端框架專案建置樣版</td>
+<td>V</td>
+</tr>
+<tr>
+<td>開發伺服器支援 Hot Module Replacement</td>
+<td>V</td>
+</tr>
+<tr>
+<td><a target="_blank" rel="noopener" href="https://www.snowpack.dev/guides/streaming-imports">Streaming Imports</a></td>
+<td>V</td>
+</tr>
+<tr>
+<td>預先配置正式環境建置</td>
+<td>V</td>
+</tr>
+<tr>
+<td>自動支援 PostCSS 和 Preprocessor 轉換</td>
+<td>X</td>
+</tr>
+<tr>
+<td>轉譯產生 HTML</td>
+<td>V</td>
+</tr>
+<tr>
+<td>支援 Rollup 套件</td>
+<td>V</td>
+</tr>
+<tr>
+<td>檔案大小</td>
+<td>2.57MB</td>
+</tr>
+</tbody></table>
+<h2 id="功能比較-1"><a href="#功能比較-1" class="headerlink" title="功能比較"></a>功能比較</h2><p>上面涵蓋了不少東西，實作比較和內容整理讓我們概略了解這些工具的特性，組成。下面附註一些上面可能有遺漏的比較：</p>
+<h3 id="適用情境-4"><a href="#適用情境-4" class="headerlink" title="適用情境"></a>適用情境</h3><table>
+<thead>
+<tr>
+<th>工具</th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>esbuild</td>
+<td>適用於專案包含大量原始碼。目前不適用於正式專案</td>
+</tr>
+<tr>
+<td>Snowpack</td>
+<td>小型專案，可自行選擇是否需要封裝打包，也適用於逐步採用 JavaScript 框架，目前還是伺服器端渲染的專案</td>
+</tr>
+<tr>
+<td>Vite</td>
+<td>Vue Cli/create-react-app 的競品，特別適合 Vue 專案</td>
+</tr>
+<tr>
+<td>wmr</td>
+<td>原型，小型到中型專案，特別適合 Preact 專案</td>
+</tr>
+</tbody></table>
+<h3 id="設定-4"><a href="#設定-4" class="headerlink" title="設定"></a>設定</h3><table>
+<thead>
+<tr>
+<th></th>
+<th>esbuild</th>
+<th>Snowpack</th>
+<th>Vite</th>
+<th>wmr</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>各種前端框架專案建置樣版</td>
+<td>X</td>
+<td>V</td>
+<td>V</td>
+<td>X</td>
+</tr>
+<tr>
+<td>檔案大小</td>
+<td>7.34MB</td>
+<td>16MB</td>
+<td>17.1MB</td>
+<td>2.57MB</td>
+</tr>
+<tr>
+<td>無須設定，支援正式版本建置</td>
+<td>X</td>
+<td>X</td>
+<td>V</td>
+<td>V</td>
+</tr>
+<tr>
+<td>無須設定，支援HMR 開發伺服器</td>
+<td>X</td>
+<td>V</td>
+<td>V</td>
+<td>V</td>
+</tr>
+<tr>
+<td>處理 Node 套件</td>
+<td>X</td>
+<td>V</td>
+<td>V</td>
+<td>V</td>
+</tr>
+</tbody></table>
+<h3 id="開發伺服器"><a href="#開發伺服器" class="headerlink" title="開發伺服器"></a>開發伺服器</h3><table>
+<thead>
+<tr>
+<th></th>
+<th>esbuild</th>
+<th>Snowpack</th>
+<th>Vite</th>
+<th>wmr</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>HMR</td>
+<td>X</td>
+<td>V</td>
+<td>V</td>
+<td>V</td>
+</tr>
+<tr>
+<td>CSS HMR</td>
+<td>X</td>
+<td>V</td>
+<td>V</td>
+<td>V</td>
+</tr>
+<tr>
+<td>預先建置 npm 相依套件</td>
+<td>X</td>
+<td>V</td>
+<td>V</td>
+<td>X</td>
+</tr>
+<tr>
+<td>瀏覽器顯示錯誤訊息</td>
+<td>X</td>
+<td>V</td>
+<td>V</td>
+<td>X</td>
+</tr>
+<tr>
+<td>轉譯產生 HTML</td>
+<td>X</td>
+<td>X</td>
+<td>X</td>
+<td>V</td>
+</tr>
+</tbody></table>
+<h3 id="正式版本建置-4"><a href="#正式版本建置-4" class="headerlink" title="正式版本建置"></a>正式版本建置</h3><table>
+<thead>
+<tr>
+<th></th>
+<th>esbuild</th>
+<th>Snowpack</th>
+<th>Vite</th>
+<th>wmr</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Snap Shot 專案建置大小</td>
+<td>177KB</td>
+<td>多檔總和 184KB 外加 Skypack CDN 相依 105KB</td>
+<td>165KB(5KB + 160KB 檔案)</td>
+<td>164KB</td>
+</tr>
+<tr>
+<td>使用 Go 編譯</td>
+<td>V</td>
+<td>V 當使用 esbuild 時</td>
+<td>X</td>
+<td>X</td>
+</tr>
+<tr>
+<td>預先設定正式環境建置</td>
+<td>X</td>
+<td>X</td>
+<td>V</td>
+<td>V</td>
+</tr>
+<tr>
+<td>非同步 chunk 載入</td>
+<td>X</td>
+<td>X</td>
+<td>V</td>
+<td>V</td>
+</tr>
+<tr>
+<td>支援 Rollup</td>
+<td>X</td>
+<td>V</td>
+<td>V</td>
+<td>V</td>
+</tr>
+</tbody></table>
+<h3 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h3><table>
+<thead>
+<tr>
+<th></th>
+<th>esbuild</th>
+<th>Snowpack</th>
+<th>Vite</th>
+<th>wmr</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Streaming imports</td>
+<td>X</td>
+<td>V</td>
+<td>X</td>
+<td>V</td>
+</tr>
+<tr>
+<td>Server-side rendering</td>
+<td>X</td>
+<td>X</td>
+<td>V</td>
+<td>V</td>
+</tr>
+<tr>
+<td>CSS Modules</td>
+<td>X</td>
+<td>X</td>
+<td>V</td>
+<td>V</td>
+</tr>
+<tr>
+<td>自動 PostCSS 和 Preprocessor 轉換</td>
+<td>V</td>
+<td>V</td>
+<td>V</td>
+<td>X</td>
+</tr>
+</tbody></table>
+<h2 id="結論"><a href="#結論" class="headerlink" title="結論"></a>結論</h2><p>對於使用上面介紹的工具建置 JavaScript 專案，無論是小型個人專案或大型專案這些工具都提升開發效率。它讓我們知道 JavaScript 生態圈需要什麼，我們是否能免受傳統瀏覽器和模組帶來的困擾。這些工具將通過提供一個更精簡，更快速的開發環境，減少”撰寫的程式碼“和”瀏覽器執行版本“之間的抽象，進一步降低新進人員的門檻。</p>
+<p>如果您正因為建置工具而困擾，建議您可以嘗試一下這些新工具。</p>
+<h2 id="參考"><a href="#參考" class="headerlink" title="參考"></a>參考</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://css-tricks.com/comparing-the-new-generation-of-build-tools/">Comparing the New Generation of Build Tools</a></li>
+<li><a target="_blank" rel="noopener" href="https://vitejs.dev/guide/comparisons.html">Comparisons with Other No-Bundler Solutions</a> (Vite)</li>
+<li><a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=KLdF1yu_bmI">Let’s Learn esbuild! (with Sunil Pai)</a> (Jason Lengstorf)</li>
+<li><a target="_blank" rel="noopener" href="https://dev.to/walpolea/through-the-pipeline-an-exploration-of-front-end-bundlers-ea1">Through the pipeline: an exploration of frontend bundlers</a> (Andrew Walpole)</li>
+</ul>
+<h2 id="其他新世代工具"><a href="#其他新世代工具" class="headerlink" title="其他新世代工具"></a>其他新世代工具</h2><ul>
+<li><a target="_blank" rel="noopener" href="https://rome.tools/">Rome</a> – 完整型工具包含 linting, compiling, bundling, test-running and formatting</li>
+<li><a target="_blank" rel="noopener" href="https://swc.rs/">SWC</a> – 基於 Rust 語言 JavaScript/TypeScript 編譯器</li>
+<li><a target="_blank" rel="noopener" href="https://deno.land/">Deno</a> – JavaScript and TypeScript 執行環境 (類似 Node.js)</li>
+</ul>
+</div><div class="article-licensing box"><div class="licensing-title"><p>新世代建置工具解析(esbuild、Snowpack、Vite、wmr)</p><p><a href="https://andyyou.github.io/2021/04/25/new-generation-of-build-tools-comparsing/">https://andyyou.github.io/2021/04/25/new-generation-of-build-tools-comparsing/</a></p></div><div class="licensing-meta level is-mobile"><div class="level-left"><div class="level-item is-narrow"><div><h6>作者</h6><p>andyyou(YOU,ZONGYAN)</p></div></div><div class="level-item is-narrow"><div><h6>發表於</h6><p>2021-04-25</p></div></div><div class="level-item is-narrow"><div><h6>更新於</h6><p>2023-05-12</p></div></div><div class="level-item is-narrow"><div><h6>許可協議</h6><p><a class="icons" rel="noopener" target="_blank" title="Creative Commons" href="https://creativecommons.org/"><i class="icon fab fa-creative-commons"></i></a><a class="icons" rel="noopener" target="_blank" title="Attribution" href="https://creativecommons.org/licenses/by/4.0/"><i class="icon fab fa-creative-commons-by"></i></a><a class="icons" rel="noopener" target="_blank" title="Noncommercial" href="https://creativecommons.org/licenses/by-nc/4.0/"><i class="icon fab fa-creative-commons-nc"></i></a></p></div></div></div></div></div><div class="article-tags is-size-7 mb-4"><span class="mr-2">#</span><a class="link-muted mr-2" rel="tag" href="/tags/javascript/">javascript</a></div><!--!--></article></div><div class="card"><div class="card-content"><h3 class="menu-label has-text-centered">喜歡這篇文章嗎? 贊助一下作者吧!</h3><div class="buttons is-centered"><a class="button donate" href="https://www.buymeacoffee.com/andyyou" target="_blank" rel="noopener" data-type="buymeacoffee"><span class="icon is-small"><i class="fas fa-coffee"></i></span><span>送我杯咖啡</span></a></div></div></div><nav class="post-navigation mt-4 level is-mobile"><div class="level-start"><a class="article-nav-prev level level-item link-muted" href="/2021/08/25/eight-quick-convert-string-to-number/"><i class="level-item fas fa-chevron-left"></i><span class="level-item">JavaScript 8 種資料格式 4 種轉型數字方式</span></a></div><div class="level-end"><a class="article-nav-next level level-item link-muted" href="/2021/03/07/react-dnd-basic/"><span class="level-item">React DnD 入門</span><i class="level-item fas fa-chevron-right"></i></a></div></nav><!--!--></div><div class="column column-left is-4-tablet is-4-desktop is-4-widescreen  order-1"><div class="card widget" data-type="profile"><div class="card-content"><nav class="level"><div class="level-item has-text-centered flex-shrink-1"><div><figure class="image is-128x128 mx-auto mb-2"><img class="avatar is-rounded" src="https://avatars2.githubusercontent.com/u/665690?v=3&amp;s=466" alt="andyou"></figure><p class="title is-size-4 is-block" style="line-height:inherit;">andyou</p><p class="is-size-6 is-block">DEVLOG of andyyou</p><p class="is-size-6 is-flex justify-content-center"><i class="fas fa-map-marker-alt mr-1"></i><span>Taipei</span></p></div></div></nav><nav class="level is-mobile"><div class="level-item has-text-centered is-marginless"><div><p class="heading">文章</p><a href="/archives"><p class="title">215</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">分類</p><a href="/categories"><p class="title">8</p></a></div></div><div class="level-item has-text-centered is-marginless"><div><p class="heading">標籤</p><a href="/tags"><p class="title">88</p></a></div></div></nav><div class="level"><a class="level-item button is-primary is-rounded" href="https://github.com/andyyou" target="_blank" rel="noopener">追蹤</a></div><div class="level is-mobile is-multiline"><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="Github" href="https://github.com/andyyou"><i class="fab fa-github"></i></a><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="Facebook" href="/"><i class="fab fa-facebook"></i></a><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="Twitter" href="/"><i class="fab fa-twitter"></i></a><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="Dribbble" href="/"><i class="fab fa-dribbble"></i></a><a class="level-item button is-transparent is-marginless" target="_blank" rel="noopener" title="RSS" href="/"><i class="fas fa-rss"></i></a></div></div></div><!--!--><div class="card widget" data-type="categories"><div class="card-content"><div class="menu"><h3 class="menu-label">分類</h3><ul class="menu-list"><li><a class="level is-mobile" href="/categories/Cloud/"><span class="level-start"><span class="level-item">Cloud</span></span><span class="level-end"><span class="level-item tag">15</span></span></a></li><li><a class="level is-mobile" href="/categories/Database/"><span class="level-start"><span class="level-item">Database</span></span><span class="level-end"><span class="level-item tag">5</span></span></a></li><li><a class="level is-mobile" href="/categories/Fun/"><span class="level-start"><span class="level-item">Fun</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/categories/Mobile/"><span class="level-start"><span class="level-item">Mobile</span></span><span class="level-end"><span class="level-item tag">4</span></span></a></li><li><a class="level is-mobile" href="/categories/Program/"><span class="level-start"><span class="level-item">Program</span></span><span class="level-end"><span class="level-item tag">152</span></span></a></li><li><a class="level is-mobile" href="/categories/System/"><span class="level-start"><span class="level-item">System</span></span><span class="level-end"><span class="level-item tag">18</span></span></a></li><li><a class="level is-mobile" href="/categories/Tools/"><span class="level-start"><span class="level-item">Tools</span></span><span class="level-end"><span class="level-item tag">17</span></span></a></li><li><a class="level is-mobile" href="/categories/UX/"><span class="level-start"><span class="level-item">UX</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li></ul></div></div></div><div class="card widget" data-type="recent-posts"><div class="card-content"><h3 class="menu-label">最新文章</h3><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-04-12T01:09:12.000Z">2023-04-12</time></p><p class="title"><a href="/2023/04/12/gke-quick-guide/">[譯]部署應用程式到 GKE 叢集</a></p><p class="categories"><a href="/categories/Cloud/">Cloud</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-04-12T01:05:40.000Z">2023-04-12</time></p><p class="title"><a href="/2023/04/12/fail2ban-quick-guide/">防禦 DDoS - 限制 IP 時間內大量請求 Nginx + fail2ban</a></p><p class="categories"><a href="/categories/System/">System</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-01-21T15:20:36.000Z">2023-01-21</time></p><p class="title"><a href="/2023/01/21/all-you-need-to-know-about-react-concurrent/">(譯) 關於 React 併發功能與 Suspense 您所需要了解的事</a></p><p class="categories"><a href="/categories/Program/">Program</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2023-01-12T10:11:53.000Z">2023-01-12</time></p><p class="title"><a href="/2023/01/12/deploy-nextjs-to-cloud-run-with-gitlab-ci/">2023 部署 Next.js 至 Google Cloud Run (混搭 Cloud Build, Gitlab CI, Secret Manager)</a></p><p class="categories"><a href="/categories/Cloud/">Cloud</a></p></div></article><article class="media"><div class="media-content"><p class="date"><time dateTime="2022-08-17T07:24:36.000Z">2022-08-17</time></p><p class="title"><a href="/2022/08/17/avoiding-use-effect-with-callback-refs/">使用 Callback Refs 取代 useEffect 避免問題產生</a></p><p class="categories"><a href="/categories/Program/">Program</a></p></div></article></div></div><div class="card widget" data-type="archives"><div class="card-content"><div class="menu"><h3 class="menu-label">彙整</h3><ul class="menu-list"><li><a class="level is-mobile" href="/archives/2023/04/"><span class="level-start"><span class="level-item">四月 2023</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/archives/2023/01/"><span class="level-start"><span class="level-item">一月 2023</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/archives/2022/08/"><span class="level-start"><span class="level-item">八月 2022</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/archives/2022/07/"><span class="level-start"><span class="level-item">七月 2022</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2022/06/"><span class="level-start"><span class="level-item">六月 2022</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2022/05/"><span class="level-start"><span class="level-item">五月 2022</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2022/04/"><span class="level-start"><span class="level-item">四月 2022</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/archives/2022/02/"><span class="level-start"><span class="level-item">二月 2022</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2022/01/"><span class="level-start"><span class="level-item">一月 2022</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/archives/2021/12/"><span class="level-start"><span class="level-item">十二月 2021</span></span><span class="level-end"><span class="level-item tag">5</span></span></a></li><li><a class="level is-mobile" href="/archives/2021/11/"><span class="level-start"><span class="level-item">十一月 2021</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li><li><a class="level is-mobile" href="/archives/2021/10/"><span class="level-start"><span class="level-item">十月 2021</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2021/09/"><span class="level-start"><span class="level-item">九月 2021</span></span><span class="level-end"><span class="level-item tag">6</span></span></a></li><li><a class="level is-mobile" href="/archives/2021/08/"><span class="level-start"><span class="level-item">八月 2021</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2021/04/"><span class="level-start"><span class="level-item">四月 2021</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2021/03/"><span class="level-start"><span class="level-item">三月 2021</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2020/10/"><span class="level-start"><span class="level-item">十月 2020</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2020/09/"><span class="level-start"><span class="level-item">九月 2020</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2020/07/"><span class="level-start"><span class="level-item">七月 2020</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2020/05/"><span class="level-start"><span class="level-item">五月 2020</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2019/08/"><span class="level-start"><span class="level-item">八月 2019</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/archives/2019/07/"><span class="level-start"><span class="level-item">七月 2019</span></span><span class="level-end"><span class="level-item tag">4</span></span></a></li><li><a class="level is-mobile" href="/archives/2019/06/"><span class="level-start"><span class="level-item">六月 2019</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/archives/2019/05/"><span class="level-start"><span class="level-item">五月 2019</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li><li><a class="level is-mobile" href="/archives/2019/04/"><span class="level-start"><span class="level-item">四月 2019</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li><li><a class="level is-mobile" href="/archives/2018/11/"><span class="level-start"><span class="level-item">十一月 2018</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2018/06/"><span class="level-start"><span class="level-item">六月 2018</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2018/05/"><span class="level-start"><span class="level-item">五月 2018</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2018/03/"><span class="level-start"><span class="level-item">三月 2018</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2017/12/"><span class="level-start"><span class="level-item">十二月 2017</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2017/11/"><span class="level-start"><span class="level-item">十一月 2017</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2017/10/"><span class="level-start"><span class="level-item">十月 2017</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2017/09/"><span class="level-start"><span class="level-item">九月 2017</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li><li><a class="level is-mobile" href="/archives/2017/08/"><span class="level-start"><span class="level-item">八月 2017</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li><li><a class="level is-mobile" href="/archives/2017/07/"><span class="level-start"><span class="level-item">七月 2017</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2017/06/"><span class="level-start"><span class="level-item">六月 2017</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li><li><a class="level is-mobile" href="/archives/2017/05/"><span class="level-start"><span class="level-item">五月 2017</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/archives/2017/04/"><span class="level-start"><span class="level-item">四月 2017</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li><li><a class="level is-mobile" href="/archives/2017/03/"><span class="level-start"><span class="level-item">三月 2017</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2017/02/"><span class="level-start"><span class="level-item">二月 2017</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li><li><a class="level is-mobile" href="/archives/2017/01/"><span class="level-start"><span class="level-item">一月 2017</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2016/12/"><span class="level-start"><span class="level-item">十二月 2016</span></span><span class="level-end"><span class="level-item tag">5</span></span></a></li><li><a class="level is-mobile" href="/archives/2016/11/"><span class="level-start"><span class="level-item">十一月 2016</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2016/10/"><span class="level-start"><span class="level-item">十月 2016</span></span><span class="level-end"><span class="level-item tag">4</span></span></a></li><li><a class="level is-mobile" href="/archives/2016/09/"><span class="level-start"><span class="level-item">九月 2016</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/archives/2016/08/"><span class="level-start"><span class="level-item">八月 2016</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2016/06/"><span class="level-start"><span class="level-item">六月 2016</span></span><span class="level-end"><span class="level-item tag">5</span></span></a></li><li><a class="level is-mobile" href="/archives/2016/05/"><span class="level-start"><span class="level-item">五月 2016</span></span><span class="level-end"><span class="level-item tag">4</span></span></a></li><li><a class="level is-mobile" href="/archives/2016/04/"><span class="level-start"><span class="level-item">四月 2016</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li><li><a class="level is-mobile" href="/archives/2016/03/"><span class="level-start"><span class="level-item">三月 2016</span></span><span class="level-end"><span class="level-item tag">7</span></span></a></li><li><a class="level is-mobile" href="/archives/2016/02/"><span class="level-start"><span class="level-item">二月 2016</span></span><span class="level-end"><span class="level-item tag">6</span></span></a></li><li><a class="level is-mobile" href="/archives/2016/01/"><span class="level-start"><span class="level-item">一月 2016</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/archives/2015/12/"><span class="level-start"><span class="level-item">十二月 2015</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li><li><a class="level is-mobile" href="/archives/2015/11/"><span class="level-start"><span class="level-item">十一月 2015</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2015/10/"><span class="level-start"><span class="level-item">十月 2015</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/archives/2015/09/"><span class="level-start"><span class="level-item">九月 2015</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2015/08/"><span class="level-start"><span class="level-item">八月 2015</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li><li><a class="level is-mobile" href="/archives/2015/07/"><span class="level-start"><span class="level-item">七月 2015</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2015/05/"><span class="level-start"><span class="level-item">五月 2015</span></span><span class="level-end"><span class="level-item tag">5</span></span></a></li><li><a class="level is-mobile" href="/archives/2015/04/"><span class="level-start"><span class="level-item">四月 2015</span></span><span class="level-end"><span class="level-item tag">19</span></span></a></li><li><a class="level is-mobile" href="/archives/2014/12/"><span class="level-start"><span class="level-item">十二月 2014</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2014/11/"><span class="level-start"><span class="level-item">十一月 2014</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/archives/2014/10/"><span class="level-start"><span class="level-item">十月 2014</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2014/09/"><span class="level-start"><span class="level-item">九月 2014</span></span><span class="level-end"><span class="level-item tag">17</span></span></a></li><li><a class="level is-mobile" href="/archives/2014/08/"><span class="level-start"><span class="level-item">八月 2014</span></span><span class="level-end"><span class="level-item tag">6</span></span></a></li><li><a class="level is-mobile" href="/archives/2014/02/"><span class="level-start"><span class="level-item">二月 2014</span></span><span class="level-end"><span class="level-item tag">12</span></span></a></li><li><a class="level is-mobile" href="/archives/2014/01/"><span class="level-start"><span class="level-item">一月 2014</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li><li><a class="level is-mobile" href="/archives/2013/11/"><span class="level-start"><span class="level-item">十一月 2013</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2013/10/"><span class="level-start"><span class="level-item">十月 2013</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/archives/2013/09/"><span class="level-start"><span class="level-item">九月 2013</span></span><span class="level-end"><span class="level-item tag">4</span></span></a></li><li><a class="level is-mobile" href="/archives/2013/08/"><span class="level-start"><span class="level-item">八月 2013</span></span><span class="level-end"><span class="level-item tag">6</span></span></a></li><li><a class="level is-mobile" href="/archives/2013/03/"><span class="level-start"><span class="level-item">三月 2013</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/archives/2012/03/"><span class="level-start"><span class="level-item">三月 2012</span></span><span class="level-end"><span class="level-item tag">1</span></span></a></li><li><a class="level is-mobile" href="/archives/2012/01/"><span class="level-start"><span class="level-item">一月 2012</span></span><span class="level-end"><span class="level-item tag">2</span></span></a></li><li><a class="level is-mobile" href="/archives/2011/11/"><span class="level-start"><span class="level-item">十一月 2011</span></span><span class="level-end"><span class="level-item tag">3</span></span></a></li></ul></div></div></div><div class="card widget" data-type="tags"><div class="card-content"><div class="menu"><h3 class="menu-label">標籤</h3><div class="field is-grouped is-grouped-multiline"><div class="control"><a class="tags has-addons" href="/tags/net-mvc/"><span class="tag">.net mvc</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/RoR/"><span class="tag">RoR</span><span class="tag">15</span></a></div><div class="control"><a class="tags has-addons" href="/tags/api/"><span class="tag">api</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/aws/"><span class="tag">aws</span><span class="tag">5</span></a></div><div class="control"><a class="tags has-addons" href="/tags/azure/"><span class="tag">azure</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/bot/"><span class="tag">bot</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/bundler/"><span class="tag">bundler</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/cache/"><span class="tag">cache</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/carrier-wave/"><span class="tag">carrier wave</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/centos/"><span class="tag">centos</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/chrome/"><span class="tag">chrome</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/cloudflare/"><span class="tag">cloudflare</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/compass/"><span class="tag">compass</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/css/"><span class="tag">css</span><span class="tag">19</span></a></div><div class="control"><a class="tags has-addons" href="/tags/cve/"><span class="tag">cve</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/devise/"><span class="tag">devise</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/dnd/"><span class="tag">dnd</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/docker/"><span class="tag">docker</span><span class="tag">5</span></a></div><div class="control"><a class="tags has-addons" href="/tags/e-invoice/"><span class="tag">e-invoice</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/entity-framework/"><span class="tag">entity framework</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/envoy/"><span class="tag">envoy</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/es6/"><span class="tag">es6</span><span class="tag">3</span></a></div><div class="control"><a class="tags has-addons" href="/tags/facebook/"><span class="tag">facebook</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/flux/"><span class="tag">flux</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/framework/"><span class="tag">framework</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/gcp/"><span class="tag">gcp</span><span class="tag">3</span></a></div><div class="control"><a class="tags has-addons" href="/tags/gitlab/"><span class="tag">gitlab</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/go/"><span class="tag">go</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/grunt/"><span class="tag">grunt</span><span class="tag">4</span></a></div><div class="control"><a class="tags has-addons" href="/tags/gulp/"><span class="tag">gulp</span><span class="tag">3</span></a></div><div class="control"><a class="tags has-addons" href="/tags/heroku/"><span class="tag">heroku</span><span class="tag">6</span></a></div><div class="control"><a class="tags has-addons" href="/tags/html/"><span class="tag">html</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/iisexpress/"><span class="tag">iisexpress</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/ios/"><span class="tag">ios</span><span class="tag">3</span></a></div><div class="control"><a class="tags has-addons" href="/tags/javascript/"><span class="tag">javascript</span><span class="tag">84</span></a></div><div class="control"><a class="tags has-addons" href="/tags/javascript-express-passport/"><span class="tag">javascript express passport</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/javascript-nodejs/"><span class="tag">javascript nodejs</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/jekyll/"><span class="tag">jekyll</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/jetstream/"><span class="tag">jetstream</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/jspm/"><span class="tag">jspm</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/jwt/"><span class="tag">jwt</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/k8s/"><span class="tag">k8s</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/laravel/"><span class="tag">laravel</span><span class="tag">8</span></a></div><div class="control"><a class="tags has-addons" href="/tags/letsencrypt/"><span class="tag">letsencrypt</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/linux/"><span class="tag">linux</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/mechanism/"><span class="tag">mechanism</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/mongodb/"><span class="tag">mongodb</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/nginx/"><span class="tag">nginx</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/node/"><span class="tag">node</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/nodejs/"><span class="tag">nodejs</span><span class="tag">7</span></a></div><div class="control"><a class="tags has-addons" href="/tags/oocss/"><span class="tag">oocss</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/osx/"><span class="tag">osx</span><span class="tag">6</span></a></div><div class="control"><a class="tags has-addons" href="/tags/package-manager/"><span class="tag">package manager</span><span class="tag">6</span></a></div><div class="control"><a class="tags has-addons" href="/tags/php/"><span class="tag">php</span><span class="tag">3</span></a></div><div class="control"><a class="tags has-addons" href="/tags/postgres/"><span class="tag">postgres</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/postgresql/"><span class="tag">postgresql</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/queue/"><span class="tag">queue</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/rabbitmq/"><span class="tag">rabbitmq</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/rack-server/"><span class="tag">rack server</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/rails/"><span class="tag">rails</span><span class="tag">6</span></a></div><div class="control"><a class="tags has-addons" href="/tags/rails-webpack-stimulus-javascript-bootstrap/"><span class="tag">rails webpack stimulus javascript bootstrap</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/raspberry-pi/"><span class="tag">raspberry-pi</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/react/"><span class="tag">react</span><span class="tag">21</span></a></div><div class="control"><a class="tags has-addons" href="/tags/react-native/"><span class="tag">react native</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/reactjs/"><span class="tag">reactjs</span><span class="tag">32</span></a></div><div class="control"><a class="tags has-addons" href="/tags/redux/"><span class="tag">redux</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/ruby/"><span class="tag">ruby</span><span class="tag">18</span></a></div><div class="control"><a class="tags has-addons" href="/tags/sass/"><span class="tag">sass</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/selenium/"><span class="tag">selenium</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/serial-port/"><span class="tag">serial-port</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/slim/"><span class="tag">slim</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/ssh/"><span class="tag">ssh</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/ssl/"><span class="tag">ssl</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/stimulus/"><span class="tag">stimulus</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/svg-javascript/"><span class="tag">svg javascript</span><span class="tag">3</span></a></div><div class="control"><a class="tags has-addons" href="/tags/task-runner/"><span class="tag">task runner</span><span class="tag">3</span></a></div><div class="control"><a class="tags has-addons" href="/tags/tmux/"><span class="tag">tmux</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/tools/"><span class="tag">tools</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/ubuntu/"><span class="tag">ubuntu</span><span class="tag">4</span></a></div><div class="control"><a class="tags has-addons" href="/tags/ux/"><span class="tag">ux</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/vm/"><span class="tag">vm</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/vue/"><span class="tag">vue</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/vuejs/"><span class="tag">vuejs</span><span class="tag">5</span></a></div><div class="control"><a class="tags has-addons" href="/tags/webpack/"><span class="tag">webpack</span><span class="tag">4</span></a></div><div class="control"><a class="tags has-addons" href="/tags/windows/"><span class="tag">windows</span><span class="tag">3</span></a></div><div class="control"><a class="tags has-addons" href="/tags/wsl/"><span class="tag">wsl</span><span class="tag">2</span></a></div><div class="control"><a class="tags has-addons" href="/tags/xml/"><span class="tag">xml</span><span class="tag">1</span></a></div><div class="control"><a class="tags has-addons" href="/tags/zoom/"><span class="tag">zoom</span><span class="tag">1</span></a></div></div></div></div></div><div class="card widget" data-type="adsense"><div class="card-content"><div class="menu"><h3 class="menu-label">廣告</h3><script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script><ins class="adsbygoogle" style="display:block" data-ad-client="ca-pub-3038600205998182" data-ad-slot="6442659171" data-ad-format="auto" data-full-width-responsive="true"></ins><script>(adsbygoogle = window.adsbygoogle || []).push({});</script></div></div></div></div><!--!--></div></div></section><footer class="footer"><div class="container"><div class="level"><div class="level-start"><a class="footer-logo is-block mb-2" href="/"><img src="/img/logo.png" alt="DEVLOG of andyyou" height="28"></a><p class="is-size-7"><span>&copy; 2023 andyyou(YOU,ZONGYAN)</span></p></div><div class="level-end"><div class="field has-addons"><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Creative Commons" href="https://creativecommons.org/"><i class="fab fa-creative-commons"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="Attribution 4.0 International" href="https://creativecommons.org/licenses/by/4.0/"><i class="fab fa-creative-commons-by"></i></a></p><p class="control"><a class="button is-transparent is-large" target="_blank" rel="noopener" title="GitHub" href="https://github.com/andyyou/"><i class="fab fa-github"></i></a></p></div></div></div></div></footer><script src="https://cdn.jsdelivr.net/npm/jquery@3.3.1/dist/jquery.min.js"></script><script src="https://cdn.jsdelivr.net/npm/moment@2.22.2/min/moment-with-locales.min.js"></script><script src="https://cdn.jsdelivr.net/npm/clipboard@2.0.4/dist/clipboard.min.js" defer></script><script>moment.locale("zh-TW");</script><script>var IcarusThemeSettings = {
+            article: {
+                highlight: {
+                    clipboard: true,
+                    fold: 'unfolded'
+                }
+            }
+        };</script><script src="/js/column.js"></script><script src="/js/animation.js"></script><a id="back-to-top" title="回到頁首" href="javascript:;"><i class="fas fa-chevron-up"></i></a><script src="/js/back_to_top.js" defer></script><script src="https://cdn.jsdelivr.net/npm/lightgallery@1.6.8/dist/js/lightgallery.min.js" defer></script><script src="https://cdn.jsdelivr.net/npm/justifiedGallery@3.7.0/dist/js/jquery.justifiedGallery.min.js" defer></script><script>window.addEventListener("load", () => {
+            if (typeof $.fn.lightGallery === 'function') {
+                $('.article').lightGallery({ selector: '.gallery-item' });
+            }
+            if (typeof $.fn.justifiedGallery === 'function') {
+                if ($('.justified-gallery > p > .gallery-item').length) {
+                    $('.justified-gallery > p > .gallery-item').unwrap();
+                }
+                $('.justified-gallery').justifiedGallery();
+            }
+        });</script><!--!--><!--!--><!--!--><script src="/js/main.js" defer></script><div class="searchbox"><div class="searchbox-container"><div class="searchbox-header"><div class="searchbox-input-container"><input class="searchbox-input" type="text" placeholder="請輸入關鍵字..."></div><a class="searchbox-close" href="javascript:;">×</a></div><div class="searchbox-body"></div></div></div><script src="/js/insight.js" defer></script><script>document.addEventListener('DOMContentLoaded', function () {
+            loadInsight({"contentUrl":"/content.json"}, {"hint":"請輸入關鍵字...","untitled":"(無標題)","posts":"文章","pages":"頁面","categories":"分類","tags":"標籤"});
+        });</script></body></html>

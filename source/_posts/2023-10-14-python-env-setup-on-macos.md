@@ -10,7 +10,7 @@ categories: Program
 
 使用 `pyenv` 目的是讓本地環境支援多種 Python 版本。大多的程式語言都有對應的工具如 Nodejs 的 nvm，Ruby 的 rvm，rbenv 等。
 
-<!-- more --
+<!-- more -->
 
 ```sh 
 # ⭐️ 1. 安裝 Homebrew 

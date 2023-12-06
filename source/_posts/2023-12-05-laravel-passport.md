@@ -48,49 +48,112 @@ OAuth2 是一個業界標準協議，處理有關授權的相關流程。
 
 ### 認識 OAuth2 的術語
 
-- `Access Token` （存取憑證）: 這是一種特殊的憑證，用於讓應用程式能夠安全存取用戶在另一平台上的保護資料，如社交媒體的個人資料。
-- `Authorization Code` （授權碼）: 這是一種中介金鑰。當用戶同意授權後，系統會先提供這個金鑰給第三方應用程式，用於安全地交換存取憑證。這是因為直接回傳存取憑證可能存在安全風險，這個步驟增加了一層保護。
-- `Authorization Server` （授權伺服器）: 這是管理用戶身份驗證和授權的伺服器。它負責處理授權請求，確認身份，並發放存取憑證和授權碼給客戶端（Client）。
-- `Client` （客戶端）: 指的是想要取得你的資料的第三方應用程式，例如需要取得用戶的 Facebook 資料的應用程式。
+- `Access Token` （存取權杖）: 這是一種特殊的權杖，用於讓應用程式能夠安全存取用戶在平台上保護的資料，如社群平台的個人資料。
+- `Authorization Code` （授權碼）: 這是一種中介權杖。當用戶同意授權後，系統會先提供這個權杖給第三方應用程式，目的是提高交換存取權杖的安全性。這是因為直接回傳存取權杖可能存在安全風險，這個步驟增加了一層保護。
+- `Authorization Server` （授權伺服器）: 這是管理用戶身份驗證和授權的伺服器。它負責處理授權請求，確認身份，發行存取權杖和授權碼給客戶端（Client）。
+- `Client` （客戶端）: 指的是想要取得你資料的第三方應用程式，例如某個需要取得用戶 Facebook 資料的應用程式。
 - `Grant` （授權）: 這是用戶授予第三方應用程式存取其資料的過程，如 Facebook 登入之後點擊同意按鈕的操作。
-- `Resource Server` （資源伺服器）: 這是儲存用戶資料的伺服器，如社群媒體帖文和個人資料。它根據 Access Token 的驗證來提供資料存取。
+- `Resource Server` （資源伺服器）: 這是儲存用戶資料的伺服器，如社群媒體帖文和個人資料。它通過驗證存取權杖來檢查是否提供資料存取。
 - `Resource Owner` （資源擁有者）: 指的是用戶本人，他們可以授權第三方應用程式存取他們在目標平台的帳戶。這種存取是有限制的，僅限於用戶授予的權限範圍內。
 - `Scope` （授權範圍）: 這定義了第三方應用程式可以存取的資料類型和程度，例如僅讀取個人資料權限。
-- `JWT` （JSON Web Token）: 這是一種格式為 JSON 的安全金鑰，常用於用戶和伺服器之間的身份驗證和資訊傳輸。它依靠伺服器端的秘鑰和簽名過程來保障安全，而客戶端則負責安全地儲存和使用這個 Token。
-- `Redirect URI（Callback URL）`：授權伺服器驗證完授權同意之後導向的網址或路徑。
+- `JWT` （JSON Web Token）: 這是一種格式為 JSON 的安全權杖，常用於用戶和伺服器之間的身份驗證和資訊傳輸。它依靠伺服器端的密鑰和簽名過程來保障安全，而客戶端則負責安全地儲存和使用這個權杖。
+- `Redirect URI（Callback URL）`：授權伺服器驗證完身份，授權同意之後導向的網址或路徑。
 
-## OAuth 4 種授權模式
+## OAuth2 支援 4 種授權模式
 
-### Authorization Code 模式
+### 授權碼模式 Authorization Code
 
-1. 用戶點擊**使用 Google 登入**
-2. 瀏覽器導向授權伺服器，過程中會先提供 Google 需要的資料如 ClientId, RedirectURI, Scope 等
-3. 授權伺服器進行身份驗證
-4. 驗證成功後，提示詢問用戶是否同意 Scope 授權
-5. 用戶同意之後導向 RedirectURI 並依照授權模式執行對應流程，這裡是 `code` 就會回傳 Authorization Code
-6. 應用程式使用 Authorization Code 重新向授權伺服器取得存取憑證 Access Token。
-7. 應用程式使用存取憑證 Access Token 向資源伺服器取得資料。
+1. 用戶發起登入：用戶在應用點擊**使用 Google 登入**
+2. 瀏覽器導向授權伺服器：過程中會先提供 Google 需要的資料如 Client Id, Redirect URI, Scope 等
+3. 用戶身份驗證：在授權伺服器上進行用戶身份驗證
+4. 授權確認：用戶被提示是否同意授予應用程式所需權限
+5. 授權碼返回：用戶同意後，瀏覽器導向回應用程式的 Redirect URL 網址，同時包含授權碼（Authorization Code）
+6. 交換存取權杖：應用程式使用授權碼向授權伺服器請求存取權杖（Access Token）
+7. 存取資源：應用程式使用存取權杖向資源伺服器請求資料
 
-### Implicit 模式
+```
+Client ID: 客戶端 ID
+Client Secret: 客戶端密鑰
+Redirect URI: 導向網址
+Scope: 授權範圍(可選)
+State: 防止 CSRF 攻擊隨機產生的值(推薦)
+```
 
-適用於客戶端應用程式（例如 JavaScript SPA）。通常整個程式都在前端運行。依照需求向 API 取得資料。也因為沒有後端因此無法通過 Authorization Code 交換 Access Token。取而代之的是直接請 Authorization Server 核發 Access Token。
+### Authorization Code + PKCE（Proof Key for Code Exchange）
 
-1. 應用程式將用戶導向 Authorization Server 進行驗證
-2. 驗證成功後，詢問用戶是否同意授權
-3. 用戶同意後，將用戶導回 RedirectURI 並附上 Access Token
-4. 應用程式使用 Access Token 向 Resource Server 取得資料。
+1. 產生程式碼驗證器和程式碼挑戰：
 
-### Resource Owner Password Credentials 模式
+- 應用程式產生一個隨機的程式碼驗證器（Code Verifier）即一個隨機字串。
+- 應用程式使用程式碼驗證器產生一個程式碼挑戰（Code Challenge），通常是對驗證器進行 SHA256 雜湊 Hash 並進行 Base64 編碼。
 
-用戶將帳號密碼交給第三方應用程式，由應用程式直接向 Authorization Server 交換 Access Token
+2. 用戶發起登入
+3. 發送授權請求：應用程式將用戶導向授權伺服器，並在請求中包含程式碼挑戰和其他必要資訊，如客戶端 ID、導向 URI 等。
+4. 用戶身份驗證和授權
+5. 返回授權碼
+6. 使用授權碼和程式碼驗證器取得存取權杖
+7. 存取資源
 
-### Client Credentials 模式
+主要在步驟 1 中加入產生程式碼驗證器和程式碼挑戰的過程，並在步驟 6 中使用這些值來獲取存取權杖。PKCE 通過確保只有發送授權請求的同一客戶端能夠使用授權碼來提高了安全性。
 
-通常是應用程式向 Authorization Server 取得 Access Token 用於讀取自己的資料而不是用戶的資料。
+```
+Client ID: 客戶端 ID
+Redirect URI: 導向網址
+Scope: 授權範圍(可選)
+Code Verifier: 隨機字串，用於產生 Code Challenge
+Code Challenge: 用 Code Verifier 產生，發送給授權伺服器
+State: : 防止 CSRF 攻擊隨機產生的值(推薦)
+```
+
+### 隱式模式 Implicit
+
+適用於客戶端應用程式（例如 JavaScript SPA）。通常整個程式都在前端運行。因為需向 API 取得資料，也因為沒有後端無法通過授權碼交換存取權杖。因而直接讓授權伺服器核發存取權杖（Access Token）。
+
+1. 用戶發起登入：用戶在應用程式中點擊登入。
+2. 導向到授權伺服器：瀏覽器導向授權伺服器。
+3. 用戶身份驗證：用戶在授權伺服器上進行身份驗證。
+4. 授權確認：用戶被提示是否同意授予權限。
+5. 直接獲取存取權杖：用戶同意後，瀏覽器重定向回應用程式同時包含回傳存取權杖。
+6. 存取資源：應用程式使用存取憑證向資源伺服器請求資料。
+
+```
+Client ID: 客戶端 ID
+Redirect URI: 導向網址
+Scope: 授權範圍(可選)
+State: : 防止 CSRF 攻擊隨機產生的值(推薦)
+```
+
+### 資源擁有者密碼憑證模式 Resource Owner Password Credentials
+
+用戶將帳號密碼交給第三方應用程式，由應用程式直接向授權伺服器交換存取權杖。
+
+1. 收集用戶憑證：用戶將自己的登入資訊（例如，用戶名和密碼）提供給應用程式
+2. 應用程式請求存取權杖：應用程式直接使用這些資訊向授權伺服器請求存取權杖
+3. 存取資源：獲得存取權杖後，應用程式即可使用此權杖向資源伺服器請求用戶資料。
+
+```
+Client ID: 客戶端 ID（可選，取決於伺服器端的要求）
+Client Secret: 客戶端密鑰（可選，取決於伺服器端的要求）
+Username: 用戶帳號。
+Password: 用戶密碼。
+```
+
+### 客戶端憑證模式 Client Credentials
+
+通常是應用程式向授權伺服器取得存取權杖，讀取自己的資料而不是用戶的資料。
+
+1. 應用程式認證：應用程式使用其自身的憑證（不涉及用戶）向授權伺服器請求存取權杖
+2. 存取資源：應用程式使用獲得的存取權杖向資源伺服器請求資料，通常是應用程式自己的資料而非用戶個人資料
+
+```
+Client ID: 客戶端 ID
+Client Secret: 客戶端密鑰
+```
 
 ## Passport 或 Sanctum?
 
-在開始之前您可能需要確認您的應用程式需要使用 Passport 還是 Sanctum。如果您的應用程式需要支援 OAuth2 那麼你該使用 Passport 。如果你只是需要支援存取第三方平台的資料如 Facebook 或者簡單提供 API Token 讓應用程式可以使用 API 存取，那麼你應該使用 Sanctum。Scanctum 不支援 OAuth2 但是提供簡單的 API 驗證開發體驗。
+在開始之前您可能需要確認您的應用程式需要使用 Passport 還是 Sanctum。如果您的應用程式需要支援 OAuth2 那麼你該使用 Passport 。如果你只是需要支援存取第三方平台的資料如 Facebook 登入或者簡單提供 API Token 讓應用程式可以使用 API，那麼你應該使用 Sanctum。
+
+Scanctum 不支援 OAuth2 但是提供簡單的 API 驗證開發體驗。
 
 ## 安裝 Passport
 
@@ -1163,7 +1226,7 @@ Passport::hasScope('place-orders');
 
 需要確保這個 `CreateFreshApiToken` Middleware 在最後。
 
-這個 Middleware 會將一個名為 `laravel_token` 的 Cookie 附加到 Response。 Cookie 包含一個加密的 JWT ，Passport 會使用這個 JWT 驗證來自你 JavaScript 應用的請求。也就是當讀取頁面時，由於瀏覽器會自動隨所有請求發送這個 Cookie，您的前端應用可以不必在每次請求時明確地傳遞訪問令牌。JWT 的有效時間等於 `session.lifetime` 設定。
+這個 Middleware 會將一個名為 `laravel_token` 的 Cookie 附加到 Response。 Cookie 包含一個加密的 JWT ，Passport 會使用這個 JWT 驗證來自你 JavaScript 應用的請求。也就是當讀取頁面時，由於瀏覽器會自動隨所有請求發送這個 Cookie，您的前端應用可以不必在每次請求時明確地傳遞訪問權杖。JWT 的有效時間等於 `session.lifetime` 設定。
 
 ```js
 axios.get('/api/user').then((response) => {

@@ -2,6 +2,13 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
   <url>
+    <loc>https://andyyou.github.io/2024/10/28/implement-live-activity-for-rn/</loc>
+    
+    <lastmod>2024-10-28</lastmod>
+    
+  </url>
+  
+  <url>
     <loc>https://andyyou.github.io/2024/07/08/laravel-interface/</loc>
     
     <lastmod>2024-10-28</lastmod>
@@ -10,13 +17,6 @@
   
   <url>
     <loc>https://andyyou.github.io/2024/07/03/edit-gcloud-gke-secrets/</loc>
-    
-    <lastmod>2024-10-28</lastmod>
-    
-  </url>
-  
-  <url>
-    <loc>https://andyyou.github.io/2024/10/28/implement-live-activity-for-rn/</loc>
     
     <lastmod>2024-10-28</lastmod>
     
@@ -2231,6 +2231,13 @@
   
   <url>
     <loc>https://andyyou.github.io/tags/nextjs/</loc>
+    <lastmod>2024-10-28</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
+  <url>
+    <loc>https://andyyou.github.io/tags/react-native/</loc>
     <lastmod>2024-10-28</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.6</priority>

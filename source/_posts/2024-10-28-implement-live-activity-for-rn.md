@@ -1,12 +1,10 @@
 ---
-title: implement-live-activity-for-rn
+title: React Native 實作 iOS Live Activity
 date: 2024-10-28 17:04:56
 tags:
+  - react-native
+categories: Program
 ---
-
-# React Native 實作 iOS Live Activity
-
-[toc]
 
 ## Live Activity
 
@@ -17,6 +15,8 @@ tags:
 - Dynamic Island 動態島則是 iPhone 14 Pro 開始新增的功能。
 
 進一步我們釐清在 iOS 14 加入的 Widget 和 Live Activity 的差別。Live Activity 以提供即時資訊為核心例如追蹤某個事件的狀態，比賽分數、Uber 司機是否抵達等資訊。Widget 比較合適的情境是提供跟短時間即時性比較沒有那麼強烈關係的資料例如天氣等。
+
+<!-- more -->
 
 ## 建置第一個 Live Activity
 
